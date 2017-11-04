@@ -1,0 +1,7 @@
+/.idea
+/node_modules
+/bower_components
+/dist/build
+/db/dump/*
+prepros-6.config
+**/.DS_Store

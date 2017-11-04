@@ -1,0 +1,21 @@
+{
+  "name": "dreampilot",
+  "description": "DreamPilot FrontEnd Framework",
+  "main": "",
+  "authors": [
+    "dimaninc"
+  ],
+  "license": "UNLICENSED",
+  "homepage": "testpilot.co",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^3.2.1"
+  }
+}
