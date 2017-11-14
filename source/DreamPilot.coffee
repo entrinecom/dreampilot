@@ -1,19 +1,22 @@
 class DreamPilot
     apps = {}
+    self = @
 
     constructor: ->
-        @checkDependencies()
-        .setupApps()
+        $ =>
+            @checkDependencies()
+            .setupApps()
 
     @prefix: 'dp-'
+
     @e: (selector, parent) -> jQuery selector, parent
-    e: (selector, parent) -> DreamPilot.e selector, parent
+    e: (selector, parent) -> self.e selector, parent
 
     @attribute: (name) ->
-        DreamPilot.prefix + name
+        self.prefix + name
 
     @selectorForAttribute: (name) ->
-        "[#{DreamPilot.attribute(name)}]"
+        "[#{self.attribute(name)}]"
 
     checkDependencies: ->
         throw 'jQuery needed' if typeof jQuery is 'undefined'
@@ -21,11 +24,12 @@ class DreamPilot
         @
 
     setupApps: ->
-        @e(DreamPilot.selectorForAttribute(dpApp.appAttr)).each ->
-            $app = DreamPilot.e @
-            name = $app.attr DreamPilot.attribute dpApp.appAttr
+        @e(self.selectorForAttribute(dpApp.appAttr)).each ->
+            $app = self.e @
+            name = $app.attr self.attribute dpApp.appAttr
             throw 'Application with empty name found' if not name
             apps[name] = new dpApp $app
         @
 
+$dp = DreamPilot
 dp = new DreamPilot()

@@ -1,4 +1,6 @@
 class dpApp
+    self = @
+
     constructor: (@$element) ->
         @setupAttributes()
 
@@ -6,8 +8,13 @@ class dpApp
     @classAttr = 'class'
 
     setupAttributes: ->
-        DreamPilot.e(DreamPilot.selectorForAttribute(dpApp.classAttr)).each ->
-            $el = DreamPilot.e @
-            parseTree = jsep $el.attr DreamPilot.attribute dpApp.classAttr
-            console.log parseTree
+        $dp.e($dp.selectorForAttribute(self.classAttr)).each ->
+            $el = $dp.e @
+            obj = Parser.object $el.attr $dp.attribute self.classAttr
+
+            for k,v of obj
+                console.log '[' + k + '] =', v
+
+            #parseTree = jsep $el.attr DreamPilot.attribute dpApp.classAttr
+            #console.log parseTree
         @
