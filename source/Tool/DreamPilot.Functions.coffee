@@ -1,4 +1,4 @@
-class Functions
+class DreamPilot.Functions
     @trim: (s) ->
         s.replace /^\s+|\s+$/g, ''
 
@@ -20,4 +20,4 @@ class Functions
     @urldecode: (s) ->
         decodeURIComponent (s + '').replace /\+/g, '%20'
 
-$dp.fn = Functions if $dp
+$dp.fn = DreamPilot.Functions if $dp

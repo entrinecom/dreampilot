@@ -1,4 +1,4 @@
-class dpModel
+class DreamPilot.Model
     data = {}
     callbacks =
         change: {}

@@ -1,87 +1,3 @@
-var dpApp;
-
-dpApp = (function() {
-  var self;
-
-  self = dpApp;
-
-  function dpApp($element) {
-    this.$element = $element;
-    this.setupAttributes();
-  }
-
-  dpApp.appAttr = 'app';
-
-  dpApp.classAttr = 'class';
-
-  dpApp.prototype.setupAttributes = function() {
-    $dp.e($dp.selectorForAttribute(self.classAttr)).each(function() {
-      var $el, k, obj, results, v;
-      $el = $dp.e(this);
-      obj = Parser.object($el.attr($dp.attribute(self.classAttr)));
-      results = [];
-      for (k in obj) {
-        v = obj[k];
-        results.push(console.log('[' + k + '] =', v));
-      }
-      return results;
-    });
-    return this;
-  };
-
-  return dpApp;
-
-})();
-
-var dpModel;
-
-dpModel = (function() {
-  var callbacks, data;
-
-  data = {};
-
-  callbacks = {
-    change: {}
-  };
-
-  function dpModel() {}
-
-  dpModel.prototype.get = function(field) {
-    if (typeof data[field] !== 'undefined') {
-      return data[field];
-    } else {
-      return null;
-    }
-  };
-
-  dpModel.prototype.set = function(field, value) {
-    var base, k, v;
-    if (value == null) {
-      value = null;
-    }
-    if (typeof field === 'object' && value === null) {
-      for (k in field) {
-        v = field[k];
-        this.set(k, v);
-      }
-    } else {
-      data[field] = value;
-      if (typeof (base = callbacks.change)[field] === "function") {
-        base[field]();
-      }
-    }
-    return this;
-  };
-
-  dpModel.prototype.onChange = function(field, callback) {
-    callbacks.change[field] = callback;
-    return this;
-  };
-
-  return dpModel;
-
-})();
-
 var $dp, DreamPilot, dp;
 
 DreamPilot = (function() {
@@ -128,14 +44,14 @@ DreamPilot = (function() {
   };
 
   DreamPilot.prototype.setupApps = function() {
-    this.e(self.selectorForAttribute(dpApp.appAttr)).each(function() {
+    this.e(self.selectorForAttribute($dp.Application.appAttr)).each(function() {
       var $app, name;
       $app = self.e(this);
-      name = $app.attr(self.attribute(dpApp.appAttr));
+      name = $app.attr(self.attribute($dp.Application.appAttr));
       if (!name) {
         throw 'Application with empty name found';
       }
-      return apps[name] = new dpApp($app);
+      return apps[name] = new $dp.Application($app);
     });
     return this;
   };
@@ -148,9 +64,111 @@ $dp = DreamPilot;
 
 dp = new DreamPilot();
 
-var Functions;
+DreamPilot.Application = (function() {
+  var self;
 
-Functions = (function() {
+  self = Application;
+
+  function Application($element) {
+    this.$element = $element;
+    this.setupScope().setupAttributes();
+  }
+
+  Application.appAttr = 'app';
+
+  Application.classAttr = 'class';
+
+  Application.prototype.getScope = function() {
+    return this.Scope;
+  };
+
+  Application.prototype.setupScope = function() {
+    this.Scope = new $dp.Scope();
+    return this;
+  };
+
+  Application.prototype.setupAttributes = function() {
+    var that;
+    that = this;
+    $dp.e($dp.selectorForAttribute(self.classAttr)).each(function() {
+      var $el, k, obj, v;
+      $el = $dp.e(this);
+      obj = $dp.Parser.object($el.attr($dp.attribute(self.classAttr)));
+      for (k in obj) {
+        v = obj[k];
+        $el.toggleClass(k, $dp.Parser.isExpressionTrue(v, that));
+      }
+      return true;
+    });
+    return this;
+  };
+
+  return Application;
+
+})();
+
+DreamPilot.Model = (function() {
+  var callbacks, data;
+
+  data = {};
+
+  callbacks = {
+    change: {}
+  };
+
+  function Model() {}
+
+  Model.prototype.get = function(field) {
+    if (typeof data[field] !== 'undefined') {
+      return data[field];
+    } else {
+      return null;
+    }
+  };
+
+  Model.prototype.set = function(field, value) {
+    var base, k, v;
+    if (value == null) {
+      value = null;
+    }
+    if (typeof field === 'object' && value === null) {
+      for (k in field) {
+        v = field[k];
+        this.set(k, v);
+      }
+    } else {
+      data[field] = value;
+      if (typeof (base = callbacks.change)[field] === "function") {
+        base[field]();
+      }
+    }
+    return this;
+  };
+
+  Model.prototype.onChange = function(field, callback) {
+    callbacks.change[field] = callback;
+    return this;
+  };
+
+  return Model;
+
+})();
+
+var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+DreamPilot.Scope = (function(superClass) {
+  extend(Scope, superClass);
+
+  function Scope() {
+    Scope.__super__.constructor.call(this);
+  }
+
+  return Scope;
+
+})(DreamPilot.Model);
+
+DreamPilot.Functions = (function() {
   function Functions() {}
 
   Functions.trim = function(s) {
@@ -190,13 +208,12 @@ Functions = (function() {
 })();
 
 if ($dp) {
-  $dp.fn = Functions;
+  $dp.fn = DreamPilot.Functions;
 }
 
-var Parser,
-  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-Parser = (function() {
+DreamPilot.Parser = (function() {
   var self;
 
   self = Parser;
@@ -259,10 +276,101 @@ Parser = (function() {
     return o;
   };
 
+  Parser.isExpressionTrue = function(expr, App) {
+    var e, evalNode, operators;
+    operators = {
+      binary: {
+        '+': function(a, b) {
+          return a + b;
+        },
+        '-': function(a, b) {
+          return a - b;
+        },
+        '*': function(a, b) {
+          return a * b;
+        },
+        '/': function(a, b) {
+          return a / b;
+        },
+        '%': function(a, b) {
+          return a % b;
+        },
+        '>': function(a, b) {
+          return a > b;
+        },
+        '>=': function(a, b) {
+          return a >= b;
+        },
+        '<': function(a, b) {
+          return a < b;
+        },
+        '<=': function(a, b) {
+          return a <= b;
+        },
+        '==': function(a, b) {
+          return a == b;
+        },
+        '===': function(a, b) {
+          return a === b;
+        },
+        '!=': function(a, b) {
+          return a != b;
+        }
+      },
+      unary: {
+        '-': function(a) {
+          return -a;
+        },
+        '+': function(a) {
+          return -a;
+        },
+        '!': function(a) {
+          return !a;
+        }
+      },
+      logical: {
+        '&&': function(a, b) {
+          return a && b;
+        },
+        '||': function(a, b) {
+          return a || b;
+        }
+      }
+    };
+    evalNode = function(node) {
+      switch (node.type) {
+        case 'BinaryExpression':
+          if (typeof operators.binary[node.operator] === 'undefined') {
+            throw 'No callback for binary operator ' + node.operator;
+          }
+          return operators.binary[node.operator](evalNode(node.left), evalNode(node.right));
+        case 'UnaryExpression':
+          if (typeof operators.unary[node.operator] === 'undefined') {
+            throw 'No callback for unary operator ' + node.operator;
+          }
+          return operators.unary[node.operator](evalNode(node.argument));
+        case 'LogicalExpression':
+          if (typeof operators.logical[node.operator] === 'undefined') {
+            throw 'No callback for logical operator ' + node.operator;
+          }
+          return operators.logical[node.operator](evalNode(node.left), evalNode(node.right));
+        case 'Identifier':
+          return App.getScope().get(node.name);
+        case 'Literal':
+          return node.value;
+        default:
+          throw 'Unknown node type ' + node.type;
+      }
+    };
+    try {
+      return !!evalNode(jsep(expr));
+    } catch (error) {
+      e = error;
+      console.log('Expression parsing error ', e);
+      return false;
+    }
+  };
+
   return Parser;
 
 })();
-
-if ($dp) {
-  $dp.parser = Parser;
-}

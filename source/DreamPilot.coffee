@@ -24,11 +24,11 @@ class DreamPilot
         @
 
     setupApps: ->
-        @e(self.selectorForAttribute(dpApp.appAttr)).each ->
+        @e(self.selectorForAttribute($dp.Application.appAttr)).each ->
             $app = self.e @
-            name = $app.attr self.attribute dpApp.appAttr
+            name = $app.attr self.attribute $dp.Application.appAttr
             throw 'Application with empty name found' if not name
-            apps[name] = new dpApp $app
+            apps[name] = new $dp.Application $app
         @
 
 $dp = DreamPilot
