@@ -4,6 +4,28 @@ class DreamPilot.Parser
     constructor: ->
 
     @quotes: '\'"`'
+    @operators:
+        binary:
+            '+': (a, b) -> a + b
+            '-': (a, b) -> a - b
+            '*': (a, b) -> a * b
+            '/': (a, b) -> a / b
+            '%': (a, b) -> a % b
+            '>': (a, b) -> a > b
+            '>=': (a, b) -> a >= b
+            '<': (a, b) -> a < b
+            '<=': (a, b) -> a <= b
+            '==': (a, b) -> `a == b`
+            '===': (a, b) -> a is b
+            '!=': (a, b) -> `a != b`
+        unary:
+            '-': (a) -> -a
+            '+': (a) -> -a
+            '!': (a) -> !a
+        logical:
+            '&&': (a, b) -> a and b
+            '||': (a, b) -> a or b
+    @lastUsedVariables: []
 
     @object: (dataStr) ->
         dataStr = $dp.fn.trim dataStr
@@ -49,48 +71,32 @@ class DreamPilot.Parser
         o
 
     @isExpressionTrue: (expr, App) ->
-        operators =
-            binary:
-                '+': (a, b) -> a + b
-                '-': (a, b) -> a - b
-                '*': (a, b) -> a * b
-                '/': (a, b) -> a / b
-                '%': (a, b) -> a % b
-                '>': (a, b) -> a > b
-                '>=': (a, b) -> a >= b
-                '<': (a, b) -> a < b
-                '<=': (a, b) -> a <= b
-                '==': (a, b) -> `a == b`
-                '===': (a, b) -> a is b
-                '!=': (a, b) -> `a != b`
-            unary:
-                '-': (a) -> -a
-                '+': (a) -> -a
-                '!': (a) -> !a
-            logical:
-                '&&': (a, b) -> a and b
-                '||': (a, b) -> a or b
-
         evalNode = (node) ->
             switch node.type
                 when 'BinaryExpression'
-                    if typeof operators.binary[node.operator] is 'undefined'
+                    if typeof self.operators.binary[node.operator] is 'undefined'
                         throw 'No callback for binary operator ' + node.operator
-                    operators.binary[node.operator] evalNode(node.left), evalNode(node.right)
+                    self.operators.binary[node.operator] evalNode(node.left), evalNode(node.right)
                 when 'UnaryExpression'
-                    if typeof operators.unary[node.operator] is 'undefined'
+                    if typeof self.operators.unary[node.operator] is 'undefined'
                         throw 'No callback for unary operator ' + node.operator
-                    operators.unary[node.operator] evalNode(node.argument)
+                    self.operators.unary[node.operator] evalNode(node.argument)
                 when 'LogicalExpression'
-                    if typeof operators.logical[node.operator] is 'undefined'
+                    if typeof self.operators.logical[node.operator] is 'undefined'
                         throw 'No callback for logical operator ' + node.operator
-                    operators.logical[node.operator] evalNode(node.left), evalNode(node.right)
-                when 'Identifier' then App.getScope().get node.name
+                    self.operators.logical[node.operator] evalNode(node.left), evalNode(node.right)
+                when 'Identifier'
+                    self.lastUsedVariables.push node.name
+                    App.getScope().get node.name
                 when 'Literal' then node.value
                 else throw 'Unknown node type ' + node.type
 
         try
+            self.lastUsedVariables = []
             !! evalNode jsep expr
         catch e
             console.log 'Expression parsing error ', e
             false
+
+    @getLastUsedVariables: ->
+        self.lastUsedVariables

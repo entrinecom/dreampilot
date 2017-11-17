@@ -28,7 +28,7 @@ class DreamPilot
             $app = self.e @
             name = $app.attr self.attribute $dp.Application.appAttr
             throw 'Application with empty name found' if not name
-            apps[name] = new $dp.Application $app
+            apps[name] = $dp.Application.create name, $app
         @
 
 $dp = DreamPilot

@@ -6,17 +6,24 @@ class DreamPilot.Model
     constructor: ->
 
     get: (field) ->
-        if typeof data[field] isnt 'undefined' then data[field] else null
+        if @exists field then data[field] else null
+
+    has: (field) ->
+        if @exists field then !!data[field] else false
 
     set: (field, value = null) ->
         if typeof field is 'object' and value is null
-            for k, v of field
-                @set k, v
+            @set k, v for k, v of field
         else
             data[field] = value
-            callbacks.change[field]?()
+            if callbacks.change[field]?
+                cb field, value for cb in callbacks.change[field]
         @
 
+    exists: (field) ->
+        typeof data[field] isnt 'undefined'
+
     onChange: (field, callback) ->
-        callbacks.change[field] = callback
+        callbacks.change[field] = [] unless callbacks.change[field]?
+        callbacks.change[field].push callback
         @

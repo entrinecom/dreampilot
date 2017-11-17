@@ -51,7 +51,7 @@ DreamPilot = (function() {
       if (!name) {
         throw 'Application with empty name found';
       }
-      return apps[name] = new $dp.Application($app);
+      return apps[name] = $dp.Application.create(name, $app);
     });
     return this;
   };
@@ -69,14 +69,22 @@ DreamPilot.Application = (function() {
 
   self = Application;
 
-  function Application($element) {
-    this.$element = $element;
+  Application.create = function(className, $element) {
+    var classSource;
+    classSource = $dp.fn.stringToFunction(className);
+    return new classSource($element);
+  };
+
+  function Application($element1) {
+    this.$element = $element1;
     this.setupScope().setupAttributes();
   }
 
   Application.appAttr = 'app';
 
   Application.classAttr = 'class';
+
+  Application.showAttr = 'show';
 
   Application.prototype.getScope = function() {
     return this.Scope;
@@ -88,15 +96,47 @@ DreamPilot.Application = (function() {
   };
 
   Application.prototype.setupAttributes = function() {
+    return this.setupClassAttribute().setupShowAttribute();
+  };
+
+  Application.prototype.setupClassAttribute = function() {
     var that;
     that = this;
     $dp.e($dp.selectorForAttribute(self.classAttr)).each(function() {
-      var $el, k, obj, v;
+      var $el, cssClass, expression, field, i, len, obj, ref;
       $el = $dp.e(this);
       obj = $dp.Parser.object($el.attr($dp.attribute(self.classAttr)));
-      for (k in obj) {
-        v = obj[k];
-        $el.toggleClass(k, $dp.Parser.isExpressionTrue(v, that));
+      for (cssClass in obj) {
+        expression = obj[cssClass];
+        $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that));
+      }
+      ref = $dp.Parser.getLastUsedVariables();
+      for (i = 0, len = ref.length; i < len; i++) {
+        field = ref[i];
+        that.getScope().onChange(field, function(field, value) {
+          console.log('changed: ', field, '=', value, 'class', cssClass);
+          return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that));
+        });
+      }
+      return true;
+    });
+    return this;
+  };
+
+  Application.prototype.setupShowAttribute = function() {
+    var that;
+    that = this;
+    $dp.e($dp.selectorForAttribute(self.showAttr)).each(function() {
+      var $el, expression, field, i, len, ref;
+      $el = $dp.e(this);
+      expression = $el.attr($dp.attribute(self.showAttr));
+      $el.toggle($dp.Parser.isExpressionTrue(expression, that));
+      ref = $dp.Parser.getLastUsedVariables();
+      for (i = 0, len = ref.length; i < len; i++) {
+        field = ref[i];
+        that.getScope().onChange(field, function(field, value) {
+          return $el.toggle($dp.Parser.isExpressionTrue(expression, that));
+        });
       }
       return true;
     });
@@ -119,15 +159,23 @@ DreamPilot.Model = (function() {
   function Model() {}
 
   Model.prototype.get = function(field) {
-    if (typeof data[field] !== 'undefined') {
+    if (this.exists(field)) {
       return data[field];
     } else {
       return null;
     }
   };
 
+  Model.prototype.has = function(field) {
+    if (this.exists(field)) {
+      return !!data[field];
+    } else {
+      return false;
+    }
+  };
+
   Model.prototype.set = function(field, value) {
-    var base, k, v;
+    var cb, i, k, len, ref, v;
     if (value == null) {
       value = null;
     }
@@ -138,15 +186,26 @@ DreamPilot.Model = (function() {
       }
     } else {
       data[field] = value;
-      if (typeof (base = callbacks.change)[field] === "function") {
-        base[field]();
+      if (callbacks.change[field] != null) {
+        ref = callbacks.change[field];
+        for (i = 0, len = ref.length; i < len; i++) {
+          cb = ref[i];
+          cb(field, value);
+        }
       }
     }
     return this;
   };
 
+  Model.prototype.exists = function(field) {
+    return typeof data[field] !== 'undefined';
+  };
+
   Model.prototype.onChange = function(field, callback) {
-    callbacks.change[field] = callback;
+    if (callbacks.change[field] == null) {
+      callbacks.change[field] = [];
+    }
+    callbacks.change[field].push(callback);
     return this;
   };
 
@@ -203,6 +262,20 @@ DreamPilot.Functions = (function() {
     return decodeURIComponent((s + '').replace(/\+/g, '%20'));
   };
 
+  Functions.stringToFunction = function(s) {
+    var ar, fn, k, v;
+    ar = s.split('.');
+    fn = window || this;
+    for (k in ar) {
+      v = ar[k];
+      fn = fn[v];
+    }
+    if (typeof fn !== 'function') {
+      throw "Function/Class " + s + " not found";
+    }
+    return fn;
+  };
+
   return Functions;
 
 })();
@@ -221,6 +294,68 @@ DreamPilot.Parser = (function() {
   function Parser() {}
 
   Parser.quotes = '\'"`';
+
+  Parser.operators = {
+    binary: {
+      '+': function(a, b) {
+        return a + b;
+      },
+      '-': function(a, b) {
+        return a - b;
+      },
+      '*': function(a, b) {
+        return a * b;
+      },
+      '/': function(a, b) {
+        return a / b;
+      },
+      '%': function(a, b) {
+        return a % b;
+      },
+      '>': function(a, b) {
+        return a > b;
+      },
+      '>=': function(a, b) {
+        return a >= b;
+      },
+      '<': function(a, b) {
+        return a < b;
+      },
+      '<=': function(a, b) {
+        return a <= b;
+      },
+      '==': function(a, b) {
+        return a == b;
+      },
+      '===': function(a, b) {
+        return a === b;
+      },
+      '!=': function(a, b) {
+        return a != b;
+      }
+    },
+    unary: {
+      '-': function(a) {
+        return -a;
+      },
+      '+': function(a) {
+        return -a;
+      },
+      '!': function(a) {
+        return !a;
+      }
+    },
+    logical: {
+      '&&': function(a, b) {
+        return a && b;
+      },
+      '||': function(a, b) {
+        return a || b;
+      }
+    }
+  };
+
+  Parser.lastUsedVariables = [];
 
   Parser.object = function(dataStr) {
     var addPair, ch, i, j, len, o, pair, quoteOpened, skip, underCursor;
@@ -277,84 +412,26 @@ DreamPilot.Parser = (function() {
   };
 
   Parser.isExpressionTrue = function(expr, App) {
-    var e, evalNode, operators;
-    operators = {
-      binary: {
-        '+': function(a, b) {
-          return a + b;
-        },
-        '-': function(a, b) {
-          return a - b;
-        },
-        '*': function(a, b) {
-          return a * b;
-        },
-        '/': function(a, b) {
-          return a / b;
-        },
-        '%': function(a, b) {
-          return a % b;
-        },
-        '>': function(a, b) {
-          return a > b;
-        },
-        '>=': function(a, b) {
-          return a >= b;
-        },
-        '<': function(a, b) {
-          return a < b;
-        },
-        '<=': function(a, b) {
-          return a <= b;
-        },
-        '==': function(a, b) {
-          return a == b;
-        },
-        '===': function(a, b) {
-          return a === b;
-        },
-        '!=': function(a, b) {
-          return a != b;
-        }
-      },
-      unary: {
-        '-': function(a) {
-          return -a;
-        },
-        '+': function(a) {
-          return -a;
-        },
-        '!': function(a) {
-          return !a;
-        }
-      },
-      logical: {
-        '&&': function(a, b) {
-          return a && b;
-        },
-        '||': function(a, b) {
-          return a || b;
-        }
-      }
-    };
+    var e, evalNode;
     evalNode = function(node) {
       switch (node.type) {
         case 'BinaryExpression':
-          if (typeof operators.binary[node.operator] === 'undefined') {
+          if (typeof self.operators.binary[node.operator] === 'undefined') {
             throw 'No callback for binary operator ' + node.operator;
           }
-          return operators.binary[node.operator](evalNode(node.left), evalNode(node.right));
+          return self.operators.binary[node.operator](evalNode(node.left), evalNode(node.right));
         case 'UnaryExpression':
-          if (typeof operators.unary[node.operator] === 'undefined') {
+          if (typeof self.operators.unary[node.operator] === 'undefined') {
             throw 'No callback for unary operator ' + node.operator;
           }
-          return operators.unary[node.operator](evalNode(node.argument));
+          return self.operators.unary[node.operator](evalNode(node.argument));
         case 'LogicalExpression':
-          if (typeof operators.logical[node.operator] === 'undefined') {
+          if (typeof self.operators.logical[node.operator] === 'undefined') {
             throw 'No callback for logical operator ' + node.operator;
           }
-          return operators.logical[node.operator](evalNode(node.left), evalNode(node.right));
+          return self.operators.logical[node.operator](evalNode(node.left), evalNode(node.right));
         case 'Identifier':
+          self.lastUsedVariables.push(node.name);
           return App.getScope().get(node.name);
         case 'Literal':
           return node.value;
@@ -363,12 +440,17 @@ DreamPilot.Parser = (function() {
       }
     };
     try {
+      self.lastUsedVariables = [];
       return !!evalNode(jsep(expr));
     } catch (error) {
       e = error;
       console.log('Expression parsing error ', e);
       return false;
     }
+  };
+
+  Parser.getLastUsedVariables = function() {
+    return self.lastUsedVariables;
   };
 
   return Parser;

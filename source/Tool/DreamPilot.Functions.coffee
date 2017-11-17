@@ -20,4 +20,11 @@ class DreamPilot.Functions
     @urldecode: (s) ->
         decodeURIComponent (s + '').replace /\+/g, '%20'
 
+    @stringToFunction: (s) ->
+        ar = s.split '.'
+        fn = window or @
+        fn = fn[v] for k, v of ar
+        throw "Function/Class #{s} not found" if typeof fn isnt 'function'
+        fn
+
 $dp.fn = DreamPilot.Functions if $dp
