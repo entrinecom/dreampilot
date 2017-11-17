@@ -1,6 +1,13 @@
 class DreamPilot.Application
     self = @
 
+    @appAttr = 'app'
+    @classAttr = 'class'
+    @showAttr = 'show'
+    @ifAttr = 'if'
+
+    hiddenElements: {}
+
     @create: (className, $element) ->
         classSource = $dp.fn.stringToFunction className
         return new classSource $element
@@ -8,10 +15,6 @@ class DreamPilot.Application
     constructor: (@$element) ->
         @setupScope()
         .setupAttributes()
-
-    @appAttr = 'app'
-    @classAttr = 'class'
-    @showAttr = 'show'
 
     getScope: ->
         @Scope
@@ -23,6 +26,7 @@ class DreamPilot.Application
     setupAttributes: ->
         @setupClassAttribute()
         .setupShowAttribute()
+        .setupIfAttribute()
 
     setupClassAttribute: ->
         that = @
@@ -57,6 +61,29 @@ class DreamPilot.Application
             for field in $dp.Parser.getLastUsedVariables()
                 that.getScope().onChange field, (field, value) ->
                     $el.toggle $dp.Parser.isExpressionTrue expression, that
+
+            true
+
+        @
+
+    toggleElementExistence: ($element, state) ->
+        # todo
+        console.log $element, state
+        @
+
+    setupIfAttribute: ->
+        that = @
+
+        $dp.e($dp.selectorForAttribute(self.ifAttr)).each ->
+            $el = $dp.e @
+            expression = $el.attr $dp.attribute self.ifAttr
+
+            that.toggleElementExistence $el, $dp.Parser.isExpressionTrue expression, that
+
+            # setting up watchers
+            for field in $dp.Parser.getLastUsedVariables()
+                that.getScope().onChange field, (field, value) ->
+                    that.toggleElementExistence $el, $dp.Parser.isExpressionTrue expression, that
 
             true
 

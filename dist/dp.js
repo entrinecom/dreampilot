@@ -69,6 +69,16 @@ DreamPilot.Application = (function() {
 
   self = Application;
 
+  Application.appAttr = 'app';
+
+  Application.classAttr = 'class';
+
+  Application.showAttr = 'show';
+
+  Application.ifAttr = 'if';
+
+  Application.prototype.hiddenElements = {};
+
   Application.create = function(className, $element) {
     var classSource;
     classSource = $dp.fn.stringToFunction(className);
@@ -80,12 +90,6 @@ DreamPilot.Application = (function() {
     this.setupScope().setupAttributes();
   }
 
-  Application.appAttr = 'app';
-
-  Application.classAttr = 'class';
-
-  Application.showAttr = 'show';
-
   Application.prototype.getScope = function() {
     return this.Scope;
   };
@@ -96,7 +100,7 @@ DreamPilot.Application = (function() {
   };
 
   Application.prototype.setupAttributes = function() {
-    return this.setupClassAttribute().setupShowAttribute();
+    return this.setupClassAttribute().setupShowAttribute().setupIfAttribute();
   };
 
   Application.prototype.setupClassAttribute = function() {
@@ -136,6 +140,31 @@ DreamPilot.Application = (function() {
         field = ref[i];
         that.getScope().onChange(field, function(field, value) {
           return $el.toggle($dp.Parser.isExpressionTrue(expression, that));
+        });
+      }
+      return true;
+    });
+    return this;
+  };
+
+  Application.prototype.toggleElementExistence = function($element, state) {
+    console.log($element, state);
+    return this;
+  };
+
+  Application.prototype.setupIfAttribute = function() {
+    var that;
+    that = this;
+    $dp.e($dp.selectorForAttribute(self.ifAttr)).each(function() {
+      var $el, expression, field, i, len, ref;
+      $el = $dp.e(this);
+      expression = $el.attr($dp.attribute(self.ifAttr));
+      that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that));
+      ref = $dp.Parser.getLastUsedVariables();
+      for (i = 0, len = ref.length; i < len; i++) {
+        field = ref[i];
+        that.getScope().onChange(field, function(field, value) {
+          return that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that));
         });
       }
       return true;

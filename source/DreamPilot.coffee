@@ -27,7 +27,7 @@ class DreamPilot
         @e(self.selectorForAttribute($dp.Application.appAttr)).each ->
             $app = self.e @
             name = $app.attr self.attribute $dp.Application.appAttr
-            throw 'Application with empty name found' if not name
+            throw 'Application with empty name found' unless name
             apps[name] = $dp.Application.create name, $app
         @
 
