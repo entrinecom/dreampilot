@@ -1,19 +1,23 @@
 {
   "name": "dreampilot",
+  "version": "0.0.1",
   "description": "DreamPilot FrontEnd Framework",
-  "main": "",
+  "main": "dist/dp.js",
   "authors": [
     "dimaninc"
   ],
-  "license": "UNLICENSED",
   "homepage": "testpilot.co",
-  "private": true,
   "ignore": [
-    "**/.*",
     "node_modules",
     "bower_components",
-    "test",
-    "tests"
+    "samples",
+    ".bowerrc",
+    ".gitignore",
+    "bower.json",
+    "gulpfile.coffee",
+    "gulpfile.js",
+    "package.json",
+    "README.md"
   ],
   "dependencies": {
     "jquery": "^3.2.1",
