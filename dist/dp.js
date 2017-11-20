@@ -77,8 +77,6 @@ DreamPilot.Application = (function() {
 
   Application.ifAttr = 'if';
 
-  Application.prototype.hiddenElements = {};
-
   Application.create = function(className, $element) {
     var classSource;
     classSource = $dp.fn.stringToFunction(className);
@@ -147,8 +145,27 @@ DreamPilot.Application = (function() {
     return this;
   };
 
-  Application.prototype.toggleElementExistence = function($element, state) {
-    console.log($element, state);
+  Application.prototype.getReplacerFor = function($element, expression) {
+
+    /*
+    return $element.data 'replacer' if $element.data 'replacer'
+    
+    $replacer = $ '<div/>'
+    .hide()
+    .data 'element', $element
+    .attr 'dp-uid', $dp.fn.uniqueId()
+    
+    $element.data 'replacer', $replacer
+     */
+    var $replacer;
+    $replacer = $("<!-- dp-if: " + expression + " -->\n<!-- end of dp-if: " + expression + " -->");
+    return $replacer;
+  };
+
+  Application.prototype.toggleElementExistence = function($element, state, expression) {
+    if (!state) {
+      $element.replaceWith(this.getReplacerFor($element, expression));
+    }
     return this;
   };
 
@@ -159,12 +176,12 @@ DreamPilot.Application = (function() {
       var $el, expression, field, i, len, ref;
       $el = $dp.e(this);
       expression = $el.attr($dp.attribute(self.ifAttr));
-      that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that));
+      that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that), expression);
       ref = $dp.Parser.getLastUsedVariables();
       for (i = 0, len = ref.length; i < len; i++) {
         field = ref[i];
         that.getScope().onChange(field, function(field, value) {
-          return that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that));
+          return that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that), expression);
         });
       }
       return true;
@@ -303,6 +320,20 @@ DreamPilot.Functions = (function() {
       throw "Function/Class " + s + " not found";
     }
     return fn;
+  };
+
+  Functions.uniqueId = function(len) {
+    var i, j, possible, ref, text;
+    text = '';
+    possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (i = j = 0, ref = len || 32; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+  };
+
+  Functions.randomInt = function(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
   return Functions;

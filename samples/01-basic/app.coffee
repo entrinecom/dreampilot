@@ -14,4 +14,10 @@ class BasicApp extends DreamPilot.Application
                 lolo: 11
                 pepe: 8
         , 2000
+
+        setTimeout =>
+            @getScope().set
+                lolo: 5
+                pepe: 8
+        , 5000
         @

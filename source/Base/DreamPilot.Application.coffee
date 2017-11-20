@@ -6,8 +6,6 @@ class DreamPilot.Application
     @showAttr = 'show'
     @ifAttr = 'if'
 
-    hiddenElements: {}
-
     @create: (className, $element) ->
         classSource = $dp.fn.stringToFunction className
         return new classSource $element
@@ -66,9 +64,24 @@ class DreamPilot.Application
 
         @
 
-    toggleElementExistence: ($element, state) ->
-        # todo
-        console.log $element, state
+    getReplacerFor: ($element, expression) ->
+        ###
+        return $element.data 'replacer' if $element.data 'replacer'
+
+        $replacer = $ '<div/>'
+        .hide()
+        .data 'element', $element
+        .attr 'dp-uid', $dp.fn.uniqueId()
+
+        $element.data 'replacer', $replacer
+        ###
+        $replacer = $ "<!-- dp-if: #{expression} -->\n<!-- end of dp-if: #{expression} -->"
+
+        $replacer
+
+    toggleElementExistence: ($element, state, expression) ->
+        unless state
+            $element.replaceWith @getReplacerFor $element, expression
         @
 
     setupIfAttribute: ->
@@ -78,12 +91,12 @@ class DreamPilot.Application
             $el = $dp.e @
             expression = $el.attr $dp.attribute self.ifAttr
 
-            that.toggleElementExistence $el, $dp.Parser.isExpressionTrue expression, that
+            that.toggleElementExistence $el, $dp.Parser.isExpressionTrue(expression, that), expression
 
             # setting up watchers
             for field in $dp.Parser.getLastUsedVariables()
                 that.getScope().onChange field, (field, value) ->
-                    that.toggleElementExistence $el, $dp.Parser.isExpressionTrue expression, that
+                    that.toggleElementExistence $el, $dp.Parser.isExpressionTrue(expression, that), expression
 
             true
 

@@ -27,4 +27,14 @@ class DreamPilot.Functions
         throw "Function/Class #{s} not found" if typeof fn isnt 'function'
         fn
 
+    @uniqueId: (len) ->
+        text = ''
+        possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+        for i in [0..len || 32]
+            text += possible.charAt Math.floor Math.random() * possible.length
+        text
+
+    @randomInt: (min, max) ->
+        Math.floor(Math.random() * (max - min + 1)) + min
+
 $dp.fn = DreamPilot.Functions if $dp
