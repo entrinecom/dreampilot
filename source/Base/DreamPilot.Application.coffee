@@ -33,13 +33,14 @@ class DreamPilot.Application
             $el = $dp.e @
             obj = $dp.Parser.object $el.attr $dp.attribute self.classAttr
 
+            # todo: keep parsed expressions as closures connected to elements
             for cssClass, expression of obj
                 $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that
 
             # setting up watchers
             for field in $dp.Parser.getLastUsedVariables()
                 that.getScope().onChange field, (field, value) ->
-                    console.log 'changed: ', field, '=', value, 'class', cssClass
+                    #console.log 'changed CLASS: ', field, '=', value, ':', cssClass
                     $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that
 
             true
@@ -58,6 +59,7 @@ class DreamPilot.Application
             # setting up watchers
             for field in $dp.Parser.getLastUsedVariables()
                 that.getScope().onChange field, (field, value) ->
+                    #console.log 'changed SHOW: ', field, '=', value
                     $el.toggle $dp.Parser.isExpressionTrue expression, that
 
             true
@@ -65,23 +67,22 @@ class DreamPilot.Application
         @
 
     getReplacerFor: ($element, expression) ->
-        ###
         return $element.data 'replacer' if $element.data 'replacer'
 
-        $replacer = $ '<div/>'
-        .hide()
-        .data 'element', $element
-        .attr 'dp-uid', $dp.fn.uniqueId()
-
+        $replacer = $ "<!-- dp-if: #{expression} --><script type='text/placeholder'></script><!-- end of dp-if: #{expression} -->"
         $element.data 'replacer', $replacer
-        ###
-        $replacer = $ "<!-- dp-if: #{expression} -->\n<!-- end of dp-if: #{expression} -->"
 
         $replacer
 
     toggleElementExistence: ($element, state, expression) ->
-        unless state
-            $element.replaceWith @getReplacerFor $element, expression
+        if state
+            unless document.body.contains $element.get 0
+                $anchor = @getReplacerFor($element, expression).filter 'script'
+                $element.insertAfter $anchor
+        else
+            $element
+            .after @getReplacerFor $element, expression
+            .detach()
         @
 
     setupIfAttribute: ->
@@ -96,6 +97,7 @@ class DreamPilot.Application
             # setting up watchers
             for field in $dp.Parser.getLastUsedVariables()
                 that.getScope().onChange field, (field, value) ->
+                    #console.log 'changed IF: ', field, '=', value, expression
                     that.toggleElementExistence $el, $dp.Parser.isExpressionTrue(expression, that), expression
 
             true

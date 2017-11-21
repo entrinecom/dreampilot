@@ -116,7 +116,6 @@ DreamPilot.Application = (function() {
       for (i = 0, len = ref.length; i < len; i++) {
         field = ref[i];
         that.getScope().onChange(field, function(field, value) {
-          console.log('changed: ', field, '=', value, 'class', cssClass);
           return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that));
         });
       }
@@ -146,25 +145,24 @@ DreamPilot.Application = (function() {
   };
 
   Application.prototype.getReplacerFor = function($element, expression) {
-
-    /*
-    return $element.data 'replacer' if $element.data 'replacer'
-    
-    $replacer = $ '<div/>'
-    .hide()
-    .data 'element', $element
-    .attr 'dp-uid', $dp.fn.uniqueId()
-    
-    $element.data 'replacer', $replacer
-     */
     var $replacer;
-    $replacer = $("<!-- dp-if: " + expression + " -->\n<!-- end of dp-if: " + expression + " -->");
+    if ($element.data('replacer')) {
+      return $element.data('replacer');
+    }
+    $replacer = $("<!-- dp-if: " + expression + " --><script type='text/placeholder'></script><!-- end of dp-if: " + expression + " -->");
+    $element.data('replacer', $replacer);
     return $replacer;
   };
 
   Application.prototype.toggleElementExistence = function($element, state, expression) {
-    if (!state) {
-      $element.replaceWith(this.getReplacerFor($element, expression));
+    var $anchor;
+    if (state) {
+      if (!document.body.contains($element.get(0))) {
+        $anchor = this.getReplacerFor($element, expression).filter('script');
+        $element.insertAfter($anchor);
+      }
+    } else {
+      $element.after(this.getReplacerFor($element, expression)).detach();
     }
     return this;
   };

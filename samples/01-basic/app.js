@@ -25,6 +25,22 @@ BasicApp = (function(superClass) {
         });
       };
     })(this), 2000);
+    setTimeout((function(_this) {
+      return function() {
+        return _this.getScope().set({
+          lolo: 5,
+          pepe: 8
+        });
+      };
+    })(this), 5000);
+    setTimeout((function(_this) {
+      return function() {
+        return _this.getScope().set({
+          lolo: 12,
+          pepe: 8
+        });
+      };
+    })(this), 7000);
     return this;
   };
 
