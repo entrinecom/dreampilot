@@ -5,6 +5,7 @@ class DreamPilot.Application
     @classAttr = 'class'
     @showAttr = 'show'
     @ifAttr = 'if'
+    @initAttr = 'init'
 
     @create: (className, $element) ->
         classSource = $dp.fn.stringToFunction className
@@ -25,6 +26,7 @@ class DreamPilot.Application
         @setupClassAttribute()
         .setupShowAttribute()
         .setupIfAttribute()
+        .setupInitAttribute()
 
     setupClassAttribute: ->
         that = @
@@ -99,6 +101,19 @@ class DreamPilot.Application
                 that.getScope().onChange field, (field, value) ->
                     #console.log 'changed IF: ', field, '=', value, expression
                     that.toggleElementExistence $el, $dp.Parser.isExpressionTrue(expression, that), expression
+
+            true
+
+        @
+
+    setupInitAttribute: ->
+        that = @
+
+        $dp.e($dp.selectorForAttribute(self.initAttr)).each ->
+            $el = $dp.e @
+            expression = $el.attr $dp.attribute self.initAttr
+
+            $dp.Parser.executeExpression expression, that
 
             true
 

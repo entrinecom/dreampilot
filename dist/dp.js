@@ -77,6 +77,8 @@ DreamPilot.Application = (function() {
 
   Application.ifAttr = 'if';
 
+  Application.initAttr = 'init';
+
   Application.create = function(className, $element) {
     var classSource;
     classSource = $dp.fn.stringToFunction(className);
@@ -98,7 +100,7 @@ DreamPilot.Application = (function() {
   };
 
   Application.prototype.setupAttributes = function() {
-    return this.setupClassAttribute().setupShowAttribute().setupIfAttribute();
+    return this.setupClassAttribute().setupShowAttribute().setupIfAttribute().setupInitAttribute();
   };
 
   Application.prototype.setupClassAttribute = function() {
@@ -182,6 +184,19 @@ DreamPilot.Application = (function() {
           return that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that), expression);
         });
       }
+      return true;
+    });
+    return this;
+  };
+
+  Application.prototype.setupInitAttribute = function() {
+    var that;
+    that = this;
+    $dp.e($dp.selectorForAttribute(self.initAttr)).each(function() {
+      var $el, expression;
+      $el = $dp.e(this);
+      expression = $el.attr($dp.attribute(self.initAttr));
+      $dp.Parser.executeExpression(expression, that);
       return true;
     });
     return this;
@@ -415,13 +430,23 @@ DreamPilot.Parser = (function() {
 
   Parser.lastUsedVariables = [];
 
-  Parser.object = function(dataStr) {
+  Parser.object = function(dataStr, options) {
     var addPair, ch, i, j, len, o, pair, quoteOpened, skip, underCursor;
-    dataStr = $dp.fn.trim(dataStr);
-    if (dataStr[0] !== '{' || dataStr.slice(-1) !== '}') {
-      return null;
+    if (options == null) {
+      options = {};
     }
-    dataStr = dataStr.slice(1, dataStr.length - 1);
+    options = jQuery.extend({
+      delimiter: ',',
+      assign: ':',
+      curlyBracketsNeeded: true
+    }, options);
+    dataStr = $dp.fn.trim(dataStr);
+    if (options.curlyBracketsNeeded) {
+      if (dataStr[0] !== '{' || dataStr.slice(-1) !== '}') {
+        return null;
+      }
+      dataStr = dataStr.slice(1, dataStr.length - 1);
+    }
     o = {};
     pair = {
       key: '',
@@ -447,13 +472,13 @@ DreamPilot.Parser = (function() {
       }
       if (!quoteOpened) {
         switch (false) {
-          case ch !== ':':
+          case ch !== options.assign:
             underCursor = 'border';
             break;
           case !(underCursor === 'border' && !/\s/.test(ch)):
             underCursor = 'value';
             break;
-          case ch !== ',':
+          case ch !== options.delimiter:
             underCursor = 'key';
             addPair();
             skip = true;
@@ -505,6 +530,16 @@ DreamPilot.Parser = (function() {
       console.log('Expression parsing error ', e);
       return false;
     }
+  };
+
+  Parser.executeExpression = function(expr, App) {
+    var rows;
+    rows = this.object(expr, {
+      delimiter: ';',
+      assign: '=',
+      curlyBracketsNeeded: false
+    });
+    return console.log(rows);
   };
 
   Parser.getLastUsedVariables = function() {

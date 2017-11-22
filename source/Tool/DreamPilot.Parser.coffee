@@ -27,11 +27,17 @@ class DreamPilot.Parser
             '||': (a, b) -> a or b
     @lastUsedVariables: []
 
-    @object: (dataStr) ->
+    @object: (dataStr, options = {}) ->
+        options = jQuery.extend
+            delimiter: ','
+            assign: ':'
+            curlyBracketsNeeded: true
+        , options
+
         dataStr = $dp.fn.trim dataStr
-        if dataStr[0] isnt '{' or dataStr.slice(-1) isnt '}'
-            return null
-        dataStr = dataStr.slice 1, dataStr.length - 1
+        if options.curlyBracketsNeeded
+            return null if dataStr[0] isnt '{' or dataStr.slice(-1) isnt '}'
+            dataStr = dataStr.slice 1, dataStr.length - 1
 
         o = {}
         pair =
@@ -56,11 +62,11 @@ class DreamPilot.Parser
 
             unless quoteOpened
                 switch
-                    when ch is ':'
+                    when ch is options.assign
                         underCursor = 'border'
                     when underCursor is 'border' and not /\s/.test ch
                         underCursor = 'value'
-                    when ch is ','
+                    when ch is options.delimiter
                         underCursor = 'key'
                         addPair()
                         skip = true
@@ -97,6 +103,13 @@ class DreamPilot.Parser
         catch e
             console.log 'Expression parsing error ', e
             false
+
+    @executeExpression: (expr, App) ->
+        rows = @object expr,
+            delimiter: ';'
+            assign: '='
+            curlyBracketsNeeded: false
+        console.log rows
 
     @getLastUsedVariables: ->
         self.lastUsedVariables
