@@ -5,9 +5,11 @@ class BasicApp extends DreamPilot.Application
         @initVariables()
 
     initVariables: ->
+        ### moved to dp-init
         @getScope().set
             lolo: 10
             pepe: 7
+        ###
 
         setTimeout =>
             @getScope().set

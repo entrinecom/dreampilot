@@ -113,7 +113,7 @@ class DreamPilot.Application
             $el = $dp.e @
             expression = $el.attr $dp.attribute self.initAttr
 
-            $dp.Parser.executeExpression expression, that
+            $dp.Parser.executeExpressions expression, that
 
             true
 

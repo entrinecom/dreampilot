@@ -76,40 +76,48 @@ class DreamPilot.Parser
         addPair() if pair.key or pair.value
         o
 
-    @isExpressionTrue: (expr, App) ->
-        evalNode = (node) ->
-            switch node.type
-                when 'BinaryExpression'
-                    if typeof self.operators.binary[node.operator] is 'undefined'
-                        throw 'No callback for binary operator ' + node.operator
-                    self.operators.binary[node.operator] evalNode(node.left), evalNode(node.right)
-                when 'UnaryExpression'
-                    if typeof self.operators.unary[node.operator] is 'undefined'
-                        throw 'No callback for unary operator ' + node.operator
-                    self.operators.unary[node.operator] evalNode(node.argument)
-                when 'LogicalExpression'
-                    if typeof self.operators.logical[node.operator] is 'undefined'
-                        throw 'No callback for logical operator ' + node.operator
-                    self.operators.logical[node.operator] evalNode(node.left), evalNode(node.right)
-                when 'Identifier'
-                    self.lastUsedVariables.push node.name
-                    App.getScope().get node.name
-                when 'Literal' then node.value
-                else throw 'Unknown node type ' + node.type
+    @evalNode: (node, App) ->
+        switch node.type
+            when 'BinaryExpression'
+                if typeof self.operators.binary[node.operator] is 'undefined'
+                    throw 'No callback for binary operator ' + node.operator
+                self.operators.binary[node.operator] self.evalNode(node.left, App), self.evalNode(node.right, App)
+            when 'UnaryExpression'
+                if typeof self.operators.unary[node.operator] is 'undefined'
+                    throw 'No callback for unary operator ' + node.operator
+                self.operators.unary[node.operator] self.evalNode(node.argument, App)
+            when 'LogicalExpression'
+                if typeof self.operators.logical[node.operator] is 'undefined'
+                    throw 'No callback for logical operator ' + node.operator
+                self.operators.logical[node.operator] self.evalNode(node.left, App), self.evalNode(node.right, App)
+            when 'Identifier'
+                self.lastUsedVariables.push node.name
+                App.getScope().get node.name
+            when 'Literal' then node.value
+            else throw 'Unknown node type ' + node.type
 
+    @isExpressionTrue: (expr, App) ->
         try
             self.lastUsedVariables = []
-            !! evalNode jsep expr
+            !! self.evalNode jsep(expr), App
         catch e
-            console.log 'Expression parsing error ', e
+            console.log 'Expression parsing (isExpressionTrue) error ', e
             false
 
-    @executeExpression: (expr, App) ->
-        rows = @object expr,
+    @executeExpressions: (allExpr, App) ->
+        rows = @object allExpr,
             delimiter: ';'
             assign: '='
             curlyBracketsNeeded: false
-        console.log rows
+        self.lastUsedVariables = []
+        for key, expr of rows
+            try
+                App.getScope().set key, self.evalNode jsep(expr), App
+                console.log key, App.getScope().get key
+            catch e
+                console.log 'Expression parsing (executeExpressions) error', e
+                false
+        true
 
     @getLastUsedVariables: ->
         self.lastUsedVariables

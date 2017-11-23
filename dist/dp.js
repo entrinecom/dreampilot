@@ -196,7 +196,7 @@ DreamPilot.Application = (function() {
       var $el, expression;
       $el = $dp.e(this);
       expression = $el.attr($dp.attribute(self.initAttr));
-      $dp.Parser.executeExpression(expression, that);
+      $dp.Parser.executeExpressions(expression, that);
       return true;
     });
     return this;
@@ -494,52 +494,65 @@ DreamPilot.Parser = (function() {
     return o;
   };
 
+  Parser.evalNode = function(node, App) {
+    switch (node.type) {
+      case 'BinaryExpression':
+        if (typeof self.operators.binary[node.operator] === 'undefined') {
+          throw 'No callback for binary operator ' + node.operator;
+        }
+        return self.operators.binary[node.operator](self.evalNode(node.left, App), self.evalNode(node.right, App));
+      case 'UnaryExpression':
+        if (typeof self.operators.unary[node.operator] === 'undefined') {
+          throw 'No callback for unary operator ' + node.operator;
+        }
+        return self.operators.unary[node.operator](self.evalNode(node.argument, App));
+      case 'LogicalExpression':
+        if (typeof self.operators.logical[node.operator] === 'undefined') {
+          throw 'No callback for logical operator ' + node.operator;
+        }
+        return self.operators.logical[node.operator](self.evalNode(node.left, App), self.evalNode(node.right, App));
+      case 'Identifier':
+        self.lastUsedVariables.push(node.name);
+        return App.getScope().get(node.name);
+      case 'Literal':
+        return node.value;
+      default:
+        throw 'Unknown node type ' + node.type;
+    }
+  };
+
   Parser.isExpressionTrue = function(expr, App) {
-    var e, evalNode;
-    evalNode = function(node) {
-      switch (node.type) {
-        case 'BinaryExpression':
-          if (typeof self.operators.binary[node.operator] === 'undefined') {
-            throw 'No callback for binary operator ' + node.operator;
-          }
-          return self.operators.binary[node.operator](evalNode(node.left), evalNode(node.right));
-        case 'UnaryExpression':
-          if (typeof self.operators.unary[node.operator] === 'undefined') {
-            throw 'No callback for unary operator ' + node.operator;
-          }
-          return self.operators.unary[node.operator](evalNode(node.argument));
-        case 'LogicalExpression':
-          if (typeof self.operators.logical[node.operator] === 'undefined') {
-            throw 'No callback for logical operator ' + node.operator;
-          }
-          return self.operators.logical[node.operator](evalNode(node.left), evalNode(node.right));
-        case 'Identifier':
-          self.lastUsedVariables.push(node.name);
-          return App.getScope().get(node.name);
-        case 'Literal':
-          return node.value;
-        default:
-          throw 'Unknown node type ' + node.type;
-      }
-    };
+    var e;
     try {
       self.lastUsedVariables = [];
-      return !!evalNode(jsep(expr));
+      return !!self.evalNode(jsep(expr), App);
     } catch (error) {
       e = error;
-      console.log('Expression parsing error ', e);
+      console.log('Expression parsing (isExpressionTrue) error ', e);
       return false;
     }
   };
 
-  Parser.executeExpression = function(expr, App) {
-    var rows;
-    rows = this.object(expr, {
+  Parser.executeExpressions = function(allExpr, App) {
+    var e, expr, key, rows;
+    rows = this.object(allExpr, {
       delimiter: ';',
       assign: '=',
       curlyBracketsNeeded: false
     });
-    return console.log(rows);
+    self.lastUsedVariables = [];
+    for (key in rows) {
+      expr = rows[key];
+      try {
+        App.getScope().set(key, self.evalNode(jsep(expr), App));
+        console.log(key, App.getScope().get(key));
+      } catch (error) {
+        e = error;
+        console.log('Expression parsing (executeExpressions) error', e);
+        false;
+      }
+    }
+    return true;
   };
 
   Parser.getLastUsedVariables = function() {

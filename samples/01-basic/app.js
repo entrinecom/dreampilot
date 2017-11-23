@@ -13,10 +13,12 @@ BasicApp = (function(superClass) {
   }
 
   BasicApp.prototype.initVariables = function() {
-    this.getScope().set({
-      lolo: 10,
-      pepe: 7
-    });
+
+    /* moved to dp-init
+    @getScope().set
+        lolo: 10
+        pepe: 7
+     */
     setTimeout((function(_this) {
       return function() {
         return _this.getScope().set({
