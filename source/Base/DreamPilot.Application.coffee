@@ -14,6 +14,7 @@ class DreamPilot.Application
     constructor: (@$element) ->
         @setupScope()
         .setupAttributes()
+        .setupEvents()
 
     getScope: ->
         @Scope
@@ -22,16 +23,20 @@ class DreamPilot.Application
         @Scope = new $dp.Scope()
         @
 
+    setupEvents: ->
+        @Events = new $dp.Events @
+        @
+
     setupAttributes: ->
-        @setupClassAttribute()
+        @setupInitAttribute()
+        .setupClassAttribute()
         .setupShowAttribute()
         .setupIfAttribute()
-        .setupInitAttribute()
 
     setupClassAttribute: ->
         that = @
 
-        $dp.e($dp.selectorForAttribute(self.classAttr)).each ->
+        $dp.e($dp.selectorForAttribute(self.classAttr), @$element).each ->
             $el = $dp.e @
             obj = $dp.Parser.object $el.attr $dp.attribute self.classAttr
 
@@ -52,7 +57,7 @@ class DreamPilot.Application
     setupShowAttribute: ->
         that = @
 
-        $dp.e($dp.selectorForAttribute(self.showAttr)).each ->
+        $dp.e($dp.selectorForAttribute(self.showAttr), @$element).each ->
             $el = $dp.e @
             expression = $el.attr $dp.attribute self.showAttr
 
@@ -90,7 +95,7 @@ class DreamPilot.Application
     setupIfAttribute: ->
         that = @
 
-        $dp.e($dp.selectorForAttribute(self.ifAttr)).each ->
+        $dp.e($dp.selectorForAttribute(self.ifAttr), @$element).each ->
             $el = $dp.e @
             expression = $el.attr $dp.attribute self.ifAttr
 
@@ -109,7 +114,7 @@ class DreamPilot.Application
     setupInitAttribute: ->
         that = @
 
-        $dp.e($dp.selectorForAttribute(self.initAttr)).each ->
+        $dp.e($dp.selectorForAttribute(self.initAttr), @$element).each ->
             $el = $dp.e @
             expression = $el.attr $dp.attribute self.initAttr
 

@@ -87,7 +87,7 @@ DreamPilot.Application = (function() {
 
   function Application($element1) {
     this.$element = $element1;
-    this.setupScope().setupAttributes();
+    this.setupScope().setupAttributes().setupEvents();
   }
 
   Application.prototype.getScope = function() {
@@ -99,14 +99,19 @@ DreamPilot.Application = (function() {
     return this;
   };
 
+  Application.prototype.setupEvents = function() {
+    this.Events = new $dp.Events(this);
+    return this;
+  };
+
   Application.prototype.setupAttributes = function() {
-    return this.setupClassAttribute().setupShowAttribute().setupIfAttribute().setupInitAttribute();
+    return this.setupInitAttribute().setupClassAttribute().setupShowAttribute().setupIfAttribute();
   };
 
   Application.prototype.setupClassAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.classAttr)).each(function() {
+    $dp.e($dp.selectorForAttribute(self.classAttr), this.$element).each(function() {
       var $el, cssClass, expression, field, i, len, obj, ref;
       $el = $dp.e(this);
       obj = $dp.Parser.object($el.attr($dp.attribute(self.classAttr)));
@@ -129,7 +134,7 @@ DreamPilot.Application = (function() {
   Application.prototype.setupShowAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.showAttr)).each(function() {
+    $dp.e($dp.selectorForAttribute(self.showAttr), this.$element).each(function() {
       var $el, expression, field, i, len, ref;
       $el = $dp.e(this);
       expression = $el.attr($dp.attribute(self.showAttr));
@@ -172,7 +177,7 @@ DreamPilot.Application = (function() {
   Application.prototype.setupIfAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.ifAttr)).each(function() {
+    $dp.e($dp.selectorForAttribute(self.ifAttr), this.$element).each(function() {
       var $el, expression, field, i, len, ref;
       $el = $dp.e(this);
       expression = $el.attr($dp.attribute(self.ifAttr));
@@ -192,7 +197,7 @@ DreamPilot.Application = (function() {
   Application.prototype.setupInitAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.initAttr)).each(function() {
+    $dp.e($dp.selectorForAttribute(self.initAttr), this.$element).each(function() {
       var $el, expression;
       $el = $dp.e(this);
       expression = $el.attr($dp.attribute(self.initAttr));
@@ -203,6 +208,47 @@ DreamPilot.Application = (function() {
   };
 
   return Application;
+
+})();
+
+DreamPilot.Events = (function() {
+  var self;
+
+  self = Events;
+
+  Events.prototype.events = ['click', 'focus', 'blur', 'change', 'keypress', 'keyup', 'keydown', 'mouseover', 'mouseout'];
+
+  function Events(App) {
+    this.App = App;
+    this.setupEvents();
+  }
+
+  Events.prototype.setupEvents = function() {
+    var event, i, len, ref;
+    ref = this.events;
+    for (i = 0, len = ref.length; i < len; i++) {
+      event = ref[i];
+      this.setupSingleEvent(event);
+    }
+    return this;
+  };
+
+  Events.prototype.setupSingleEvent = function(name) {
+    var that;
+    that = this;
+    $dp.e($dp.selectorForAttribute(name), this.App.$element).each(function() {
+      var $el, expression;
+      $el = $dp.e(this);
+      expression = $el.attr($dp.attribute(name));
+      $el.on(name, function(event) {
+        return $dp.Parser.executeExpressions(expression, that.App);
+      });
+      return true;
+    });
+    return this;
+  };
+
+  return Events;
 
 })();
 

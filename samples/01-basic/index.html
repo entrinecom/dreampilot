@@ -19,6 +19,16 @@
 		.comeon {
 			color: white;
 		}
+
+		.blue {
+			background: blue;
+			color: white;
+		}
+
+		.green {
+			background: green;
+			color: white;
+		}
 	</style>
 </head>
 <body dp-app="BasicApp">
@@ -29,6 +39,10 @@
 <div dp-if="lolo <= 10">if: lolo &lt;= 10</div>
 
 <div dp-init="lolo = 10; pepe = 7; lobster = 15 + 7; shrimp = lobster > 110 || !!pepe"></div>
+
+<div dp-class="{blue: x > 0, green: x <= 0}" dp-init="x = 10" dp-click="x = x - 10"
+     dp-mouseover="show_bottom = true" dp-mouseout="show_bottom = false">click on me (or hover)</div>
+<div dp-show="show_bottom">bottom (shown only when hover on &uparrow;)</div>
 
 <script type="text/javascript" src="../../bower_components/jquery/dist/jquery.min.js"></script>
 <script type="text/javascript" src="../../bower_components/jsep/build/jsep.min.js"></script>
