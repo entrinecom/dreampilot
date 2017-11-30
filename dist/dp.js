@@ -694,8 +694,13 @@ DreamPilot.Parser = (function() {
     for (key in rows) {
       expr = rows[key];
       try {
-        App.getScope().set(key, self.evalNode(jsep(expr), App));
-        console.log(key, App.getScope().get(key));
+        if (key.indexOf('(') > -1 && expr === '') {
+          self.evalNode(jsep(key), App);
+          console.log('function: ', key, jsep(key));
+        } else {
+          App.getScope().set(key, self.evalNode(jsep(expr), App));
+          console.log('simple assign: ', key, App.getScope().get(key));
+        }
       } catch (error) {
         e = error;
         console.log('Expression parsing (executeExpressions) error', e);

@@ -78,6 +78,8 @@ class DreamPilot.Parser
 
     @evalNode: (node, App) ->
         switch node.type
+            when 'CallExpression'
+                console.log node
             when 'BinaryExpression'
                 if typeof self.operators.binary[node.operator] is 'undefined'
                     throw 'No callback for binary operator ' + node.operator
@@ -112,8 +114,12 @@ class DreamPilot.Parser
         self.lastUsedVariables = []
         for key, expr of rows
             try
-                App.getScope().set key, self.evalNode jsep(expr), App
-                console.log key, App.getScope().get key
+                if key.indexOf('(') > -1 and expr is ''
+                    self.evalNode jsep(key), App
+                    console.log 'function: ', key, jsep key
+                else
+                    App.getScope().set key, self.evalNode jsep(expr), App
+                    console.log 'simple assign: ', key, App.getScope().get key
             catch e
                 console.log 'Expression parsing (executeExpressions) error', e
                 false
