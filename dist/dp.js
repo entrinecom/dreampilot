@@ -335,6 +335,18 @@ DreamPilot.Scope = (function(superClass) {
 DreamPilot.Functions = (function() {
   function Functions() {}
 
+  Functions.int = function(s) {
+    return ~~s;
+  };
+
+  Functions.str = function(s) {
+    return s + '';
+  };
+
+  Functions.float = function(s) {
+    return parseFloat(s) || .0;
+  };
+
   Functions.trim = function(s) {
     return s.replace(/^\s+|\s+$/g, '');
   };
@@ -393,6 +405,63 @@ DreamPilot.Functions = (function() {
 
   Functions.randomInt = function(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
+  Functions.escapeHtml = function(text) {
+    var map;
+    map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) {
+      return map[m];
+    });
+  };
+
+  Functions.round = function(number, precision) {
+    var factor, roundedTempNumber, tempNumber;
+    if (precision == null) {
+      precision = 0;
+    }
+    if (!precision) {
+      return Math.round(number);
+    }
+    factor = Math.pow(10, precision);
+    tempNumber = number * factor;
+    roundedTempNumber = Math.round(tempNumber);
+    return roundedTempNumber / factor;
+  };
+
+  Functions.isArray = function(ar) {
+    return Object.prototype.toString.call(ar) === '[object Array]';
+  };
+
+  Functions.keys = function(array) {
+    return $.map(array, function(val, key) {
+      return key;
+    });
+  };
+
+  Functions.values = function(array) {
+    return $.map(array, function(val, key) {
+      return val;
+    });
+  };
+
+  Functions.lead0 = function(x, len) {
+    var results;
+    if (len == null) {
+      len = 2;
+    }
+    x = this.str(x);
+    results = [];
+    while (x.length < len) {
+      results.push(x = '0' + x);
+    }
+    return results;
   };
 
   return Functions;
