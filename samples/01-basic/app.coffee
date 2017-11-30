@@ -1,16 +1,10 @@
 class BasicApp extends DreamPilot.Application
-    constructor: ($element) ->
-        super $element
+    constructor: ($wrapper) ->
+        super $wrapper
         console.log 'I am the basic app!'
         @initVariables()
 
     initVariables: ->
-        ### moved to dp-init
-        @getScope().set
-            lolo: 10
-            pepe: 7
-        ###
-
         setTimeout =>
             @getScope().set
                 lolo: 11

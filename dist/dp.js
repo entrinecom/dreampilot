@@ -71,24 +71,20 @@ DreamPilot.Application = (function() {
 
   Application.appAttr = 'app';
 
-  Application.classAttr = 'class';
-
-  Application.showAttr = 'show';
-
-  Application.ifAttr = 'if';
-
-  Application.initAttr = 'init';
-
-  Application.create = function(className, $element) {
+  Application.create = function(className, $wrapper) {
     var classSource;
     classSource = $dp.fn.stringToFunction(className);
-    return new classSource($element);
+    return new classSource($wrapper);
   };
 
-  function Application($element1) {
-    this.$element = $element1;
+  function Application($wrapper1) {
+    this.$wrapper = $wrapper1;
     this.setupScope().setupAttributes().setupEvents();
   }
+
+  Application.prototype.getWrapper = function() {
+    return this.$wrapper;
+  };
 
   Application.prototype.getScope = function() {
     return this.Scope;
@@ -105,25 +101,64 @@ DreamPilot.Application = (function() {
   };
 
   Application.prototype.setupAttributes = function() {
+    this.Attributes = new $dp.Attributes(this);
+    return this;
+  };
+
+  return Application;
+
+})();
+
+DreamPilot.Attributes = (function() {
+  var self;
+
+  self = Attributes;
+
+  Attributes.classAttr = 'class';
+
+  Attributes.showAttr = 'show';
+
+  Attributes.ifAttr = 'if';
+
+  Attributes.initAttr = 'init';
+
+  function Attributes(App) {
+    this.App = App;
+    this.setupAttributes();
+  }
+
+  Attributes.prototype.setupAttributes = function() {
     return this.setupInitAttribute().setupClassAttribute().setupShowAttribute().setupIfAttribute();
   };
 
-  Application.prototype.setupClassAttribute = function() {
+  Attributes.prototype.getApp = function() {
+    return this.App;
+  };
+
+  Attributes.prototype.getScope = function() {
+    return this.getApp().getScope();
+  };
+
+  Attributes.prototype.getWrapper = function() {
+    return this.getApp().getWrapper();
+  };
+
+  Attributes.prototype.setupClassAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.classAttr), this.$element).each(function() {
+    $dp.e($dp.selectorForAttribute(self.classAttr), this.getWrapper()).each(function() {
       var $el, cssClass, expression, field, i, len, obj, ref;
       $el = $dp.e(this);
       obj = $dp.Parser.object($el.attr($dp.attribute(self.classAttr)));
       for (cssClass in obj) {
         expression = obj[cssClass];
-        $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that));
+        $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp()));
       }
       ref = $dp.Parser.getLastUsedVariables();
       for (i = 0, len = ref.length; i < len; i++) {
         field = ref[i];
         that.getScope().onChange(field, function(field, value) {
-          return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that));
+          return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp()));
         });
       }
       return true;
@@ -131,19 +166,19 @@ DreamPilot.Application = (function() {
     return this;
   };
 
-  Application.prototype.setupShowAttribute = function() {
+  Attributes.prototype.setupShowAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.showAttr), this.$element).each(function() {
+    $dp.e($dp.selectorForAttribute(self.showAttr), this.getWrapper()).each(function() {
       var $el, expression, field, i, len, ref;
       $el = $dp.e(this);
       expression = $el.attr($dp.attribute(self.showAttr));
-      $el.toggle($dp.Parser.isExpressionTrue(expression, that));
+      $el.toggle($dp.Parser.isExpressionTrue(expression, that.getApp()));
       ref = $dp.Parser.getLastUsedVariables();
       for (i = 0, len = ref.length; i < len; i++) {
         field = ref[i];
         that.getScope().onChange(field, function(field, value) {
-          return $el.toggle($dp.Parser.isExpressionTrue(expression, that));
+          return $el.toggle($dp.Parser.isExpressionTrue(expression, that.getApp()));
         });
       }
       return true;
@@ -151,7 +186,7 @@ DreamPilot.Application = (function() {
     return this;
   };
 
-  Application.prototype.getReplacerFor = function($element, expression) {
+  Attributes.prototype.getReplacerFor = function($element, expression) {
     var $replacer;
     if ($element.data('replacer')) {
       return $element.data('replacer');
@@ -161,7 +196,7 @@ DreamPilot.Application = (function() {
     return $replacer;
   };
 
-  Application.prototype.toggleElementExistence = function($element, state, expression) {
+  Attributes.prototype.toggleElementExistence = function($element, state, expression) {
     var $anchor;
     if (state) {
       if (!document.body.contains($element.get(0))) {
@@ -174,19 +209,19 @@ DreamPilot.Application = (function() {
     return this;
   };
 
-  Application.prototype.setupIfAttribute = function() {
+  Attributes.prototype.setupIfAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.ifAttr), this.$element).each(function() {
+    $dp.e($dp.selectorForAttribute(self.ifAttr), this.getWrapper()).each(function() {
       var $el, expression, field, i, len, ref;
       $el = $dp.e(this);
       expression = $el.attr($dp.attribute(self.ifAttr));
-      that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that), expression);
+      that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that.getApp()), expression);
       ref = $dp.Parser.getLastUsedVariables();
       for (i = 0, len = ref.length; i < len; i++) {
         field = ref[i];
         that.getScope().onChange(field, function(field, value) {
-          return that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that), expression);
+          return that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that.getApp()), expression);
         });
       }
       return true;
@@ -194,10 +229,10 @@ DreamPilot.Application = (function() {
     return this;
   };
 
-  Application.prototype.setupInitAttribute = function() {
+  Attributes.prototype.setupInitAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.initAttr), this.$element).each(function() {
+    $dp.e($dp.selectorForAttribute(self.initAttr), this.getWrapper()).each(function() {
       var $el, expression;
       $el = $dp.e(this);
       expression = $el.attr($dp.attribute(self.initAttr));
@@ -207,7 +242,7 @@ DreamPilot.Application = (function() {
     return this;
   };
 
-  return Application;
+  return Attributes;
 
 })();
 
