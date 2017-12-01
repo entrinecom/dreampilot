@@ -646,6 +646,8 @@ DreamPilot.Parser = (function() {
 
   Parser.evalNode = function(node, App) {
     switch (node.type) {
+      case 'CallExpression':
+        return console.log(node);
       case 'BinaryExpression':
         if (typeof self.operators.binary[node.operator] === 'undefined') {
           throw 'No callback for binary operator ' + node.operator;
