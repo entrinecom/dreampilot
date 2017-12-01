@@ -5,6 +5,16 @@ class BasicApp extends DreamPilot.Application
         @initVariables()
 
     initVariables: ->
+        @getScope().set
+            assignItOut: ->
+                console.log 'assignItOut called with args: ', arguments
+                x = 0
+                for y in arguments
+                    x += y
+                x
+            letItOut: ->
+                alert 'let it out!'
+
         setTimeout =>
             @getScope().set
                 lolo: 11

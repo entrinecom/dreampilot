@@ -79,7 +79,15 @@ class DreamPilot.Parser
     @evalNode: (node, App) ->
         switch node.type
             when 'CallExpression'
-                console.log node
+                if node.callee.type? and node.callee.type is 'Identifier' and node.callee.name
+                    args = (self.evalNode arg for arg in node.arguments)
+                    fn = App.getScope().get node.callee.name
+                    if fn and typeof fn is 'function'
+                        fn args...
+                    else
+                        $dp.log.error "No function '#{node.callee.name}' found in scope"
+                else
+                    throw 'Unable to call node, type: ' + node.callee.type + ', name: ' + node.callee.name
             when 'BinaryExpression'
                 if typeof self.operators.binary[node.operator] is 'undefined'
                     throw 'No callback for binary operator ' + node.operator
@@ -103,7 +111,7 @@ class DreamPilot.Parser
             self.lastUsedVariables = []
             !! self.evalNode jsep(expr), App
         catch e
-            console.log 'Expression parsing (isExpressionTrue) error ', e
+            $dp.log.error 'Expression parsing (isExpressionTrue) error ', e
             false
 
     @executeExpressions: (allExpr, App) ->
@@ -116,12 +124,10 @@ class DreamPilot.Parser
             try
                 if key.indexOf('(') > -1 and expr is ''
                     self.evalNode jsep(key), App
-                    console.log 'function: ', key, jsep key
                 else
                     App.getScope().set key, self.evalNode jsep(expr), App
-                    console.log 'simple assign: ', key, App.getScope().get key
             catch e
-                console.log 'Expression parsing (executeExpressions) error', e
+                $dp.log.error 'Expression parsing (executeExpressions) error', e
                 false
         true
 

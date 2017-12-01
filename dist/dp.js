@@ -507,6 +507,29 @@ if ($dp) {
   $dp.fn = DreamPilot.Functions;
 }
 
+var slice = [].slice;
+
+DreamPilot.Logger = (function() {
+  function Logger() {}
+
+  Logger.print = function() {
+    return console.log.apply(arguments);
+  };
+
+  Logger.error = function() {
+    var args;
+    args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+    throw args.join(' ');
+  };
+
+  return Logger;
+
+})();
+
+if ($dp) {
+  $dp.log = DreamPilot.Logger;
+}
+
 var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 DreamPilot.Parser = (function() {
@@ -645,9 +668,30 @@ DreamPilot.Parser = (function() {
   };
 
   Parser.evalNode = function(node, App) {
+    var arg, args, fn;
     switch (node.type) {
       case 'CallExpression':
-        return console.log(node);
+        if ((node.callee.type != null) && node.callee.type === 'Identifier' && node.callee.name) {
+          args = (function() {
+            var j, len, ref, results;
+            ref = node["arguments"];
+            results = [];
+            for (j = 0, len = ref.length; j < len; j++) {
+              arg = ref[j];
+              results.push(self.evalNode(arg));
+            }
+            return results;
+          })();
+          fn = App.getScope().get(node.callee.name);
+          if (fn && typeof fn === 'function') {
+            return fn.apply(null, args);
+          } else {
+            return $dp.log.error("No function '" + node.callee.name + "' found in scope");
+          }
+        } else {
+          throw 'Unable to call node, type: ' + node.callee.type + ', name: ' + node.callee.name;
+        }
+        break;
       case 'BinaryExpression':
         if (typeof self.operators.binary[node.operator] === 'undefined') {
           throw 'No callback for binary operator ' + node.operator;
@@ -680,7 +724,7 @@ DreamPilot.Parser = (function() {
       return !!self.evalNode(jsep(expr), App);
     } catch (error) {
       e = error;
-      console.log('Expression parsing (isExpressionTrue) error ', e);
+      $dp.log.error('Expression parsing (isExpressionTrue) error ', e);
       return false;
     }
   };
@@ -698,14 +742,12 @@ DreamPilot.Parser = (function() {
       try {
         if (key.indexOf('(') > -1 && expr === '') {
           self.evalNode(jsep(key), App);
-          console.log('function: ', key, jsep(key));
         } else {
           App.getScope().set(key, self.evalNode(jsep(expr), App));
-          console.log('simple assign: ', key, App.getScope().get(key));
         }
       } catch (error) {
         e = error;
-        console.log('Expression parsing (executeExpressions) error', e);
+        $dp.log.error('Expression parsing (executeExpressions) error', e);
         false;
       }
     }
