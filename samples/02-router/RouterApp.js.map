@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "RouterApp.js",
+  "sourceRoot": "",
+  "sources": [
+    "RouterApp.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA,IAAA,SAAA;EAAA;;;AAAM;;;sBACF,MAAA,GAAQ;;EAEK,mBAAC,QAAD;IACT,2CAAM,QAAN;IACA,IAAC,CAAA,UAAD,CAAA;EAFS;;sBAIb,UAAA,GAAY,SAAA;IACR,IAAC,CAAA,MAAD,GAAc,IAAA,UAAU,CAAC,MAAX,CAAkB,IAAlB,CACd,CAAC,IADa,CACR,EADQ;WAEd;EAHQ;;;;GAPQ,UAAU,CAAC"
+}

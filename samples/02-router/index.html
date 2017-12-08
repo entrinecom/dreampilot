@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>DreamPilot Router, ProgressBar</title>
+	<style type="text/css">
+		[data-step] {
+			display: none;
+		}
+	</style>
+</head>
+<body dp-app="RouterApp">
+
+<div class="progress-bar"></div>
+
+<div data-step="intro">
+	<p>step#1, intro</p>
+</div>
+
+<div data-step="your-name">
+	<p>step#2, your-name</p>
+
+	<p>
+		<input type="text" name="name">
+	</p>
+
+	<p>
+		<button>next</button>
+	</p>
+</div>
+
+<div data-step="company-size">
+	<p>step#3, your company is</p>
+
+	<p>
+		<button>small</button>
+		<button>big</button>
+	</p>
+</div>
+
+<div data-step="small-company">
+	<p>step#4, for small company</p>
+
+	<p>
+		<input type="text" name="small_company_question">
+	</p>
+</div>
+
+<div data-step="big-company-q1">
+	<p>step#5, for big company (some question #1)</p>
+
+	<p>
+		<input type="text" name="big_company_question1">
+	</p>
+</div>
+
+<div data-step="big-company-q2">
+	<p>step#6, for big company (some question #2)</p>
+
+	<p>
+		<input type="text" name="big_company_question2">
+	</p>
+</div>
+
+<div data-step="final">
+	<p>step#7, final! thank you!</p>
+
+	<p>your data:</p>
+</div>
+
+<script type="text/javascript" src="../../bower_components/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="../../bower_components/jsep/build/jsep.min.js"></script>
+<script type="text/javascript" src="../../dist/dp.js"></script>
+<script type="text/javascript" src="RouterApp.js"></script>
+
+</body>
+</html>
