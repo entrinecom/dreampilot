@@ -5,6 +5,8 @@ class DreamPilot.Attributes
     @showAttr = 'show'
     @ifAttr = 'if'
     @initAttr = 'init'
+    @valueWriteToAttr = 'value-write-to'
+    @valueReadFromAttr = 'value-read-from'
 
     constructor: (@App) ->
         @setupAttributes()
@@ -14,6 +16,8 @@ class DreamPilot.Attributes
         .setupClassAttribute()
         .setupShowAttribute()
         .setupIfAttribute()
+        .setupValueWriteToAttribute()
+        .setupValueReadFromAttribute()
 
     getApp: ->
         @App
@@ -110,6 +114,34 @@ class DreamPilot.Attributes
             expression = $el.attr $dp.attribute self.initAttr
 
             $dp.Parser.executeExpressions expression, that
+
+            true
+
+        @
+
+    setupValueWriteToAttribute: ->
+        that = @
+
+        $dp.e($dp.selectorForAttribute(self.valueWriteToAttr), @getWrapper()).each ->
+            $el = $dp.e @
+            field = $el.attr $dp.attribute self.valueWriteToAttr
+
+            $el.on 'input', =>
+                that.getScope().set field, $el.val()
+
+            true
+
+        @
+
+    setupValueReadFromAttribute: ->
+        that = @
+
+        $dp.e($dp.selectorForAttribute(self.valueReadFromAttr), @getWrapper()).each ->
+            $el = $dp.e @
+            field = $el.attr $dp.attribute self.valueReadFromAttr
+
+            that.getScope().onChange field, (field, value) ->
+                $el.html value
 
             true
 

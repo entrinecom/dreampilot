@@ -3,7 +3,7 @@ class DreamPilot.Model
     callbacks =
         change: {}
 
-    constructor: ->
+    constructor: (@App) ->
 
     get: (field) ->
         if @exists field then data[field] else null
@@ -27,3 +27,6 @@ class DreamPilot.Model
         callbacks.change[field] = [] unless callbacks.change[field]?
         callbacks.change[field].push callback
         @
+
+    getApp: ->
+        @App

@@ -18,8 +18,14 @@ class DreamPilot.Application
     getScope: ->
         @Scope
 
+    getEvents: ->
+        @Events
+
+    getAttributes: ->
+        @Attributes
+
     setupScope: ->
-        @Scope = new $dp.Scope()
+        @Scope = new $dp.Scope @
         @
 
     setupEvents: ->

@@ -90,8 +90,16 @@ DreamPilot.Application = (function() {
     return this.Scope;
   };
 
+  Application.prototype.getEvents = function() {
+    return this.Events;
+  };
+
+  Application.prototype.getAttributes = function() {
+    return this.Attributes;
+  };
+
   Application.prototype.setupScope = function() {
-    this.Scope = new $dp.Scope();
+    this.Scope = new $dp.Scope(this);
     return this;
   };
 
@@ -122,13 +130,17 @@ DreamPilot.Attributes = (function() {
 
   Attributes.initAttr = 'init';
 
+  Attributes.valueWriteToAttr = 'value-write-to';
+
+  Attributes.valueReadFromAttr = 'value-read-from';
+
   function Attributes(App) {
     this.App = App;
     this.setupAttributes();
   }
 
   Attributes.prototype.setupAttributes = function() {
-    return this.setupInitAttribute().setupClassAttribute().setupShowAttribute().setupIfAttribute();
+    return this.setupInitAttribute().setupClassAttribute().setupShowAttribute().setupIfAttribute().setupValueWriteToAttribute().setupValueReadFromAttribute();
   };
 
   Attributes.prototype.getApp = function() {
@@ -242,6 +254,38 @@ DreamPilot.Attributes = (function() {
     return this;
   };
 
+  Attributes.prototype.setupValueWriteToAttribute = function() {
+    var that;
+    that = this;
+    $dp.e($dp.selectorForAttribute(self.valueWriteToAttr), this.getWrapper()).each(function() {
+      var $el, field;
+      $el = $dp.e(this);
+      field = $el.attr($dp.attribute(self.valueWriteToAttr));
+      $el.on('input', (function(_this) {
+        return function() {
+          return that.getScope().set(field, $el.val());
+        };
+      })(this));
+      return true;
+    });
+    return this;
+  };
+
+  Attributes.prototype.setupValueReadFromAttribute = function() {
+    var that;
+    that = this;
+    $dp.e($dp.selectorForAttribute(self.valueReadFromAttr), this.getWrapper()).each(function() {
+      var $el, field;
+      $el = $dp.e(this);
+      field = $el.attr($dp.attribute(self.valueReadFromAttr));
+      that.getScope().onChange(field, function(field, value) {
+        return $el.html(value);
+      });
+      return true;
+    });
+    return this;
+  };
+
   return Attributes;
 
 })();
@@ -251,7 +295,7 @@ DreamPilot.Events = (function() {
 
   self = Events;
 
-  Events.prototype.events = ['click', 'focus', 'blur', 'change', 'keypress', 'keyup', 'keydown', 'mouseover', 'mouseout'];
+  Events.prototype.events = ['click', 'focus', 'blur', 'change', 'keypress', 'keyup', 'keydown', 'mouseover', 'mouseout', 'paste', 'input'];
 
   function Events(App) {
     this.App = App;
@@ -296,7 +340,9 @@ DreamPilot.Model = (function() {
     change: {}
   };
 
-  function Model() {}
+  function Model(App) {
+    this.App = App;
+  }
 
   Model.prototype.get = function(field) {
     if (this.exists(field)) {
@@ -349,6 +395,10 @@ DreamPilot.Model = (function() {
     return this;
   };
 
+  Model.prototype.getApp = function() {
+    return this.App;
+  };
+
   return Model;
 
 })();
@@ -360,63 +410,12 @@ DreamPilot.Scope = (function(superClass) {
   extend(Scope, superClass);
 
   function Scope() {
-    Scope.__super__.constructor.call(this);
+    return Scope.__super__.constructor.apply(this, arguments);
   }
 
   return Scope;
 
 })(DreamPilot.Model);
-
-DreamPilot.Router = (function() {
-  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
-
-  WORK_MODE_HASH = 1;
-
-  WORK_MODE_URL = 2;
-
-  ELSE_PATH = null;
-
-  Router.prototype.steps = {};
-
-  function Router(App, options) {
-    this.App = App;
-    if (options == null) {
-      options = {};
-    }
-    this.options = $.extend({
-      workMode: WORK_MODE_HASH,
-      attrName: 'data-step'
-    }, options);
-  }
-
-  Router.prototype.when = function(path, opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[path] = opts;
-    return this;
-  };
-
-  Router.prototype["else"] = function(opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[ELSE_PATH] = opts;
-    return this;
-  };
-
-  return Router;
-
-})();
-
-var Router;
-
-Router = (function() {
-  function Router() {}
-
-  return Router;
-
-})();
 
 DreamPilot.Functions = (function() {
   function Functions() {}
@@ -810,5 +809,56 @@ DreamPilot.Parser = (function() {
   };
 
   return Parser;
+
+})();
+
+DreamPilot.Router = (function() {
+  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
+
+  WORK_MODE_HASH = 1;
+
+  WORK_MODE_URL = 2;
+
+  ELSE_PATH = null;
+
+  Router.prototype.steps = {};
+
+  function Router(App, options) {
+    this.App = App;
+    if (options == null) {
+      options = {};
+    }
+    this.options = $.extend({
+      workMode: WORK_MODE_HASH,
+      attrName: 'data-step'
+    }, options);
+  }
+
+  Router.prototype.when = function(path, opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[path] = opts;
+    return this;
+  };
+
+  Router.prototype["else"] = function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[ELSE_PATH] = opts;
+    return this;
+  };
+
+  return Router;
+
+})();
+
+var Router;
+
+Router = (function() {
+  function Router() {}
+
+  return Router;
 
 })();

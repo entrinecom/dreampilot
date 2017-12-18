@@ -46,6 +46,12 @@
      dp-mouseover="show_bottom = true" dp-mouseout="show_bottom = false">click on me (or hover)</div>
 <div dp-show="show_bottom">bottom (shown only when hover on &uparrow;)</div>
 
+<div>
+	<h2>bind input to div</h2>
+	<input name="zhopa" dp-value-write-to="zhopa">
+	<span class="green" dp-value-read-from="zhopa"></span>
+</div>
+
 <script type="text/javascript" src="../../bower_components/jquery/dist/jquery.min.js"></script>
 <script type="text/javascript" src="../../bower_components/jsep/build/jsep.min.js"></script>
 <script type="text/javascript" src="../../dist/dp.js"></script>

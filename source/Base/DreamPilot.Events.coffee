@@ -11,6 +11,8 @@ class DreamPilot.Events
         'keydown'
         'mouseover'
         'mouseout'
+        'paste'
+        'input'
     ]
 
     constructor: (@App) ->
