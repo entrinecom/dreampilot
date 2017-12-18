@@ -48,8 +48,14 @@
 
 <div>
 	<h2>bind input to div</h2>
-	<input name="zhopa" dp-value-write-to="zhopa">
-	<span class="green" dp-value-read-from="zhopa"></span>
+	<input dp-value-write-to="val1">
+	<span class="green" dp-value-read-from="val1"></span>
+</div>
+
+<div>
+	<h2>bind content-editable to input</h2>
+	<span class="blue" contenteditable="true" dp-value-write-to="val2" style="padding: 10px;"></span>
+	<input dp-value-read-from="val2">
 </div>
 
 <script type="text/javascript" src="../../bower_components/jquery/dist/jquery.min.js"></script>

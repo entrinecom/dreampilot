@@ -263,7 +263,9 @@ DreamPilot.Attributes = (function() {
       field = $el.attr($dp.attribute(self.valueWriteToAttr));
       $el.on('input', (function(_this) {
         return function() {
-          return that.getScope().set(field, $el.val());
+          var value;
+          value = $dp.fn.getValueOfElement($el);
+          return that.getScope().set(field, value);
         };
       })(this));
       return true;
@@ -279,7 +281,7 @@ DreamPilot.Attributes = (function() {
       $el = $dp.e(this);
       field = $el.attr($dp.attribute(self.valueReadFromAttr));
       that.getScope().onChange(field, function(field, value) {
-        return $el.html(value);
+        return $dp.fn.setValueOfElement($el, value);
       });
       return true;
     });
@@ -547,6 +549,21 @@ DreamPilot.Functions = (function() {
       results.push(x = '0' + x);
     }
     return results;
+  };
+
+  Functions.getValueOfElement = function($element) {
+    return $element.val() || $element.html();
+  };
+
+  Functions.setValueOfElement = function($element, value) {
+    if ($element.length) {
+      if ($element.is('input,button')) {
+        $element.val(value);
+      } else {
+        $element.html(value);
+      }
+    }
+    return $element;
   };
 
   return Functions;

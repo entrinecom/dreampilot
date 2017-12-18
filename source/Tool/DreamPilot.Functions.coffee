@@ -64,4 +64,15 @@ class DreamPilot.Functions
         x = @str x
         x = '0' + x while x.length < len
 
+    @getValueOfElement: ($element) ->
+        $element.val() or $element.html()
+
+    @setValueOfElement: ($element, value) ->
+        if $element.length
+            if $element.is 'input,button'
+                $element.val value
+            else
+                $element.html value
+        $element
+
 $dp.fn = DreamPilot.Functions if $dp

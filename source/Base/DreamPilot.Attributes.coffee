@@ -127,7 +127,8 @@ class DreamPilot.Attributes
             field = $el.attr $dp.attribute self.valueWriteToAttr
 
             $el.on 'input', =>
-                that.getScope().set field, $el.val()
+                value = $dp.fn.getValueOfElement $el
+                that.getScope().set field, value
 
             true
 
@@ -141,7 +142,7 @@ class DreamPilot.Attributes
             field = $el.attr $dp.attribute self.valueReadFromAttr
 
             that.getScope().onChange field, (field, value) ->
-                $el.html value
+                $dp.fn.setValueOfElement $el, value
 
             true
 
