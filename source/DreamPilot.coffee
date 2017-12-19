@@ -31,5 +31,10 @@ class DreamPilot
             apps[name] = $dp.Application.create name, $app
         @
 
+    getApp: (name) ->
+        throw 'Application can not have an empty name' unless name
+        throw "Application '#{name}' not found" unless apps[name]
+        apps[name]
+
 $dp = DreamPilot
 dp = new DreamPilot()

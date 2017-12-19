@@ -56,6 +56,16 @@ DreamPilot = (function() {
     return this;
   };
 
+  DreamPilot.prototype.getApp = function(name) {
+    if (!name) {
+      throw 'Application can not have an empty name';
+    }
+    if (!apps[name]) {
+      throw "Application '" + name + "' not found";
+    }
+    return apps[name];
+  };
+
   return DreamPilot;
 
 })();
@@ -419,8 +429,63 @@ DreamPilot.Scope = (function(superClass) {
 
 })(DreamPilot.Model);
 
+DreamPilot.Router = (function() {
+  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
+
+  WORK_MODE_HASH = 1;
+
+  WORK_MODE_URL = 2;
+
+  ELSE_PATH = null;
+
+  Router.prototype.steps = {};
+
+  function Router(App, options) {
+    this.App = App;
+    if (options == null) {
+      options = {};
+    }
+    this.options = $.extend({
+      workMode: WORK_MODE_HASH,
+      attrName: 'data-step'
+    }, options);
+  }
+
+  Router.prototype.when = function(path, opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[path] = opts;
+    return this;
+  };
+
+  Router.prototype["else"] = function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[ELSE_PATH] = opts;
+    return this;
+  };
+
+  return Router;
+
+})();
+
+var Router;
+
+Router = (function() {
+  function Router() {}
+
+  return Router;
+
+})();
+
 DreamPilot.Functions = (function() {
+  var self;
+
   function Functions() {}
+
+  self = Functions;
 
   Functions.int = function(s) {
     return ~~s;
@@ -447,13 +512,13 @@ DreamPilot.Functions = (function() {
   };
 
   Functions.underscore = function(s) {
-    return (s + '').replace(/(\-[a-z])/g, function($1) {
+    return self.str(s).replace(/(\-[a-z])/g, function($1) {
       return $1.toUpperCase().replace('-', '');
     });
   };
 
   Functions.camelize = function(s) {
-    return (s + '').replace(/([A-Z])/g, function($1) {
+    return self.str(s).replace(/([A-Z])/g, function($1) {
       return '_' + $1.toLowerCase();
     });
   };
@@ -463,7 +528,38 @@ DreamPilot.Functions = (function() {
   };
 
   Functions.urldecode = function(s) {
-    return decodeURIComponent((s + '').replace(/\+/g, '%20'));
+    return decodeURIComponent(self.str(s).replace(/\+/g, '%20'));
+  };
+
+  Functions.parseQueryString = function(url, start, delimiter, equal) {
+    var ar, ar2, ar3, i;
+    if (url == null) {
+      url = window.location.href;
+    }
+    if (start == null) {
+      start = '?';
+    }
+    if (delimiter == null) {
+      delimiter = '&';
+    }
+    if (equal == null) {
+      equal = '=';
+    }
+    ar = {};
+    if (url.indexOf(start) > -1) {
+      url = url.substr(url.indexOf(start) + 1);
+      if (start === '?' && url.indexOf('#') > -1) {
+        url = url.substr(0, url.indexOf('#'));
+      }
+      ar2 = url.split(delimiter);
+      i = 0;
+      while (i < ar2.length) {
+        ar3 = ar2[i].split(equal);
+        ar[ar3[0]] = ar3[1];
+        i++;
+      }
+    }
+    return ar;
   };
 
   Functions.stringToFunction = function(s) {
@@ -481,10 +577,10 @@ DreamPilot.Functions = (function() {
   };
 
   Functions.uniqueId = function(len) {
-    var i, j, possible, ref, text;
+    var i, l, possible, ref, text;
     text = '';
     possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (i = j = 0, ref = len || 32; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
+    for (i = l = 0, ref = len || 32; 0 <= ref ? l <= ref : l >= ref; i = 0 <= ref ? ++l : --l) {
       text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
     return text;
@@ -505,6 +601,23 @@ DreamPilot.Functions = (function() {
     };
     return text.replace(/[&<>"']/g, function(m) {
       return map[m];
+    });
+  };
+
+  Functions.stripTags = function(input, allowed) {
+    var commentsAndPhpTags, tags;
+    if (allowed == null) {
+      allowed = '';
+    }
+    allowed = (self.str(allowed).toLowerCase().match(/<[a-z][a-z0-9]*>/g) || []).join('');
+    tags = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi;
+    commentsAndPhpTags = /<!--[\s\S]*?-->|<\?(?:php)?[\s\S]*?\?>/gi;
+    return input.replace(commentsAndPhpTags, '').replace(tags, function($0, $1) {
+      if (allowed.indexOf('<' + $1.toLowerCase() + '>') > -1) {
+        return $0;
+      } else {
+        return '';
+      }
     });
   };
 
@@ -538,6 +651,67 @@ DreamPilot.Functions = (function() {
     });
   };
 
+  Functions.arraySum = function(ar) {
+    var key, sum;
+    sum = 0;
+    if (ar && typeof ar === 'object' && ar.change_key_case) {
+      return ar.sum.apply(ar, Array.prototype.slice.call(arguments, 0));
+    }
+    if (typeof ar !== 'object') {
+      return null;
+    }
+    for (key in ar) {
+      if (!ar.hasOwnProperty(key)) {
+        continue;
+      }
+      if (!isNaN(parseFloat(ar[key]))) {
+        sum += parseFloat(ar[key]);
+      }
+    }
+    return sum;
+  };
+
+  Functions.arrayCount = function(ar) {
+    var cc, i;
+    cc = 0;
+    if (ar && typeof ar === 'object' && ar.change_key_case) {
+      return ar.length;
+    }
+    if (typeof ar !== 'object') {
+      return null;
+    }
+    for (i in ar) {
+      if (ar.hasOwnProperty(i)) {
+        cc++;
+      }
+    }
+    return cc;
+  };
+
+  Functions.arrayFlip = function(ar) {
+    var key, tmp;
+    tmp = {};
+    for (key in ar) {
+      if (ar.hasOwnProperty(key)) {
+        tmp[ar[key]] = key;
+      }
+    }
+    return tmp;
+  };
+
+  Functions.arrayShuffle = function(ar) {
+    var i, j, temp;
+    i = ar.length - 1;
+    while (i > 0) {
+      j = Math.floor(Math.random() * (i + 1));
+      temp = ar[i];
+      ar[i] = ar[j];
+      ar[j] = temp;
+      i--;
+    }
+    return ar;
+  };
+
   Functions.lead0 = function(x, len) {
     var results;
     if (len == null) {
@@ -549,6 +723,99 @@ DreamPilot.Functions = (function() {
       results.push(x = '0' + x);
     }
     return results;
+  };
+
+  Functions.digitCase = function(x, s1, s2, s3, endingOnly) {
+    var ref;
+    if (s3 == null) {
+      s3 = null;
+    }
+    if (endingOnly == null) {
+      endingOnly = false;
+    }
+    if (s3 === null) {
+      s3 = s2;
+    }
+    x = self.int(x);
+    if (x % 10 === 1 && x !== 11) {
+      if (endingOnly) {
+        return s1;
+      } else {
+        return x + ' ' + s1;
+      }
+    } else if ((2 <= (ref = x % 10) && ref <= 4) && (x !== 12 && x !== 13 && x !== 14)) {
+      if (endingOnly) {
+        return s2;
+      } else {
+        return x + ' ' + s2;
+      }
+    } else {
+      if (endingOnly) {
+        return s3;
+      } else {
+        return x + ' ' + s3;
+      }
+    }
+  };
+
+  Functions.divide3dig = function(num, divider) {
+    var i, j, len, s2, ss, start, x;
+    if (divider == null) {
+      divider = ',';
+    }
+    num = self.str(num);
+    x = num.indexOf('.');
+    s2 = x !== -1 ? num.substr(x) : '';
+    num = x !== -1 ? num.substr(0, x) : num;
+    ss = '';
+    start = num.length - 3;
+    j = Math.ceil(num.length / 3);
+    i = 0;
+    while (i < j) {
+      len = 3;
+      if (start < 0) {
+        len += start;
+        start = 0;
+      }
+      ss = num.substr(start, len) + divider + ss;
+      start -= 3;
+      i++;
+    }
+    ss = ss.substr(0, ss.length - divider.length);
+    return ss + s2;
+  };
+
+  Functions.basename = function(str, suffix) {
+    var base, x;
+    if (suffix == null) {
+      suffix = null;
+    }
+    x = str.lastIndexOf('/');
+    if (x === -1) {
+      x = str.lastIndexOf('\\');
+    }
+    base = self.str(str).substr(x + 1);
+    if (typeof suffix === 'string' && base.substr(base.length - suffix.length) === suffix) {
+      base = base.substr(0, base.length - suffix.length);
+    }
+    return base;
+  };
+
+  Functions.dirname = function(str) {
+    var x;
+    x = str.lastIndexOf('/');
+    if (x === -1) {
+      x = str.lastIndexOf('\\');
+    }
+    if (x !== -1) {
+      return self.str(str).substr(0, x);
+    } else {
+      return str;
+    }
+  };
+
+  Functions.fileExt = function(fn) {
+    return fn.split('.').pop();
   };
 
   Functions.getValueOfElement = function($element) {
@@ -826,56 +1093,5 @@ DreamPilot.Parser = (function() {
   };
 
   return Parser;
-
-})();
-
-DreamPilot.Router = (function() {
-  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
-
-  WORK_MODE_HASH = 1;
-
-  WORK_MODE_URL = 2;
-
-  ELSE_PATH = null;
-
-  Router.prototype.steps = {};
-
-  function Router(App, options) {
-    this.App = App;
-    if (options == null) {
-      options = {};
-    }
-    this.options = $.extend({
-      workMode: WORK_MODE_HASH,
-      attrName: 'data-step'
-    }, options);
-  }
-
-  Router.prototype.when = function(path, opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[path] = opts;
-    return this;
-  };
-
-  Router.prototype["else"] = function(opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[ELSE_PATH] = opts;
-    return this;
-  };
-
-  return Router;
-
-})();
-
-var Router;
-
-Router = (function() {
-  function Router() {}
-
-  return Router;
 
 })();
