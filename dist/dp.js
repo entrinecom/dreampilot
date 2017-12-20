@@ -144,13 +144,15 @@ DreamPilot.Attributes = (function() {
 
   Attributes.valueReadFromAttr = 'value-read-from';
 
+  Attributes.valueBindAttr = 'value-bind';
+
   function Attributes(App) {
     this.App = App;
     this.setupAttributes();
   }
 
   Attributes.prototype.setupAttributes = function() {
-    return this.setupInitAttribute().setupClassAttribute().setupShowAttribute().setupIfAttribute().setupValueWriteToAttribute().setupValueReadFromAttribute();
+    return this.setupInitAttribute().setupClassAttribute().setupShowAttribute().setupIfAttribute().setupValueWriteToAttribute().setupValueReadFromAttribute().setupValueBindAttribute();
   };
 
   Attributes.prototype.getApp = function() {
@@ -290,6 +292,28 @@ DreamPilot.Attributes = (function() {
       var $el, field;
       $el = $dp.e(this);
       field = $el.attr($dp.attribute(self.valueReadFromAttr));
+      that.getScope().onChange(field, function(field, value) {
+        return $dp.fn.setValueOfElement($el, value);
+      });
+      return true;
+    });
+    return this;
+  };
+
+  Attributes.prototype.setupValueBindAttribute = function() {
+    var that;
+    that = this;
+    $dp.e($dp.selectorForAttribute(self.valueBindAttr), this.getWrapper()).each(function() {
+      var $el, field;
+      $el = $dp.e(this);
+      field = $el.attr($dp.attribute(self.valueBindAttr));
+      $el.on('input', (function(_this) {
+        return function() {
+          var value;
+          value = $dp.fn.getValueOfElement($el);
+          return that.getScope().set(field, value);
+        };
+      })(this));
       that.getScope().onChange(field, function(field, value) {
         return $dp.fn.setValueOfElement($el, value);
       });

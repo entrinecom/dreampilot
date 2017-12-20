@@ -7,6 +7,7 @@ class DreamPilot.Attributes
     @initAttr = 'init'
     @valueWriteToAttr = 'value-write-to'
     @valueReadFromAttr = 'value-read-from'
+    @valueBindAttr = 'value-bind'
 
     constructor: (@App) ->
         @setupAttributes()
@@ -18,6 +19,7 @@ class DreamPilot.Attributes
         .setupIfAttribute()
         .setupValueWriteToAttribute()
         .setupValueReadFromAttribute()
+        .setupValueBindAttribute()
 
     getApp: ->
         @App
@@ -140,6 +142,24 @@ class DreamPilot.Attributes
         $dp.e($dp.selectorForAttribute(self.valueReadFromAttr), @getWrapper()).each ->
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueReadFromAttr
+
+            that.getScope().onChange field, (field, value) ->
+                $dp.fn.setValueOfElement $el, value
+
+            true
+
+        @
+
+    setupValueBindAttribute: ->
+        that = @
+
+        $dp.e($dp.selectorForAttribute(self.valueBindAttr), @getWrapper()).each ->
+            $el = $dp.e @
+            field = $el.attr $dp.attribute self.valueBindAttr
+
+            $el.on 'input', =>
+                value = $dp.fn.getValueOfElement $el
+                that.getScope().set field, value
 
             that.getScope().onChange field, (field, value) ->
                 $dp.fn.setValueOfElement $el, value
