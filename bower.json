@@ -1,6 +1,6 @@
 {
   "name": "dreampilot",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "DreamPilot FrontEnd Framework",
   "main": "dist/dp.js",
   "authors": [
