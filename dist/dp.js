@@ -92,6 +92,10 @@ DreamPilot.Application = (function() {
     this.setupScope().setupAttributes().setupEvents();
   }
 
+  Application.prototype.e = function(selector) {
+    return $dp.e(selector, this.$wrapper);
+  };
+
   Application.prototype.getWrapper = function() {
     return this.$wrapper;
   };
@@ -152,7 +156,7 @@ DreamPilot.Attributes = (function() {
   }
 
   Attributes.prototype.setupAttributes = function() {
-    return this.setupInitAttribute().setupClassAttribute().setupShowAttribute().setupIfAttribute().setupValueWriteToAttribute().setupValueReadFromAttribute().setupValueBindAttribute();
+    return this.setupInitAttribute().setupClassAttribute().setupShowAttribute().setupIfAttribute().setupValueBindAttribute().setupValueWriteToAttribute().setupValueReadFromAttribute();
   };
 
   Attributes.prototype.getApp = function() {
@@ -294,7 +298,7 @@ DreamPilot.Attributes = (function() {
       field = $el.attr($dp.attribute(self.valueReadFromAttr));
       that.getScope().onChange(field, function(field, value) {
         return $dp.fn.setValueOfElement($el, value);
-      });
+      }).trigger('change', field);
       return true;
     });
     return this;
@@ -316,7 +320,7 @@ DreamPilot.Attributes = (function() {
       })(this)).trigger('input');
       that.getScope().onChange(field, function(field, value) {
         return $dp.fn.setValueOfElement($el, value);
-      });
+      }).trigger('change', field);
       return true;
     });
     return this;
@@ -397,7 +401,7 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.set = function(field, value) {
-    var cb, cbId, k, ref, v;
+    var k, v;
     if (value == null) {
       value = null;
     }
@@ -408,13 +412,7 @@ DreamPilot.Model = (function() {
       }
     } else {
       data[field] = value;
-      if (callbacks.change[field] != null) {
-        ref = callbacks.change[field];
-        for (cbId in ref) {
-          cb = ref[cbId];
-          cb(field, value);
-        }
-      }
+      this.trigger('change', field);
     }
     return this;
   };
@@ -476,11 +474,12 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.on = function(action, field, callback, callbackId) {
+    var ref, ref1;
     if (callbackId == null) {
       callbackId = null;
     }
-    while (!callbackId || typeof callbacks[action][field][callbackId] !== 'undefined') {
-      callbackId = dp.fn.uniqueId();
+    while (!callbackId || (((ref = callbacks[action]) != null ? (ref1 = ref[field]) != null ? ref1[callbackId] : void 0 : void 0) != null)) {
+      callbackId = $dp.fn.uniqueId();
     }
     if (callbacks[action] == null) {
       callbacks[action] = {};
@@ -494,6 +493,21 @@ DreamPilot.Model = (function() {
 
   Model.prototype.off = function(action, field, callbackId) {
     delete callbacks[action][field][callbackId];
+    return this;
+  };
+
+  Model.prototype.trigger = function(action, field, callbackId) {
+    var cb, cbId, ref, ref1, value;
+    if (((ref = callbacks[action]) != null ? ref[field] : void 0) != null) {
+      value = this.get(field);
+      ref1 = callbacks[action][field];
+      for (cbId in ref1) {
+        cb = ref1[cbId];
+        if (!callbackId || cbId === callbackId) {
+          cb(field, value);
+        }
+      }
+    }
     return this;
   };
 

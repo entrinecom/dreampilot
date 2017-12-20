@@ -16,8 +16,7 @@ class DreamPilot.Model
             @set k, v for k, v of field
         else
             data[field] = value
-            if callbacks.change[field]?
-                cb field, value for cbId, cb of callbacks.change[field]
+            @trigger 'change', field
         @
 
     exists: (field) ->
@@ -60,8 +59,8 @@ class DreamPilot.Model
         @
 
     on: (action, field, callback, callbackId = null) ->
-        while not callbackId or typeof callbacks[action][field][callbackId] isnt 'undefined'
-            callbackId = dp.fn.uniqueId()
+        while not callbackId or callbacks[action]?[field]?[callbackId]?
+            callbackId = $dp.fn.uniqueId()
         callbacks[action] = {} unless callbacks[action]?
         callbacks[action][field] = {} unless callbacks[action][field]?
         callbacks[action][field][callbackId] = callback
@@ -69,6 +68,13 @@ class DreamPilot.Model
 
     off: (action, field, callbackId) ->
         delete callbacks[action][field][callbackId]
+        @
+
+    trigger: (action, field, callbackId) ->
+        if callbacks[action]?[field]?
+            value = @get field
+            for cbId, cb of callbacks[action][field]
+                cb field, value if not callbackId or cbId is callbackId
         @
 
     onChange: (field, callback, callbackId = null) ->

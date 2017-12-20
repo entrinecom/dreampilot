@@ -17,9 +17,9 @@ class DreamPilot.Attributes
         .setupClassAttribute()
         .setupShowAttribute()
         .setupIfAttribute()
+        .setupValueBindAttribute()
         .setupValueWriteToAttribute()
         .setupValueReadFromAttribute()
-        .setupValueBindAttribute()
 
     getApp: ->
         @App
@@ -146,6 +146,7 @@ class DreamPilot.Attributes
 
             that.getScope().onChange field, (field, value) ->
                 $dp.fn.setValueOfElement $el, value
+            .trigger 'change', field
 
             true
 
@@ -165,6 +166,7 @@ class DreamPilot.Attributes
 
             that.getScope().onChange field, (field, value) ->
                 $dp.fn.setValueOfElement $el, value
+            .trigger 'change', field
 
             true
 

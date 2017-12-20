@@ -12,6 +12,9 @@ class DreamPilot.Application
         .setupAttributes()
         .setupEvents()
 
+    e: (selector) ->
+        $dp.e selector, @$wrapper
+
     getWrapper: ->
         @$wrapper
 
