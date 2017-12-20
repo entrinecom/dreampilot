@@ -279,7 +279,7 @@ DreamPilot.Attributes = (function() {
           value = $dp.fn.getValueOfElement($el);
           return that.getScope().set(field, value);
         };
-      })(this));
+      })(this)).trigger('input');
       return true;
     });
     return this;
@@ -313,7 +313,7 @@ DreamPilot.Attributes = (function() {
           value = $dp.fn.getValueOfElement($el);
           return that.getScope().set(field, value);
         };
-      })(this));
+      })(this)).trigger('input');
       that.getScope().onChange(field, function(field, value) {
         return $dp.fn.setValueOfElement($el, value);
       });
@@ -397,7 +397,7 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.set = function(field, value) {
-    var cb, i, k, len, ref, v;
+    var cb, cbId, k, ref, v;
     if (value == null) {
       value = null;
     }
@@ -410,8 +410,8 @@ DreamPilot.Model = (function() {
       data[field] = value;
       if (callbacks.change[field] != null) {
         ref = callbacks.change[field];
-        for (i = 0, len = ref.length; i < len; i++) {
-          cb = ref[i];
+        for (cbId in ref) {
+          cb = ref[cbId];
           cb(field, value);
         }
       }
@@ -423,12 +423,85 @@ DreamPilot.Model = (function() {
     return typeof data[field] !== 'undefined';
   };
 
-  Model.prototype.onChange = function(field, callback) {
-    if (callbacks.change[field] == null) {
-      callbacks.change[field] = [];
-    }
-    callbacks.change[field].push(callback);
+  Model.prototype.getSaveMethod = function() {
+    return $dp.transport.POST;
+  };
+
+  Model.prototype.getSaveUrl = function() {
+    throw 'Redefine Model.getSaveUrl() method first';
+  };
+
+  Model.prototype.getSaveData = function() {
+    return data;
+  };
+
+  Model.prototype.save = function() {
+    $dp.transport.request(this.getSaveMethod(), this.getSaveUrl(), this.getSaveData(), (function(_this) {
+      return function(result) {
+        return _this.onSaved(result);
+      };
+    })(this));
     return this;
+  };
+
+  Model.prototype.onSaved = function(result) {
+    $dp.log.print('onSaved', result);
+    return this;
+  };
+
+  Model.prototype.getFetchMethod = function() {
+    return $dp.transport.GET;
+  };
+
+  Model.prototype.getFetchUrl = function() {
+    throw 'Redefine Model.getFetchUrl() method first';
+  };
+
+  Model.prototype.getFetchData = function() {
+    return null;
+  };
+
+  Model.prototype.fetch = function() {
+    $dp.transport.request(this.getFetchMethod(), this.getFetchUrl(), this.getFetchData(), (function(_this) {
+      return function(result) {
+        return _this.onFetched(result);
+      };
+    })(this));
+    return this;
+  };
+
+  Model.prototype.onFetched = function(result) {
+    $dp.log.print('onFetched', result);
+    return this;
+  };
+
+  Model.prototype.on = function(action, field, callback, callbackId) {
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    while (!callbackId || typeof callbacks[action][field][callbackId] !== 'undefined') {
+      callbackId = dp.fn.uniqueId();
+    }
+    if (callbacks[action] == null) {
+      callbacks[action] = {};
+    }
+    if (callbacks[action][field] == null) {
+      callbacks[action][field] = {};
+    }
+    callbacks[action][field][callbackId] = callback;
+    return this;
+  };
+
+  Model.prototype.off = function(action, field, callbackId) {
+    delete callbacks[action][field][callbackId];
+    return this;
+  };
+
+  Model.prototype.onChange = function(field, callback, callbackId) {
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    return this.on('change', field, callback, callbackId);
   };
 
   Model.prototype.getApp = function() {
@@ -1117,5 +1190,63 @@ DreamPilot.Parser = (function() {
   };
 
   return Parser;
+
+})();
+
+DreamPilot.Transport = (function() {
+  var self;
+
+  function Transport() {}
+
+  self = Transport;
+
+  Transport.GET = 1;
+
+  Transport.POST = 2;
+
+  Transport.PUT = 3;
+
+  Transport.DELETE = 4;
+
+  Transport.HEAD = 5;
+
+  Transport.OPTIONS = 6;
+
+  Transport.CONNECT = 7;
+
+  Transport.request = function(method, url, data, callback) {
+    switch (method) {
+      case this.GET:
+        url += '?' + jQuery.serialize(data);
+        return self.get(url, callback);
+      case this.POST:
+        return self.post(url, data, callback);
+      default:
+        throw 'This method not implemented yet';
+    }
+  };
+
+  Transport.get = function() {
+    return jQuery.get.apply(arguments);
+  };
+
+  Transport.post = function() {
+    return jQuery.post.apply(arguments);
+  };
+
+  return Transport;
+
+})();
+
+if ($dp) {
+  $dp.transport = DreamPilot.Transport;
+}
+
+var Transport;
+
+Transport = (function() {
+  function Transport() {}
+
+  return Transport;
 
 })();

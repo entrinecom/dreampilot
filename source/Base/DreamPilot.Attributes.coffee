@@ -131,6 +131,7 @@ class DreamPilot.Attributes
             $el.on 'input', =>
                 value = $dp.fn.getValueOfElement $el
                 that.getScope().set field, value
+            .trigger 'input'
 
             true
 
@@ -160,6 +161,7 @@ class DreamPilot.Attributes
             $el.on 'input', =>
                 value = $dp.fn.getValueOfElement $el
                 that.getScope().set field, value
+            .trigger 'input'
 
             that.getScope().onChange field, (field, value) ->
                 $dp.fn.setValueOfElement $el, value
