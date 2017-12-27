@@ -43,3 +43,12 @@ class DreamPilot.Application
     setupAttributes: ->
         @Attributes = new $dp.Attributes @
         @
+
+    linkToScope: (keys) ->
+        keys = [keys] if typeof keys isnt 'object'
+        for key in keys
+            unless typeof @[key] is 'undefined'
+                @getScope().set key, @[key]
+            else
+                $dp.log.print "Key #{key} not found in application"
+        @

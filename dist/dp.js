@@ -131,6 +131,22 @@ DreamPilot.Application = (function() {
     return this;
   };
 
+  Application.prototype.linkToScope = function(keys) {
+    var i, key, len;
+    if (typeof keys !== 'object') {
+      keys = [keys];
+    }
+    for (i = 0, len = keys.length; i < len; i++) {
+      key = keys[i];
+      if (typeof this[key] !== 'undefined') {
+        this.getScope().set(key, this[key]);
+      } else {
+        $dp.log.print("Key " + key + " not found in application");
+      }
+    }
+    return this;
+  };
+
   return Application;
 
 })();
