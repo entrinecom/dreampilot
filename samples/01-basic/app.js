@@ -6,11 +6,14 @@ var BasicApp,
 BasicApp = (function(superClass) {
   extend(BasicApp, superClass);
 
-  function BasicApp($wrapper) {
-    BasicApp.__super__.constructor.call(this, $wrapper);
-    console.log('I am the basic app!');
-    this.initVariables();
+  function BasicApp() {
+    return BasicApp.__super__.constructor.apply(this, arguments);
   }
+
+  BasicApp.prototype.init = function() {
+    console.log('I am the basic app!');
+    return this.initVariables();
+  };
 
   BasicApp.prototype.initVariables = function() {
     this.getScope().set({

@@ -6,12 +6,15 @@ var RouterApp,
 RouterApp = (function(superClass) {
   extend(RouterApp, superClass);
 
+  function RouterApp() {
+    return RouterApp.__super__.constructor.apply(this, arguments);
+  }
+
   RouterApp.prototype.Router = null;
 
-  function RouterApp($wrapper) {
-    RouterApp.__super__.constructor.call(this, $wrapper);
-    this.initRouter();
-  }
+  RouterApp.prototype.init = function() {
+    return this.initRouter();
+  };
 
   RouterApp.prototype.initRouter = function() {
     this.Router = new DreamPilot.Router(this).when('');

@@ -44,34 +44,38 @@ class DreamPilot.Parser
             key: ''
             value: ''
         addPair = ->
-            o[$dp.fn.trim(pair.key)] = $dp.fn.trim pair.value
+            o[$dp.fn.trim(pair.key)] = pair.value #$dp.fn.trim
             pair.key = pair.value = ''
         quoteOpened = null
         underCursor = 'key'
 
         for ch, i in dataStr
             skip = false
+            isSpace = /\s/.test ch
+            isQuote = ch in self.quotes
 
-            if ch in self.quotes
+            if isQuote
                 unless quoteOpened
                     quoteOpened = ch
-                    skip = true
+                    #skip = true
                 else if quoteOpened and ch is quoteOpened
                     quoteOpened = null
+                    #skip = true
+                #console.log 'opened', quoteOpened
+
+            if underCursor is 'border' and not isSpace
+                underCursor = 'value'
+            else if not quoteOpened
+                if ch is options.assign
+                    underCursor = 'border'
+                #else if underCursor is 'key' and isSpace
+                #    skip = true
+                else if ch is options.delimiter
+                    underCursor = 'key'
+                    addPair()
                     skip = true
 
-            unless quoteOpened
-                switch
-                    when ch is options.assign
-                        underCursor = 'border'
-                    when underCursor is 'border' and not /\s/.test ch
-                        underCursor = 'value'
-                    when ch is options.delimiter
-                        underCursor = 'key'
-                        addPair()
-                        skip = true
-
-            pair[underCursor] += ch if underCursor isnt 'border' and not skip
+            pair[underCursor] += ch if underCursor in ['key', 'value'] and not skip
 
         addPair() if pair.key or pair.value
         o
@@ -111,7 +115,7 @@ class DreamPilot.Parser
             self.lastUsedVariables = []
             !! self.evalNode jsep(expr), App
         catch e
-            $dp.log.error 'Expression parsing (isExpressionTrue) error ', e
+            $dp.log.error 'Expression parsing (isExpressionTrue) error ', e, expr
             false
 
     @executeExpressions: (allExpr, App) ->
@@ -125,9 +129,9 @@ class DreamPilot.Parser
                 if key.indexOf('(') > -1 and expr is ''
                     self.evalNode jsep(key), App
                 else
-                    App.getScope().set key, self.evalNode jsep(expr), App
+                    App.getScope().set key, self.evalNode(jsep(expr), App)
             catch e
-                $dp.log.error 'Expression parsing (executeExpressions) error', e
+                $dp.log.error 'Expression parsing (executeExpressions) error', e, ':', key, expr
                 false
         true
 

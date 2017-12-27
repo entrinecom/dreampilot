@@ -287,7 +287,10 @@ DreamPilot.Attributes = (function() {
           value = $dp.fn.getValueOfElement($el);
           return that.getScope().set(field, value);
         };
-      })(this)).trigger('input');
+      })(this));
+      if ($el.val()) {
+        $el.trigger('input');
+      }
       return true;
     });
     return this;
@@ -302,7 +305,10 @@ DreamPilot.Attributes = (function() {
       field = $el.attr($dp.attribute(self.valueReadFromAttr));
       that.getScope().onChange(field, function(field, value) {
         return $dp.fn.setValueOfElement($el, value);
-      }).trigger('change', field);
+      });
+      if (that.getScope().get(field)) {
+        that.getScope().trigger('change', field);
+      }
       return true;
     });
     return this;
@@ -321,10 +327,16 @@ DreamPilot.Attributes = (function() {
           value = $dp.fn.getValueOfElement($el);
           return that.getScope().set(field, value);
         };
-      })(this)).trigger('input');
+      })(this));
+      if ($el.val()) {
+        $el.trigger('input');
+      }
       that.getScope().onChange(field, function(field, value) {
         return $dp.fn.setValueOfElement($el, value);
-      }).trigger('change', field);
+      });
+      if (that.getScope().get(field)) {
+        that.getScope().trigger('change', field);
+      }
       return true;
     });
     return this;
@@ -389,6 +401,12 @@ DreamPilot.Model = (function() {
   }
 
   Model.prototype.get = function(field) {
+    if (field == null) {
+      field = null;
+    }
+    if (field === null) {
+      return data;
+    }
     if (this.exists(field)) {
       return data[field];
     } else {
@@ -434,7 +452,7 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.getSaveData = function() {
-    return data;
+    return this.get();
   };
 
   Model.prototype.save = function() {
@@ -1053,7 +1071,7 @@ DreamPilot.Parser = (function() {
   Parser.lastUsedVariables = [];
 
   Parser.object = function(dataStr, options) {
-    var addPair, ch, i, j, len, o, pair, quoteOpened, skip, underCursor;
+    var addPair, ch, i, isQuote, isSpace, j, len, o, pair, quoteOpened, skip, underCursor;
     if (options == null) {
       options = {};
     }
@@ -1075,7 +1093,7 @@ DreamPilot.Parser = (function() {
       value: ''
     };
     addPair = function() {
-      o[$dp.fn.trim(pair.key)] = $dp.fn.trim(pair.value);
+      o[$dp.fn.trim(pair.key)] = pair.value;
       return pair.key = pair.value = '';
     };
     quoteOpened = null;
@@ -1083,30 +1101,27 @@ DreamPilot.Parser = (function() {
     for (i = j = 0, len = dataStr.length; j < len; i = ++j) {
       ch = dataStr[i];
       skip = false;
-      if (indexOf.call(self.quotes, ch) >= 0) {
+      isSpace = /\s/.test(ch);
+      isQuote = indexOf.call(self.quotes, ch) >= 0;
+      if (isQuote) {
         if (!quoteOpened) {
           quoteOpened = ch;
-          skip = true;
         } else if (quoteOpened && ch === quoteOpened) {
           quoteOpened = null;
+        }
+      }
+      if (underCursor === 'border' && !isSpace) {
+        underCursor = 'value';
+      } else if (!quoteOpened) {
+        if (ch === options.assign) {
+          underCursor = 'border';
+        } else if (ch === options.delimiter) {
+          underCursor = 'key';
+          addPair();
           skip = true;
         }
       }
-      if (!quoteOpened) {
-        switch (false) {
-          case ch !== options.assign:
-            underCursor = 'border';
-            break;
-          case !(underCursor === 'border' && !/\s/.test(ch)):
-            underCursor = 'value';
-            break;
-          case ch !== options.delimiter:
-            underCursor = 'key';
-            addPair();
-            skip = true;
-        }
-      }
-      if (underCursor !== 'border' && !skip) {
+      if ((underCursor === 'key' || underCursor === 'value') && !skip) {
         pair[underCursor] += ch;
       }
     }
@@ -1173,7 +1188,7 @@ DreamPilot.Parser = (function() {
       return !!self.evalNode(jsep(expr), App);
     } catch (error) {
       e = error;
-      $dp.log.error('Expression parsing (isExpressionTrue) error ', e);
+      $dp.log.error('Expression parsing (isExpressionTrue) error ', e, expr);
       return false;
     }
   };
@@ -1196,7 +1211,7 @@ DreamPilot.Parser = (function() {
         }
       } catch (error) {
         e = error;
-        $dp.log.error('Expression parsing (executeExpressions) error', e);
+        $dp.log.error('Expression parsing (executeExpressions) error', e, ':', key, expr);
         false;
       }
     }

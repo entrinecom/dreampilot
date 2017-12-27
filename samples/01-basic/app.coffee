@@ -1,6 +1,5 @@
 class BasicApp extends DreamPilot.Application
-    constructor: ($wrapper) ->
-        super $wrapper
+    init: ->
         console.log 'I am the basic app!'
         @initVariables()
 

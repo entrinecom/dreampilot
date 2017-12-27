@@ -5,7 +5,8 @@ class DreamPilot.Model
 
     constructor: (@App) ->
 
-    get: (field) ->
+    get: (field = null) ->
+        return data if field is null
         if @exists field then data[field] else null
 
     has: (field) ->
@@ -29,7 +30,7 @@ class DreamPilot.Model
         throw 'Redefine Model.getSaveUrl() method first'
 
     getSaveData: ->
-        data
+        @get()
 
     save: ->
         $dp.transport.request @getSaveMethod(), @getSaveUrl(), @getSaveData(), (result) =>

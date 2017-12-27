@@ -1,8 +1,7 @@
 class RouterApp extends DreamPilot.Application
     Router: null
 
-    constructor: ($wrapper) ->
-        super $wrapper
+    init: ->
         @initRouter()
 
     initRouter: ->
