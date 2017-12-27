@@ -1,6 +1,7 @@
 class BasicApp extends DreamPilot.Application
     init: ->
         console.log 'I am the basic app!'
+        @someVar = 'some value'
         @initVariables()
 
     initVariables: ->
@@ -13,6 +14,8 @@ class BasicApp extends DreamPilot.Application
                 x
             letItOut: ->
                 alert 'let it out!'
+
+        @linkToScope ['someMethod']
 
         setTimeout =>
             @getScope().set
@@ -32,3 +35,6 @@ class BasicApp extends DreamPilot.Application
                 pepe: 8
         , 7000
         @
+
+    someMethod: (var1, var2) ->
+        alert @someVar + ', ' + var1 + ', ' + var2

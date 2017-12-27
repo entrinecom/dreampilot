@@ -12,6 +12,7 @@ BasicApp = (function(superClass) {
 
   BasicApp.prototype.init = function() {
     console.log('I am the basic app!');
+    this.someVar = 'some value';
     return this.initVariables();
   };
 
@@ -31,6 +32,7 @@ BasicApp = (function(superClass) {
         return alert('let it out!');
       }
     });
+    this.linkToScope(['someMethod']);
     setTimeout((function(_this) {
       return function() {
         return _this.getScope().set({
@@ -56,6 +58,10 @@ BasicApp = (function(superClass) {
       };
     })(this), 7000);
     return this;
+  };
+
+  BasicApp.prototype.someMethod = function(var1, var2) {
+    return alert(this.someVar + ', ' + var1 + ', ' + var2);
   };
 
   return BasicApp;

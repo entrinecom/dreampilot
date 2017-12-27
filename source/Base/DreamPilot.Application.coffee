@@ -47,7 +47,10 @@ class DreamPilot.Application
     linkToScope: (keys) ->
         keys = [keys] if typeof keys isnt 'object'
         for key in keys
-            unless typeof @[key] is 'undefined'
+            type = typeof @[key]
+            if type is 'function'
+                @getScope().set key, (args...) => @[key] args...
+            else if type isnt 'undefined'
                 @getScope().set key, @[key]
             else
                 $dp.log.print "Key #{key} not found in application"

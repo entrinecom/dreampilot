@@ -74,6 +74,8 @@ $dp = DreamPilot;
 
 dp = new DreamPilot();
 
+var slice = [].slice;
+
 DreamPilot.Application = (function() {
   var self;
 
@@ -132,13 +134,22 @@ DreamPilot.Application = (function() {
   };
 
   Application.prototype.linkToScope = function(keys) {
-    var i, key, len;
+    var i, key, len, type;
     if (typeof keys !== 'object') {
       keys = [keys];
     }
     for (i = 0, len = keys.length; i < len; i++) {
       key = keys[i];
-      if (typeof this[key] !== 'undefined') {
+      type = typeof this[key];
+      if (type === 'function') {
+        this.getScope().set(key, (function(_this) {
+          return function() {
+            var args;
+            args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+            return _this[key].apply(_this, args);
+          };
+        })(this));
+      } else if (type !== 'undefined') {
         this.getScope().set(key, this[key]);
       } else {
         $dp.log.print("Key " + key + " not found in application");
