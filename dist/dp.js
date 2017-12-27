@@ -89,8 +89,12 @@ DreamPilot.Application = (function() {
 
   function Application($wrapper1) {
     this.$wrapper = $wrapper1;
-    this.setupScope().setupAttributes().setupEvents();
+    this.setupScope().setupAttributes().setupEvents().init();
   }
+
+  Application.prototype.init = function() {
+    return this;
+  };
 
   Application.prototype.e = function(selector) {
     return $dp.e(selector, this.$wrapper);

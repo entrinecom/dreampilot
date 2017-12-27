@@ -11,6 +11,11 @@ class DreamPilot.Application
         @setupScope()
         .setupAttributes()
         .setupEvents()
+        .init()
+
+    # override this method in child classes
+    init: ->
+        @
 
     e: (selector) ->
         $dp.e selector, @$wrapper
