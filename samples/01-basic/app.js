@@ -32,7 +32,7 @@ BasicApp = (function(superClass) {
         return alert('let it out!');
       }
     });
-    this.linkToScope(['someMethod']);
+    this.linkToScope(['someMethod', 'postRequest', 'getRequest']);
     setTimeout((function(_this) {
       return function() {
         return _this.getScope().set({
@@ -57,6 +57,25 @@ BasicApp = (function(superClass) {
         });
       };
     })(this), 7000);
+    return this;
+  };
+
+  BasicApp.prototype.getRequest = function() {
+    $dp.transport.get('/api/controller/method/get/', function(res) {
+      return console.log('get', res);
+    });
+    return this;
+  };
+
+  BasicApp.prototype.postRequest = function() {
+    var data;
+    data = {
+      name: 'James',
+      band: 'Metallica'
+    };
+    $dp.transport.post('/api/controller/method/post/', data, function(res) {
+      return console.log('post', res);
+    });
     return this;
   };
 

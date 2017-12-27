@@ -15,7 +15,7 @@ class BasicApp extends DreamPilot.Application
             letItOut: ->
                 alert 'let it out!'
 
-        @linkToScope ['someMethod']
+        @linkToScope ['someMethod', 'postRequest', 'getRequest']
 
         setTimeout =>
             @getScope().set
@@ -34,6 +34,20 @@ class BasicApp extends DreamPilot.Application
                 lolo: 12
                 pepe: 8
         , 7000
+        @
+
+    getRequest: ->
+        $dp.transport.get '/api/controller/method/get/', (res) ->
+            console.log 'get', res
+        @
+
+    postRequest: ->
+        data =
+            name: 'James'
+            band: 'Metallica'
+
+        $dp.transport.post '/api/controller/method/post/', data, (res) ->
+            console.log 'post', res
         @
 
     someMethod: (var1, var2) ->

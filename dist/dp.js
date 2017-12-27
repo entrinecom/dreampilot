@@ -640,12 +640,20 @@ Router = (function() {
 
 })();
 
+var slice = [].slice;
+
 DreamPilot.Functions = (function() {
   var self;
 
   function Functions() {}
 
   self = Functions;
+
+  Functions.extend = function() {
+    var args;
+    args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+    return jQuery.extend.apply(jQuery, args);
+  };
 
   Functions.int = function(s) {
     return ~~s;
@@ -800,13 +808,13 @@ DreamPilot.Functions = (function() {
   };
 
   Functions.keys = function(array) {
-    return $.map(array, function(val, key) {
+    return jQuery.map(array, function(val, key) {
       return key;
     });
   };
 
   Functions.values = function(array) {
-    return $.map(array, function(val, key) {
+    return jQuery.map(array, function(val, key) {
       return val;
     });
   };
@@ -1253,6 +1261,8 @@ DreamPilot.Parser = (function() {
 
 })();
 
+var slice = [].slice;
+
 DreamPilot.Transport = (function() {
   var self;
 
@@ -1274,24 +1284,63 @@ DreamPilot.Transport = (function() {
 
   Transport.CONNECT = 7;
 
+  Transport.FORM_DATA = 1;
+
+  Transport.PAYLOAD = 2;
+
   Transport.request = function(method, url, data, callback) {
-    switch (method) {
+    var options;
+    if (typeof method !== 'object') {
+      options = {
+        method: method,
+        type: this.FORM_DATA
+      };
+    } else {
+      options = $dp.fn.extend({
+        method: this.GET,
+        type: this.FORM_DATA
+      }, options);
+    }
+    switch (options.method) {
       case this.GET:
         url += '?' + jQuery.serialize(data);
         return self.get(url, callback);
       case this.POST:
-        return self.post(url, data, callback);
+        switch (options.type) {
+          case this.FORM_DATA:
+            return self.post(url, data, callback);
+          case this.PAYLOAD:
+            return self.postPayload(url, data, callback);
+          default:
+            throw 'Unknown request type';
+        }
+        break;
       default:
         throw 'This method not implemented yet';
     }
   };
 
   Transport.get = function() {
-    return jQuery.get.apply(arguments);
+    var args;
+    args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+    return jQuery.get.apply(jQuery, args);
   };
 
   Transport.post = function() {
-    return jQuery.post.apply(arguments);
+    var args;
+    args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+    return jQuery.post.apply(jQuery, args);
+  };
+
+  Transport.postPayload = function(url, data, callback) {
+    return jQuery.ajax({
+      url: url,
+      type: 'POST',
+      dataType: 'json',
+      data: data,
+      contentType: 'application/json',
+      complete: callback
+    });
   };
 
   return Transport;

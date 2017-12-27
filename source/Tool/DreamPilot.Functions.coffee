@@ -1,6 +1,8 @@
 class DreamPilot.Functions
     self = @
 
+    @extend: (args...) -> jQuery.extend args...
+
     @int: (s) -> ~~s
 
     @str: (s) -> s + ''
@@ -79,9 +81,9 @@ class DreamPilot.Functions
 
     @isArray: (ar) -> Object.prototype.toString.call(ar) is '[object Array]'
 
-    @keys: (array) -> $.map array, (val, key) -> key
+    @keys: (array) -> jQuery.map array, (val, key) -> key
 
-    @values: (array) -> $.map array, (val, key) -> val
+    @values: (array) -> jQuery.map array, (val, key) -> val
 
     @arraySum: (ar) ->
         sum = 0

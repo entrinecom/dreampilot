@@ -9,22 +9,50 @@ class DreamPilot.Transport
     @OPTIONS: 6
     @CONNECT: 7
 
+    @FORM_DATA: 1
+    @PAYLOAD: 2
+
     @request: (method, url, data, callback) ->
-        switch method
+        if typeof method isnt 'object'
+            options =
+                method: method
+                type: @FORM_DATA
+        else
+            options = $dp.fn.extend
+                method: @GET
+                type: @FORM_DATA
+            , options
+
+        switch options.method
             when @GET
                 url += '?' + jQuery.serialize data
                 self.get url, callback
 
             when @POST
-                self.post url, data, callback
+                switch options.type
+                    when @FORM_DATA
+                        self.post url, data, callback
+                    when @PAYLOAD
+                        self.postPayload url, data, callback
+                    else
+                        throw 'Unknown request type'
 
             else
                 throw 'This method not implemented yet'
 
-    @get: ->
-        jQuery.get.apply arguments
+    @get: (args...) ->
+        jQuery.get args...
 
-    @post: ->
-        jQuery.post.apply arguments
+    @post: (args...) ->
+        jQuery.post args...
+
+    @postPayload: (url, data, callback) ->
+        jQuery.ajax
+            url: url
+            type: 'POST'
+            dataType: 'json'
+            data: data
+            contentType: 'application/json'
+            complete: callback
 
 $dp.transport = DreamPilot.Transport if $dp
