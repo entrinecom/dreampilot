@@ -33,7 +33,7 @@ class DreamPilot.Application
         @Attributes
 
     setupScope: ->
-        @Scope = new $dp.Scope @
+        @Scope = new $dp.Scope()
         @
 
     setupEvents: ->

@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "UserModel.js",
+  "sourceRoot": "",
+  "sources": [
+    "UserModel.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA,IAAA,SAAA;EAAA;;;AAAM;;;;;;;;;GAAkB,UAAU,CAAC"
+}

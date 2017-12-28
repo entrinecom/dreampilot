@@ -119,7 +119,7 @@ DreamPilot.Application = (function() {
   };
 
   Application.prototype.setupScope = function() {
-    this.Scope = new $dp.Scope(this);
+    this.Scope = new $dp.Scope();
     return this;
   };
 
@@ -415,27 +415,49 @@ DreamPilot.Events = (function() {
 })();
 
 DreamPilot.Model = (function() {
-  var callbacks, data;
+  Model.prototype.data = {};
 
-  data = {};
+  Model.prototype.relatedData = {};
 
-  callbacks = {
+  Model.prototype.callbacks = {
     change: {}
   };
 
-  function Model(App) {
-    this.App = App;
+  function Model(_data) {
+    if (_data == null) {
+      _data = {};
+    }
+    this.initFrom(_data);
   }
+
+  Model.prototype.initFrom = function(_data) {
+    if (_data == null) {
+      _data = {};
+    }
+    if (typeof _data === 'string') {
+      _data = JSON.parse(_data);
+    }
+    if (typeof _data === 'object') {
+      if (_data instanceof DreamPilot.Model) {
+        this.data = _data.get();
+      } else {
+        this.data = _data;
+      }
+    } else {
+      throw 'Data should be an object';
+    }
+    return this;
+  };
 
   Model.prototype.get = function(field) {
     if (field == null) {
       field = null;
     }
     if (field === null) {
-      return data;
+      return this.data;
     }
     if (this.exists(field)) {
-      return data[field];
+      return this.data[field];
     } else {
       return null;
     }
@@ -443,7 +465,7 @@ DreamPilot.Model = (function() {
 
   Model.prototype.has = function(field) {
     if (this.exists(field)) {
-      return !!data[field];
+      return !!this.data[field];
     } else {
       return false;
     }
@@ -460,14 +482,56 @@ DreamPilot.Model = (function() {
         this.set(k, v);
       }
     } else {
-      data[field] = value;
+      this.data[field] = value;
       this.trigger('change', field);
     }
     return this;
   };
 
   Model.prototype.exists = function(field) {
-    return typeof data[field] !== 'undefined';
+    return typeof this.data[field] !== 'undefined';
+  };
+
+  Model.prototype.getRelated = function(field) {
+    if (field == null) {
+      field = null;
+    }
+    if (field === null) {
+      return this.relatedData;
+    }
+    if (this.existsRelated(field)) {
+      return this.relatedData[field];
+    } else {
+      return null;
+    }
+  };
+
+  Model.prototype.hasRelated = function(field) {
+    if (this.existsRelated(field)) {
+      return !!this.relatedData[field];
+    } else {
+      return false;
+    }
+  };
+
+  Model.prototype.setRelated = function(field, value) {
+    var k, v;
+    if (value == null) {
+      value = null;
+    }
+    if (typeof field === 'object' && value === null) {
+      for (k in field) {
+        v = field[k];
+        this.setRelated(k, v);
+      }
+    } else {
+      this.relatedData[field] = value;
+    }
+    return this;
+  };
+
+  Model.prototype.existsRelated = function(field) {
+    return typeof this.relatedData[field] !== 'undefined';
   };
 
   Model.prototype.getSaveMethod = function() {
@@ -527,29 +591,29 @@ DreamPilot.Model = (function() {
     if (callbackId == null) {
       callbackId = null;
     }
-    while (!callbackId || (((ref = callbacks[action]) != null ? (ref1 = ref[field]) != null ? ref1[callbackId] : void 0 : void 0) != null)) {
+    while (!callbackId || (((ref = this.callbacks[action]) != null ? (ref1 = ref[field]) != null ? ref1[callbackId] : void 0 : void 0) != null)) {
       callbackId = $dp.fn.uniqueId();
     }
-    if (callbacks[action] == null) {
-      callbacks[action] = {};
+    if (this.callbacks[action] == null) {
+      this.callbacks[action] = {};
     }
-    if (callbacks[action][field] == null) {
-      callbacks[action][field] = {};
+    if (this.callbacks[action][field] == null) {
+      this.callbacks[action][field] = {};
     }
-    callbacks[action][field][callbackId] = callback;
+    this.callbacks[action][field][callbackId] = callback;
     return this;
   };
 
   Model.prototype.off = function(action, field, callbackId) {
-    delete callbacks[action][field][callbackId];
+    delete this.callbacks[action][field][callbackId];
     return this;
   };
 
   Model.prototype.trigger = function(action, field, callbackId) {
     var cb, cbId, ref, ref1, value;
-    if (((ref = callbacks[action]) != null ? ref[field] : void 0) != null) {
+    if (((ref = this.callbacks[action]) != null ? ref[field] : void 0) != null) {
       value = this.get(field);
-      ref1 = callbacks[action][field];
+      ref1 = this.callbacks[action][field];
       for (cbId in ref1) {
         cb = ref1[cbId];
         if (!callbackId || cbId === callbackId) {
@@ -565,10 +629,6 @@ DreamPilot.Model = (function() {
       callbackId = null;
     }
     return this.on('change', field, callback, callbackId);
-  };
-
-  Model.prototype.getApp = function() {
-    return this.App;
   };
 
   return Model;
