@@ -1,6 +1,8 @@
 class DreamPilot.Model
     data: {}
     relatedData: {}
+    parent: null
+    parentField: null
     callbacks:
         change: {}
 
@@ -18,9 +20,31 @@ class DreamPilot.Model
                 @data = _data
         else
             throw 'Data should be an object'
+
+        for field, value of _data
+            @trigger 'change', field
+
         @
 
+    setParent: (@parent, @parentField) ->
+        if @parent and not @parent instanceof DreamPilot.Model
+            throw 'Parent can be only DreamPilot.Model'
+
     get: (field = null) ->
+        # model inside model logic
+        if field and typeof field is 'string'
+            children = field.split '.'
+            if children.length > 1
+                child = children[0]
+                field = children.slice(1).join '.'
+                if @exists child
+                    model = @data[child]
+                    if model instanceof DreamPilot.Model
+                        return model.get field
+                    else
+                        return if typeof model[field] isnt 'undefined' then model[field] else null
+                else
+                    return null
         return @data if field is null
         if @exists field then @data[field] else null
 
@@ -108,6 +132,7 @@ class DreamPilot.Model
             value = @get field
             for cbId, cb of @callbacks[action][field]
                 cb field, value if not callbackId or cbId is callbackId
+            @parent.trigger 'action', @parentField if @parent
         @
 
     onChange: (field, callback, callbackId = null) ->

@@ -18,6 +18,8 @@ ModelApp = (function(superClass) {
     this.user1 = new UserModel(this.e('ul[data-user1]').data('user1'));
     this.user2 = new UserModel(this.e('script[data-of="user2"]').html());
     this.user3 = new UserModel(this.user2);
+    this.linkToScope('user1', 'user2', 'user3');
+    console.log(this.getScope().get('user1.name'));
     return this;
   };
 

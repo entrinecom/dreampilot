@@ -44,14 +44,19 @@ class DreamPilot.Application
         @Attributes = new $dp.Attributes @
         @
 
-    linkToScope: (keys) ->
-        keys = [keys] if typeof keys isnt 'object'
+    linkToScope: (keys...) ->
         for key in keys
+            if $dp.fn.isArray key
+                @linkToScope key...
+                continue
             type = typeof @[key]
             if type is 'function'
                 @getScope().set key, (args...) => @[key] args...
             else if type isnt 'undefined'
-                @getScope().set key, @[key]
+                obj = @[key]
+                @getScope().set key, obj
+                if obj instanceof DreamPilot.Model
+                    obj.setParent @getScope(), key
             else
                 $dp.log.print "Key #{key} not found in application"
         @

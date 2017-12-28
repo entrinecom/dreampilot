@@ -133,13 +133,15 @@ DreamPilot.Application = (function() {
     return this;
   };
 
-  Application.prototype.linkToScope = function(keys) {
-    var i, key, len, type;
-    if (typeof keys !== 'object') {
-      keys = [keys];
-    }
+  Application.prototype.linkToScope = function() {
+    var i, key, keys, len, obj, type;
+    keys = 1 <= arguments.length ? slice.call(arguments, 0) : [];
     for (i = 0, len = keys.length; i < len; i++) {
       key = keys[i];
+      if ($dp.fn.isArray(key)) {
+        this.linkToScope.apply(this, key);
+        continue;
+      }
       type = typeof this[key];
       if (type === 'function') {
         this.getScope().set(key, (function(_this) {
@@ -150,7 +152,11 @@ DreamPilot.Application = (function() {
           };
         })(this));
       } else if (type !== 'undefined') {
-        this.getScope().set(key, this[key]);
+        obj = this[key];
+        this.getScope().set(key, obj);
+        if (obj instanceof DreamPilot.Model) {
+          obj.setParent(this.getScope(), key);
+        }
       } else {
         $dp.log.print("Key " + key + " not found in application");
       }
@@ -419,6 +425,10 @@ DreamPilot.Model = (function() {
 
   Model.prototype.relatedData = {};
 
+  Model.prototype.parent = null;
+
+  Model.prototype.parentField = null;
+
   Model.prototype.callbacks = {
     change: {}
   };
@@ -431,6 +441,7 @@ DreamPilot.Model = (function() {
   }
 
   Model.prototype.initFrom = function(_data) {
+    var field, value;
     if (_data == null) {
       _data = {};
     }
@@ -446,12 +457,46 @@ DreamPilot.Model = (function() {
     } else {
       throw 'Data should be an object';
     }
+    for (field in _data) {
+      value = _data[field];
+      this.trigger('change', field);
+    }
     return this;
   };
 
+  Model.prototype.setParent = function(parent, parentField) {
+    this.parent = parent;
+    this.parentField = parentField;
+    if (this.parent && !this.parent instanceof DreamPilot.Model) {
+      throw 'Parent can be only DreamPilot.Model';
+    }
+  };
+
   Model.prototype.get = function(field) {
+    var child, children, model;
     if (field == null) {
       field = null;
+    }
+    if (field && typeof field === 'string') {
+      children = field.split('.');
+      if (children.length > 1) {
+        child = children[0];
+        field = children.slice(1).join('.');
+        if (this.exists(child)) {
+          model = this.data[child];
+          if (model instanceof DreamPilot.Model) {
+            return model.get(field);
+          } else {
+            if (typeof model[field] !== 'undefined') {
+              return model[field];
+            } else {
+              return null;
+            }
+          }
+        } else {
+          return null;
+        }
+      }
     }
     if (field === null) {
       return this.data;
@@ -619,6 +664,9 @@ DreamPilot.Model = (function() {
         if (!callbackId || cbId === callbackId) {
           cb(field, value);
         }
+      }
+      if (this.parent) {
+        this.parent.trigger('action', this.parentField);
       }
     }
     return this;
