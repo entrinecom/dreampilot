@@ -115,6 +115,13 @@ class DreamPilot.Parser
             when 'Literal' then node.value
             else throw 'Unknown node type ' + node.type
 
+    @getScopeOf: (expr, Scope) ->
+        node = jsep expr
+        if node.type is 'MemberExpression'
+            self.evalNode node.object, Scope
+        else
+            Scope
+
     @isExpressionTrue: (expr, App) ->
         try
             self.lastUsedVariables = []

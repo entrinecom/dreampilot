@@ -187,6 +187,8 @@ DreamPilot.Attributes = (function() {
 
   Attributes.valueBindAttr = 'value-bind';
 
+  Attributes.ScopePromises = new DreamPilot.ScopePromises();
+
   function Attributes(App) {
     this.App = App;
     this.setupAttributes();
@@ -208,10 +210,15 @@ DreamPilot.Attributes = (function() {
     return this.getApp().getWrapper();
   };
 
+  Attributes.prototype.eachByAttr = function(attr, callback) {
+    $dp.e($dp.selectorForAttribute(attr), this.getWrapper()).each(callback);
+    return this;
+  };
+
   Attributes.prototype.setupClassAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.classAttr), this.getWrapper()).each(function() {
+    this.eachByAttr(self.classAttr, function() {
       var $el, cssClass, expression, field, i, len, obj, ref;
       $el = $dp.e(this);
       obj = $dp.Parser.object($el.attr($dp.attribute(self.classAttr)));
@@ -234,7 +241,7 @@ DreamPilot.Attributes = (function() {
   Attributes.prototype.setupShowAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.showAttr), this.getWrapper()).each(function() {
+    this.eachByAttr(self.showAttr, function() {
       var $el, expression, field, i, len, ref;
       $el = $dp.e(this);
       expression = $el.attr($dp.attribute(self.showAttr));
@@ -277,7 +284,7 @@ DreamPilot.Attributes = (function() {
   Attributes.prototype.setupIfAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.ifAttr), this.getWrapper()).each(function() {
+    this.eachByAttr(self.ifAttr, function() {
       var $el, expression, field, i, len, ref;
       $el = $dp.e(this);
       expression = $el.attr($dp.attribute(self.ifAttr));
@@ -297,7 +304,7 @@ DreamPilot.Attributes = (function() {
   Attributes.prototype.setupInitAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.initAttr), this.getWrapper()).each(function() {
+    this.eachByAttr(self.initAttr, function() {
       var $el, expression;
       $el = $dp.e(this);
       expression = $el.attr($dp.attribute(self.initAttr));
@@ -310,7 +317,7 @@ DreamPilot.Attributes = (function() {
   Attributes.prototype.setupValueWriteToAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.valueWriteToAttr), this.getWrapper()).each(function() {
+    this.eachByAttr(self.valueWriteToAttr, function() {
       var $el, field;
       $el = $dp.e(this);
       field = $el.attr($dp.attribute(self.valueWriteToAttr));
@@ -332,7 +339,7 @@ DreamPilot.Attributes = (function() {
   Attributes.prototype.setupValueReadFromAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.valueReadFromAttr), this.getWrapper()).each(function() {
+    this.eachByAttr(self.valueReadFromAttr, function() {
       var $el, field;
       $el = $dp.e(this);
       field = $el.attr($dp.attribute(self.valueReadFromAttr));
@@ -350,28 +357,35 @@ DreamPilot.Attributes = (function() {
   Attributes.prototype.setupValueBindAttribute = function() {
     var that;
     that = this;
-    $dp.e($dp.selectorForAttribute(self.valueBindAttr), this.getWrapper()).each(function() {
-      var $el, field;
+    this.eachByAttr(self.valueBindAttr, function() {
+      var $el, Scope, field;
       $el = $dp.e(this);
       field = $el.attr($dp.attribute(self.valueBindAttr));
-      console.log('---:', field, that.getScope());
-      console.log($dp.Parser.evalNode(jsep(field), that.getScope()));
+      Scope = $dp.Parser.getScopeOf(field, that.getScope());
+      if (Scope === null) {
+        that.ScopePromises.add({
+          field: field,
+          $element: $el
+        });
+        return true;
+      }
       $el.on('input', (function(_this) {
         return function() {
           var value;
           value = $dp.fn.getValueOfElement($el);
-          return that.getScope().set(field, value);
+          return Scope.set(field, value);
         };
       })(this));
       if ($el.val()) {
         $el.trigger('input');
       }
-      that.getScope().onChange(field, function(field, value) {
+      Scope.onChange(field, function(field, value) {
         return $dp.fn.setValueOfElement($el, value);
       });
-      if (that.getScope().get(field)) {
-        that.getScope().trigger('change', field);
+      if (Scope.get(field)) {
+        Scope.trigger('change', field);
       }
+      console.log('that.getScope().onChange field =', field);
       return true;
     });
     return this;
@@ -1326,6 +1340,16 @@ DreamPilot.Parser = (function() {
     }
   };
 
+  Parser.getScopeOf = function(expr, Scope) {
+    var node;
+    node = jsep(expr);
+    if (node.type === 'MemberExpression') {
+      return self.evalNode(node.object, Scope);
+    } else {
+      return Scope;
+    }
+  };
+
   Parser.isExpressionTrue = function(expr, App) {
     var e;
     try {
@@ -1368,6 +1392,27 @@ DreamPilot.Parser = (function() {
   };
 
   return Parser;
+
+})();
+
+DreamPilot.ScopePromise = (function() {
+  function ScopePromise() {}
+
+  return ScopePromise;
+
+})();
+
+DreamPilot.ScopePromises = (function() {
+  function ScopePromises() {}
+
+  ScopePromises.prototype.list = [];
+
+  ScopePromises.prototype.add = function(options) {
+    list.push(options);
+    return this;
+  };
+
+  return ScopePromises;
 
 })();
 

@@ -8,6 +8,7 @@ class DreamPilot.Attributes
     @valueWriteToAttr = 'value-write-to'
     @valueReadFromAttr = 'value-read-from'
     @valueBindAttr = 'value-bind'
+    @ScopePromises = new DreamPilot.ScopePromises()
 
     constructor: (@App) ->
         @setupAttributes()
@@ -30,10 +31,14 @@ class DreamPilot.Attributes
     getWrapper: ->
         @getApp().getWrapper()
 
+    eachByAttr: (attr, callback) ->
+        $dp.e($dp.selectorForAttribute(attr), @getWrapper()).each callback
+        @
+
     setupClassAttribute: ->
         that = @
 
-        $dp.e($dp.selectorForAttribute(self.classAttr), @getWrapper()).each ->
+        @eachByAttr self.classAttr, ->
             $el = $dp.e @
             obj = $dp.Parser.object $el.attr $dp.attribute self.classAttr
 
@@ -54,7 +59,7 @@ class DreamPilot.Attributes
     setupShowAttribute: ->
         that = @
 
-        $dp.e($dp.selectorForAttribute(self.showAttr), @getWrapper()).each ->
+        @eachByAttr self.showAttr, ->
             $el = $dp.e @
             expression = $el.attr $dp.attribute self.showAttr
 
@@ -92,7 +97,7 @@ class DreamPilot.Attributes
     setupIfAttribute: ->
         that = @
 
-        $dp.e($dp.selectorForAttribute(self.ifAttr), @getWrapper()).each ->
+        @eachByAttr self.ifAttr, ->
             $el = $dp.e @
             expression = $el.attr $dp.attribute self.ifAttr
 
@@ -111,7 +116,7 @@ class DreamPilot.Attributes
     setupInitAttribute: ->
         that = @
 
-        $dp.e($dp.selectorForAttribute(self.initAttr), @getWrapper()).each ->
+        @eachByAttr self.initAttr, ->
             $el = $dp.e @
             expression = $el.attr $dp.attribute self.initAttr
 
@@ -124,7 +129,7 @@ class DreamPilot.Attributes
     setupValueWriteToAttribute: ->
         that = @
 
-        $dp.e($dp.selectorForAttribute(self.valueWriteToAttr), @getWrapper()).each ->
+        @eachByAttr self.valueWriteToAttr, ->
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueWriteToAttr
 
@@ -140,7 +145,7 @@ class DreamPilot.Attributes
     setupValueReadFromAttribute: ->
         that = @
 
-        $dp.e($dp.selectorForAttribute(self.valueReadFromAttr), @getWrapper()).each ->
+        @eachByAttr self.valueReadFromAttr, ->
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueReadFromAttr
 
@@ -155,23 +160,27 @@ class DreamPilot.Attributes
     setupValueBindAttribute: ->
         that = @
 
-        $dp.e($dp.selectorForAttribute(self.valueBindAttr), @getWrapper()).each ->
+        @eachByAttr self.valueBindAttr, ->
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueBindAttr
+            Scope = $dp.Parser.getScopeOf field, that.getScope()
 
-            console.log '---:', field, that.getScope()
-            console.log $dp.Parser.evalNode jsep(field), that.getScope()
+            if Scope is null
+                that.ScopePromises.add
+                    field: field
+                    $element: $el
+                return true
 
             $el.on 'input', =>
                 value = $dp.fn.getValueOfElement $el
-                that.getScope().set field, value
+                Scope.set field, value
             $el.trigger 'input' if $el.val()
 
-            that.getScope().onChange field, (field, value) ->
+            Scope.onChange field, (field, value) ->
                 $dp.fn.setValueOfElement $el, value
-            that.getScope().trigger 'change', field if that.getScope().get field
+            Scope.trigger 'change', field if Scope.get field
 
-            #console.log 'that.getScope().onChange field =', field
+            console.log 'that.getScope().onChange field =', field
 
             true
 
