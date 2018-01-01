@@ -132,7 +132,8 @@ class DreamPilot.Model
             value = @get field
             for cbId, cb of @callbacks[action][field]
                 cb field, value if not callbackId or cbId is callbackId
-            @parent.trigger 'action', @parentField if @parent
+            console.log 'parent trigger', action, @parentField if @parent
+            @parent.trigger action, @parentField if @parent
         @
 
     onChange: (field, callback, callbackId = null) ->

@@ -54,9 +54,9 @@ class DreamPilot.Application
                 @getScope().set key, (args...) => @[key] args...
             else if type isnt 'undefined'
                 obj = @[key]
+                obj.setParent @getScope(), key if obj instanceof DreamPilot.Model
                 @getScope().set key, obj
-                if obj instanceof DreamPilot.Model
-                    obj.setParent @getScope(), key
+                #console.log 'set parent', key, obj
             else
                 $dp.log.print "Key #{key} not found in application"
         @

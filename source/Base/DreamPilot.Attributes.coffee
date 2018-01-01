@@ -159,6 +159,9 @@ class DreamPilot.Attributes
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueBindAttr
 
+            console.log '---:', field, that.getScope()
+            console.log $dp.Parser.evalNode jsep(field), that.getScope()
+
             $el.on 'input', =>
                 value = $dp.fn.getValueOfElement $el
                 that.getScope().set field, value
@@ -167,6 +170,8 @@ class DreamPilot.Attributes
             that.getScope().onChange field, (field, value) ->
                 $dp.fn.setValueOfElement $el, value
             that.getScope().trigger 'change', field if that.getScope().get field
+
+            #console.log 'that.getScope().onChange field =', field
 
             true
 

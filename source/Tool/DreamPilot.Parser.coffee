@@ -80,12 +80,14 @@ class DreamPilot.Parser
         addPair() if pair.key or pair.value
         o
 
-    @evalNode: (node, App) ->
+    @evalNode: (node, Scope) ->
+        unless Scope instanceof DreamPilot.Model
+            throw 'Scope should be a DreamPilot.Model instance, but ' + typeof Scope + " given (#{Scope})"
         switch node.type
             when 'CallExpression'
                 if node.callee.type? and node.callee.type is 'Identifier' and node.callee.name
                     args = (self.evalNode arg for arg in node.arguments)
-                    fn = App.getScope().get node.callee.name
+                    fn = Scope.get node.callee.name
                     if fn and typeof fn is 'function'
                         fn args...
                     else
@@ -95,25 +97,28 @@ class DreamPilot.Parser
             when 'BinaryExpression'
                 if typeof self.operators.binary[node.operator] is 'undefined'
                     throw 'No callback for binary operator ' + node.operator
-                self.operators.binary[node.operator] self.evalNode(node.left, App), self.evalNode(node.right, App)
+                self.operators.binary[node.operator] self.evalNode(node.left, Scope), self.evalNode(node.right, Scope)
             when 'UnaryExpression'
                 if typeof self.operators.unary[node.operator] is 'undefined'
                     throw 'No callback for unary operator ' + node.operator
-                self.operators.unary[node.operator] self.evalNode(node.argument, App)
+                self.operators.unary[node.operator] self.evalNode(node.argument, Scope)
             when 'LogicalExpression'
                 if typeof self.operators.logical[node.operator] is 'undefined'
                     throw 'No callback for logical operator ' + node.operator
-                self.operators.logical[node.operator] self.evalNode(node.left, App), self.evalNode(node.right, App)
+                self.operators.logical[node.operator] self.evalNode(node.left, Scope), self.evalNode(node.right, Scope)
+            when 'MemberExpression'
+                obj = self.evalNode node.object, Scope
+                self.evalNode node.property, obj
             when 'Identifier'
                 self.lastUsedVariables.push node.name
-                App.getScope().get node.name
+                Scope.get node.name
             when 'Literal' then node.value
             else throw 'Unknown node type ' + node.type
 
     @isExpressionTrue: (expr, App) ->
         try
             self.lastUsedVariables = []
-            !! self.evalNode jsep(expr), App
+            !! self.evalNode jsep(expr), App.getScope()
         catch e
             $dp.log.error 'Expression parsing (isExpressionTrue) error ', e, expr
             false
@@ -127,9 +132,9 @@ class DreamPilot.Parser
         for key, expr of rows
             try
                 if key.indexOf('(') > -1 and expr is ''
-                    self.evalNode jsep(key), App
+                    self.evalNode jsep(key), App.getScope()
                 else
-                    App.getScope().set key, self.evalNode(jsep(expr), App)
+                    App.getScope().set key, self.evalNode(jsep(expr), App.getScope())
             catch e
                 $dp.log.error 'Expression parsing (executeExpressions) error', e, ':', key, expr
                 false
