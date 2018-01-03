@@ -1395,13 +1395,6 @@ DreamPilot.Parser = (function() {
 
 })();
 
-DreamPilot.ScopePromise = (function() {
-  function ScopePromise() {}
-
-  return ScopePromise;
-
-})();
-
 DreamPilot.ScopePromises = (function() {
   function ScopePromises() {}
 
