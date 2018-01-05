@@ -8,10 +8,16 @@ class DreamPilot.Attributes
     @valueWriteToAttr = 'value-write-to'
     @valueReadFromAttr = 'value-read-from'
     @valueBindAttr = 'value-bind'
-    @ScopePromises = new DreamPilot.ScopePromises()
+
+    ScopePromises: null
 
     constructor: (@App) ->
-        @setupAttributes()
+        @setupScopePromises()
+        .setupAttributes()
+
+    setupScopePromises: ->
+        @ScopePromises = new DreamPilot.ScopePromises()
+        @
 
     setupAttributes: ->
         @setupInitAttribute()
@@ -115,46 +121,27 @@ class DreamPilot.Attributes
 
     setupInitAttribute: ->
         that = @
-
         @eachByAttr self.initAttr, ->
             $el = $dp.e @
             expression = $el.attr $dp.attribute self.initAttr
-
             $dp.Parser.executeExpressions expression, that
-
             true
-
         @
 
     setupValueWriteToAttribute: ->
-        that = @
-
         @eachByAttr self.valueWriteToAttr, ->
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueWriteToAttr
-
-            $el.on 'input', =>
-                value = $dp.fn.getValueOfElement $el
-                that.getScope().set field, value
-            $el.trigger 'input' if $el.val()
-
-            true
-
+            self.bindValueWriteToAttribute field, $el, Scope
         @
 
     setupValueReadFromAttribute: ->
         that = @
-
         @eachByAttr self.valueReadFromAttr, ->
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueReadFromAttr
-
-            that.getScope().onChange field, (field, value) ->
-                $dp.fn.setValueOfElement $el, value
-            that.getScope().trigger 'change', field if that.getScope().get field
-
-            true
-
+            return true if self.bindValueCheckScope field, $el, Scope, that
+            self.bindValueReadFromAttribute field, $el, Scope
         @
 
     setupValueBindAttribute: ->
@@ -164,24 +151,35 @@ class DreamPilot.Attributes
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueBindAttr
             Scope = $dp.Parser.getScopeOf field, that.getScope()
-
-            if Scope is null
-                that.ScopePromises.add
-                    field: field
-                    $element: $el
-                return true
-
-            $el.on 'input', =>
-                value = $dp.fn.getValueOfElement $el
-                Scope.set field, value
-            $el.trigger 'input' if $el.val()
-
-            Scope.onChange field, (field, value) ->
-                $dp.fn.setValueOfElement $el, value
-            Scope.trigger 'change', field if Scope.get field
-
-            console.log 'that.getScope().onChange field =', field
-
-            true
+            return true if self.bindValueCheckScope field, $el, Scope, that
+            self.bindValueWriteToAttribute field, $el, Scope
+            self.bindValueReadFromAttribute field, $el, Scope
 
         @
+
+    @bindValueCheckScope: (field, $el, Scope, that) ->
+        if Scope is null
+            that.ScopePromises.add
+                field: field
+                # $element: $el
+                scope: that.getScope()
+                cb: (scope) ->
+                    do (scope) ->
+                        field = $dp.Parser.getPropertyOfExpression field
+                        self.bindValueWriteToAttribute field, $el, scope
+                        self.bindValueReadFromAttribute field, $el, scope
+            return true
+        false
+
+    @bindValueWriteToAttribute: (field, $el, Scope) ->
+        $el.on 'input', =>
+            value = $dp.fn.getValueOfElement $el
+            Scope.set field, value
+        $el.trigger 'input' if $el.val()
+        true
+
+    @bindValueReadFromAttribute: (field, $el, Scope) ->
+        Scope.onChange field, (field, value) ->
+            $dp.fn.setValueOfElement $el, value
+        Scope.trigger 'change', field if Scope.get field
+        true

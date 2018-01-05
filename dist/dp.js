@@ -187,12 +187,17 @@ DreamPilot.Attributes = (function() {
 
   Attributes.valueBindAttr = 'value-bind';
 
-  Attributes.ScopePromises = new DreamPilot.ScopePromises();
+  Attributes.prototype.ScopePromises = null;
 
   function Attributes(App) {
     this.App = App;
-    this.setupAttributes();
+    this.setupScopePromises().setupAttributes();
   }
+
+  Attributes.prototype.setupScopePromises = function() {
+    this.ScopePromises = new DreamPilot.ScopePromises();
+    return this;
+  };
 
   Attributes.prototype.setupAttributes = function() {
     return this.setupInitAttribute().setupClassAttribute().setupShowAttribute().setupIfAttribute().setupValueBindAttribute().setupValueWriteToAttribute().setupValueReadFromAttribute();
@@ -315,23 +320,11 @@ DreamPilot.Attributes = (function() {
   };
 
   Attributes.prototype.setupValueWriteToAttribute = function() {
-    var that;
-    that = this;
     this.eachByAttr(self.valueWriteToAttr, function() {
       var $el, field;
       $el = $dp.e(this);
       field = $el.attr($dp.attribute(self.valueWriteToAttr));
-      $el.on('input', (function(_this) {
-        return function() {
-          var value;
-          value = $dp.fn.getValueOfElement($el);
-          return that.getScope().set(field, value);
-        };
-      })(this));
-      if ($el.val()) {
-        $el.trigger('input');
-      }
-      return true;
+      return self.bindValueWriteToAttribute(field, $el, Scope);
     });
     return this;
   };
@@ -343,13 +336,10 @@ DreamPilot.Attributes = (function() {
       var $el, field;
       $el = $dp.e(this);
       field = $el.attr($dp.attribute(self.valueReadFromAttr));
-      that.getScope().onChange(field, function(field, value) {
-        return $dp.fn.setValueOfElement($el, value);
-      });
-      if (that.getScope().get(field)) {
-        that.getScope().trigger('change', field);
+      if (self.bindValueCheckScope(field, $el, Scope, that)) {
+        return true;
       }
-      return true;
+      return self.bindValueReadFromAttribute(field, $el, Scope);
     });
     return this;
   };
@@ -362,33 +352,55 @@ DreamPilot.Attributes = (function() {
       $el = $dp.e(this);
       field = $el.attr($dp.attribute(self.valueBindAttr));
       Scope = $dp.Parser.getScopeOf(field, that.getScope());
-      if (Scope === null) {
-        that.ScopePromises.add({
-          field: field,
-          $element: $el
-        });
+      if (self.bindValueCheckScope(field, $el, Scope, that)) {
         return true;
       }
-      $el.on('input', (function(_this) {
-        return function() {
-          var value;
-          value = $dp.fn.getValueOfElement($el);
-          return Scope.set(field, value);
-        };
-      })(this));
-      if ($el.val()) {
-        $el.trigger('input');
-      }
-      Scope.onChange(field, function(field, value) {
-        return $dp.fn.setValueOfElement($el, value);
-      });
-      if (Scope.get(field)) {
-        Scope.trigger('change', field);
-      }
-      console.log('that.getScope().onChange field =', field);
-      return true;
+      self.bindValueWriteToAttribute(field, $el, Scope);
+      return self.bindValueReadFromAttribute(field, $el, Scope);
     });
     return this;
+  };
+
+  Attributes.bindValueCheckScope = function(field, $el, Scope, that) {
+    if (Scope === null) {
+      that.ScopePromises.add({
+        field: field,
+        scope: that.getScope(),
+        cb: function(scope) {
+          return (function(scope) {
+            field = $dp.Parser.getPropertyOfExpression(field);
+            self.bindValueWriteToAttribute(field, $el, scope);
+            return self.bindValueReadFromAttribute(field, $el, scope);
+          })(scope);
+        }
+      });
+      return true;
+    }
+    return false;
+  };
+
+  Attributes.bindValueWriteToAttribute = function(field, $el, Scope) {
+    $el.on('input', (function(_this) {
+      return function() {
+        var value;
+        value = $dp.fn.getValueOfElement($el);
+        return Scope.set(field, value);
+      };
+    })(this));
+    if ($el.val()) {
+      $el.trigger('input');
+    }
+    return true;
+  };
+
+  Attributes.bindValueReadFromAttribute = function(field, $el, Scope) {
+    Scope.onChange(field, function(field, value) {
+      return $dp.fn.setValueOfElement($el, value);
+    });
+    if (Scope.get(field)) {
+      Scope.trigger('change', field);
+    }
+    return true;
   };
 
   return Attributes;
@@ -682,9 +694,6 @@ DreamPilot.Model = (function() {
         }
       }
       if (this.parent) {
-        console.log('parent trigger', action, this.parentField);
-      }
-      if (this.parent) {
         this.parent.trigger(action, this.parentField);
       }
     }
@@ -753,6 +762,15 @@ DreamPilot.Router = (function() {
     this.steps[ELSE_PATH] = opts;
     return this;
   };
+
+  return Router;
+
+})();
+
+var Router;
+
+Router = (function() {
+  function Router() {}
 
   return Router;
 
@@ -1350,6 +1368,16 @@ DreamPilot.Parser = (function() {
     }
   };
 
+  Parser.getPropertyOfExpression = function(expr) {
+    var node;
+    node = jsep(expr);
+    if (node.type === 'MemberExpression') {
+      return node.property.name;
+    } else {
+      return expr;
+    }
+  };
+
   Parser.isExpressionTrue = function(expr, App) {
     var e;
     try {
@@ -1396,12 +1424,55 @@ DreamPilot.Parser = (function() {
 })();
 
 DreamPilot.ScopePromises = (function() {
+  ScopePromises.prototype.list = {};
+
+  ScopePromises.prototype.interval = null;
+
+  ScopePromises.prototype.delay = 20;
+
   function ScopePromises() {}
 
-  ScopePromises.prototype.list = [];
-
   ScopePromises.prototype.add = function(options) {
-    list.push(options);
+    this.list[options.field] = options;
+    this.initCheck();
+    return this;
+  };
+
+  ScopePromises.prototype.remove = function(field) {
+    delete this.list[field];
+    if (!this.list.length) {
+      this.resetCheck();
+    }
+    return this;
+  };
+
+  ScopePromises.prototype.resetCheck = function() {
+    clearInterval(this.interval);
+    return this;
+  };
+
+  ScopePromises.prototype.initCheck = function() {
+    if (this.interval) {
+      return this;
+    }
+    this.interval = setInterval((function(_this) {
+      return function() {
+        var Scope, field, rec, ref, results;
+        ref = _this.list;
+        results = [];
+        for (field in ref) {
+          rec = ref[field];
+          Scope = $dp.Parser.getScopeOf(field, rec['scope']);
+          if (Scope) {
+            rec.cb(Scope);
+            results.push(_this.remove(field));
+          } else {
+            results.push(void 0);
+          }
+        }
+        return results;
+      };
+    })(this), this.delay);
     return this;
   };
 
@@ -1498,3 +1569,12 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
+
+var Transport;
+
+Transport = (function() {
+  function Transport() {}
+
+  return Transport;
+
+})();

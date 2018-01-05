@@ -122,6 +122,13 @@ class DreamPilot.Parser
         else
             Scope
 
+    @getPropertyOfExpression: (expr) ->
+        node = jsep expr
+        if node.type is 'MemberExpression'
+            node.property.name
+        else
+            expr
+
     @isExpressionTrue: (expr, App) ->
         try
             self.lastUsedVariables = []
