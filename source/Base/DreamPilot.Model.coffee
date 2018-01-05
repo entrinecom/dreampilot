@@ -139,12 +139,17 @@ class DreamPilot.Model
         @
 
     trigger: (action, field, callbackId) ->
+        value = @get field
         if @callbacks[action]?[field]?
-            value = @get field
             for cbId, cb of @callbacks[action][field]
                 cb field, value if not callbackId or cbId is callbackId
             # console.log 'parent trigger', action, @parentField if @parent
             @parent.trigger action, @parentField if @parent
+        if @callbacks[action]?['*']?
+            for cbId, cb of @callbacks[action]['*']
+                cb field, value if not callbackId or cbId is callbackId
+            # console.log 'parent trigger', action, @parentField if @parent
+            # @parent.trigger action, @parentField if @parent
         @
 
     onChange: (fields, callback, callbackId = null) ->

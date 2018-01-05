@@ -20,7 +20,7 @@ ModelApp = (function(superClass) {
     this.user3 = new UserModel(this.user2);
     this.linkToScope('user1', 'user2', 'user3');
     console.log(this.getScope().get('user1.name'));
-    this.user1.onChange('likes_drifting', function(field, value) {
+    this.user1.onChange('*', function(field, value) {
       return console.log(field, '=', value);
     });
     return this;
