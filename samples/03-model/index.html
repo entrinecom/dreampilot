@@ -27,7 +27,28 @@
 		</li>
 		<li>
 			<div>Phone:</div>
-			<input type="text" name="phone" dp-value-bind="user1.phone">
+			<textarea name="phone" dp-value-bind="user1.phone"></textarea>
+		</li>
+		<li>
+			<div>Sex:</div>
+			<select name="sex" dp-value-bind="user1.sex">
+				<option>select</option>
+				<option value="m">Male</option>
+				<option value="f">Female</option>
+			</select>
+		</li>
+		<li>
+			<div>Likes drifting:</div>
+			<input type="checkbox" name="likes_drifting" dp-value-bind="user1.likes_drifting">
+		</li>
+		<li>
+			<div>Drive:</div>
+			<input type="radio" name="drive" value="f" id="drive-f" dp-value-bind="user1.drive">
+			<label for="drive-f">Front</label>
+			<input type="radio" name="drive" value="r" id="drive-r" dp-value-bind="user1.drive">
+			<label for="drive-r">Read</label>
+			<input type="radio" name="drive" value="4" id="drive-4" dp-value-bind="user1.drive">
+			<label for="drive-4">4WD</label>
 		</li>
 	</ul>
 </form>

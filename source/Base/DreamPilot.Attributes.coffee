@@ -172,10 +172,14 @@ class DreamPilot.Attributes
         false
 
     @bindValueWriteToAttribute: (field, $el, Scope) ->
-        $el.on 'input', =>
+        if $el.is('input') and $el.attr('type') in ['radio', 'checkbox']
+            eventName = 'change'
+        else
+            eventName = 'input'
+        $el.on eventName, =>
             value = $dp.fn.getValueOfElement $el
             Scope.set field, value
-        $el.trigger 'input' if $el.val()
+        $el.trigger eventName if $el.val()
         true
 
     @bindValueReadFromAttribute: (field, $el, Scope) ->

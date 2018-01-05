@@ -171,12 +171,30 @@ class DreamPilot.Functions
         fn.split('.').pop()
 
     @getValueOfElement: ($element) ->
-        $element.val() or $element.html()
+        if $element.is 'input'
+            switch $element.attr 'type'
+                when 'checkbox'
+                    $element.prop 'checked'
+                when 'radio'
+                    $element.val() if $element.prop 'checked' # todo
+                else
+                    $element.val()
+        else
+            $element.val() or $element.html()
 
     @setValueOfElement: ($element, value) ->
         if $element.length
-            if $element.is 'input,button'
-                $element.val value
+            if $element.is 'input,select,button'
+                if $element.is 'input'
+                    switch $element.attr 'type'
+                        when 'checkbox'
+                            $element.prop 'checked', !!value
+                        when 'radio'
+                            $element.prop 'checked', self.str($element.val()) is self.str(value)
+                        else
+                            $element.val value
+                else
+                    $element.val value
             else
                 $element.html value
         $element

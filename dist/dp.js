@@ -380,7 +380,13 @@ DreamPilot.Attributes = (function() {
   };
 
   Attributes.bindValueWriteToAttribute = function(field, $el, Scope) {
-    $el.on('input', (function(_this) {
+    var eventName, ref;
+    if ($el.is('input') && ((ref = $el.attr('type')) === 'radio' || ref === 'checkbox')) {
+      eventName = 'change';
+    } else {
+      eventName = 'input';
+    }
+    $el.on(eventName, (function(_this) {
       return function() {
         var value;
         value = $dp.fn.getValueOfElement($el);
@@ -388,7 +394,7 @@ DreamPilot.Attributes = (function() {
       };
     })(this));
     if ($el.val()) {
-      $el.trigger('input');
+      $el.trigger(eventName);
     }
     return true;
   };
@@ -659,26 +665,58 @@ DreamPilot.Model = (function() {
     return this;
   };
 
-  Model.prototype.on = function(action, field, callback, callbackId) {
-    var ref, ref1;
+  Model.prototype.on = function(actions, fields, callback, callbackId) {
+    var action, field, i, j, len, len1, ref, ref1;
     if (callbackId == null) {
       callbackId = null;
     }
-    while (!callbackId || (((ref = this.callbacks[action]) != null ? (ref1 = ref[field]) != null ? ref1[callbackId] : void 0 : void 0) != null)) {
-      callbackId = $dp.fn.uniqueId();
+    if (!$dp.fn.isArray(actions)) {
+      actions = [actions];
     }
-    if (this.callbacks[action] == null) {
-      this.callbacks[action] = {};
+    if (!$dp.fn.isArray(fields)) {
+      fields = [fields];
     }
-    if (this.callbacks[action][field] == null) {
-      this.callbacks[action][field] = {};
+    for (i = 0, len = actions.length; i < len; i++) {
+      action = actions[i];
+      for (j = 0, len1 = fields.length; j < len1; j++) {
+        field = fields[j];
+        while (!callbackId || (((ref = this.callbacks[action]) != null ? (ref1 = ref[field]) != null ? ref1[callbackId] : void 0 : void 0) != null)) {
+          callbackId = $dp.fn.uniqueId();
+        }
+        if (this.callbacks[action] == null) {
+          this.callbacks[action] = {};
+        }
+        if (this.callbacks[action][field] == null) {
+          this.callbacks[action][field] = {};
+        }
+        this.callbacks[action][field][callbackId] = callback;
+      }
     }
-    this.callbacks[action][field][callbackId] = callback;
     return this;
   };
 
-  Model.prototype.off = function(action, field, callbackId) {
-    delete this.callbacks[action][field][callbackId];
+  Model.prototype.off = function(actions, fields, callbackId) {
+    var action, field, i, j, len, len1;
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    if (!$dp.fn.isArray(actions)) {
+      actions = [actions];
+    }
+    if (!$dp.fn.isArray(fields)) {
+      fields = [fields];
+    }
+    for (i = 0, len = actions.length; i < len; i++) {
+      action = actions[i];
+      for (j = 0, len1 = fields.length; j < len1; j++) {
+        field = fields[j];
+        if (callbackId) {
+          delete this.callbacks[action][field][callbackId];
+        } else {
+          this.callbacks[action][field] = {};
+        }
+      }
+    }
     return this;
   };
 
@@ -700,11 +738,11 @@ DreamPilot.Model = (function() {
     return this;
   };
 
-  Model.prototype.onChange = function(field, callback, callbackId) {
+  Model.prototype.onChange = function(fields, callback, callbackId) {
     if (callbackId == null) {
       callbackId = null;
     }
-    return this.on('change', field, callback, callbackId);
+    return this.on('change', fields, callback, callbackId);
   };
 
   return Model;
@@ -1123,13 +1161,40 @@ DreamPilot.Functions = (function() {
   };
 
   Functions.getValueOfElement = function($element) {
-    return $element.val() || $element.html();
+    if ($element.is('input')) {
+      switch ($element.attr('type')) {
+        case 'checkbox':
+          return $element.prop('checked');
+        case 'radio':
+          if ($element.prop('checked')) {
+            return $element.val();
+          }
+          break;
+        default:
+          return $element.val();
+      }
+    } else {
+      return $element.val() || $element.html();
+    }
   };
 
   Functions.setValueOfElement = function($element, value) {
     if ($element.length) {
-      if ($element.is('input,button')) {
-        $element.val(value);
+      if ($element.is('input,select,button')) {
+        if ($element.is('input')) {
+          switch ($element.attr('type')) {
+            case 'checkbox':
+              $element.prop('checked', !!value);
+              break;
+            case 'radio':
+              $element.prop('checked', self.str($element.val()) === self.str(value));
+              break;
+            default:
+              $element.val(value);
+          }
+        } else {
+          $element.val(value);
+        }
       } else {
         $element.html(value);
       }

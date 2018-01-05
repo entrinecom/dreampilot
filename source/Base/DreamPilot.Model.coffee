@@ -115,16 +115,27 @@ class DreamPilot.Model
         $dp.log.print 'onFetched', result
         @
 
-    on: (action, field, callback, callbackId = null) ->
-        while not callbackId or @callbacks[action]?[field]?[callbackId]?
-            callbackId = $dp.fn.uniqueId()
-        @callbacks[action] = {} unless @callbacks[action]?
-        @callbacks[action][field] = {} unless @callbacks[action][field]?
-        @callbacks[action][field][callbackId] = callback
+    on: (actions, fields, callback, callbackId = null) ->
+        actions = [actions] unless $dp.fn.isArray actions
+        fields = [fields] unless $dp.fn.isArray fields
+        for action in actions
+            for field in fields
+                while not callbackId or @callbacks[action]?[field]?[callbackId]?
+                    callbackId = $dp.fn.uniqueId()
+                @callbacks[action] = {} unless @callbacks[action]?
+                @callbacks[action][field] = {} unless @callbacks[action][field]?
+                @callbacks[action][field][callbackId] = callback
         @
 
-    off: (action, field, callbackId) ->
-        delete @callbacks[action][field][callbackId]
+    off: (actions, fields, callbackId = null) ->
+        actions = [actions] unless $dp.fn.isArray actions
+        fields = [fields] unless $dp.fn.isArray fields
+        for action in actions
+            for field in fields
+                if callbackId
+                    delete @callbacks[action][field][callbackId]
+                else
+                    @callbacks[action][field] = {}
         @
 
     trigger: (action, field, callbackId) ->
@@ -136,5 +147,5 @@ class DreamPilot.Model
             @parent.trigger action, @parentField if @parent
         @
 
-    onChange: (field, callback, callbackId = null) ->
-        @on 'change', field, callback, callbackId
+    onChange: (fields, callback, callbackId = null) ->
+        @on 'change', fields, callback, callbackId
