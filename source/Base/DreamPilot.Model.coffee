@@ -6,8 +6,11 @@ class DreamPilot.Model
         @parentField = null
         @callbacks =
             change: {}
-
         @initFrom _data
+        .init()
+
+    # override this method in child classes
+    init: -> @
 
     initFrom: (_data = {}) ->
         if typeof _data is 'string'

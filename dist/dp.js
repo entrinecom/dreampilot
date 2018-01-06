@@ -497,8 +497,12 @@ DreamPilot.Model = (function() {
     this.callbacks = {
       change: {}
     };
-    this.initFrom(_data);
+    this.initFrom(_data).init();
   }
+
+  Model.prototype.init = function() {
+    return this;
+  };
 
   Model.prototype.initFrom = function(_data) {
     var field, value;
@@ -836,15 +840,6 @@ DreamPilot.Router = (function() {
     this.steps[ELSE_PATH] = opts;
     return this;
   };
-
-  return Router;
-
-})();
-
-var Router;
-
-Router = (function() {
-  function Router() {}
 
   return Router;
 
@@ -1792,12 +1787,3 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
-
-var Transport;
-
-Transport = (function() {
-  function Transport() {}
-
-  return Transport;
-
-})();

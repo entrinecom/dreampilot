@@ -16,8 +16,7 @@ class DreamPilot.Application
         .init()
 
     # override this method in child classes
-    init: ->
-        @
+    init: -> @
 
     e: (selector) ->
         $dp.e selector, @$wrapper
