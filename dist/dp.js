@@ -391,12 +391,10 @@ DreamPilot.Attributes = (function() {
       that.ScopePromises.add({
         field: field,
         scope: that.getScope(),
-        cb: function(scope) {
-          return (function(scope) {
-            field = $dp.Parser.getPropertyOfExpression(field);
-            self.bindValueWriteToAttribute(field, $el, scope);
-            return self.bindValueReadFromAttribute(field, $el, scope);
-          })(scope);
+        cb: function(_scope) {
+          field = $dp.Parser.getPropertyOfExpression(field);
+          self.bindValueWriteToAttribute(field, $el, _scope);
+          return self.bindValueReadFromAttribute(field, $el, _scope);
         }
       });
       return true;
@@ -411,13 +409,11 @@ DreamPilot.Attributes = (function() {
     } else {
       eventName = 'input';
     }
-    $el.on(eventName, (function(_this) {
-      return function() {
-        var value;
-        value = $dp.fn.getValueOfElement($el);
-        return Scope.set(field, value);
-      };
-    })(this));
+    $el.on(eventName, function() {
+      var value;
+      value = $dp.fn.getValueOfElement($el);
+      return Scope.set(field, value);
+    });
     if ($el.val()) {
       $el.trigger(eventName);
     }
@@ -490,22 +486,17 @@ DreamPilot.Events = (function() {
 })();
 
 DreamPilot.Model = (function() {
-  Model.prototype.data = {};
-
-  Model.prototype.relatedData = {};
-
-  Model.prototype.parent = null;
-
-  Model.prototype.parentField = null;
-
-  Model.prototype.callbacks = {
-    change: {}
-  };
-
   function Model(_data) {
     if (_data == null) {
       _data = {};
     }
+    this.data = {};
+    this.relatedData = {};
+    this.parent = null;
+    this.parentField = null;
+    this.callbacks = {
+      change: {}
+    };
     this.initFrom(_data);
   }
 
@@ -519,9 +510,9 @@ DreamPilot.Model = (function() {
     }
     if (typeof _data === 'object') {
       if (_data instanceof DreamPilot.Model) {
-        this.data = _data.get();
+        this.data = jQuery.extend(true, {}, _data.get());
       } else {
-        this.data = _data;
+        this.data = jQuery.extend(true, {}, _data);
       }
     } else {
       throw 'Data should be an object';
@@ -725,6 +716,7 @@ DreamPilot.Model = (function() {
           this.callbacks[action][field] = {};
         }
         this.callbacks[action][field][callbackId] = callback;
+        callbackId = null;
       }
     }
     return this;
@@ -844,6 +836,15 @@ DreamPilot.Router = (function() {
     this.steps[ELSE_PATH] = opts;
     return this;
   };
+
+  return Router;
+
+})();
+
+var Router;
+
+Router = (function() {
+  function Router() {}
 
   return Router;
 
@@ -1791,3 +1792,12 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
+
+var Transport;
+
+Transport = (function() {
+  function Transport() {}
+
+  return Transport;
+
+})();

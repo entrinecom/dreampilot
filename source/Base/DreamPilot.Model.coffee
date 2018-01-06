@@ -1,12 +1,12 @@
 class DreamPilot.Model
-    data: {}
-    relatedData: {}
-    parent: null
-    parentField: null
-    callbacks:
-        change: {}
-
     constructor: (_data = {}) ->
+        @data = {}
+        @relatedData = {}
+        @parent = null
+        @parentField = null
+        @callbacks =
+            change: {}
+
         @initFrom _data
 
     initFrom: (_data = {}) ->
@@ -15,9 +15,9 @@ class DreamPilot.Model
 
         if typeof _data is 'object'
             if _data instanceof DreamPilot.Model
-                @data = _data.get()
+                @data = jQuery.extend true, {}, _data.get()
             else
-                @data = _data
+                @data = jQuery.extend true, {}, _data
         else
             throw 'Data should be an object'
 
@@ -118,6 +118,7 @@ class DreamPilot.Model
     on: (actions, fields, callback, callbackId = null) ->
         actions = [actions] unless $dp.fn.isArray actions
         fields = [fields] unless $dp.fn.isArray fields
+        #console.log actions, fields
         for action in actions
             for field in fields
                 while not callbackId or @callbacks[action]?[field]?[callbackId]?
@@ -125,6 +126,7 @@ class DreamPilot.Model
                 @callbacks[action] = {} unless @callbacks[action]?
                 @callbacks[action][field] = {} unless @callbacks[action][field]?
                 @callbacks[action][field][callbackId] = callback
+                callbackId = null
         @
 
     off: (actions, fields, callbackId = null) ->

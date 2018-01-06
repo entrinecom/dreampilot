@@ -168,11 +168,11 @@ class DreamPilot.Attributes
                 field: field
                 # $element: $el
                 scope: that.getScope()
-                cb: (scope) ->
-                    do (scope) ->
-                        field = $dp.Parser.getPropertyOfExpression field
-                        self.bindValueWriteToAttribute field, $el, scope
-                        self.bindValueReadFromAttribute field, $el, scope
+                cb: (_scope) ->
+                    field = $dp.Parser.getPropertyOfExpression field
+                    self.bindValueWriteToAttribute field, $el, _scope
+                    self.bindValueReadFromAttribute field, $el, _scope
+
             return true
         false
 
@@ -181,7 +181,7 @@ class DreamPilot.Attributes
             eventName = 'change'
         else
             eventName = 'input'
-        $el.on eventName, =>
+        $el.on eventName, ->
             value = $dp.fn.getValueOfElement $el
             Scope.set field, value
         $el.trigger eventName if $el.val()
