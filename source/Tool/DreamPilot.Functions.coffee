@@ -120,6 +120,15 @@ class DreamPilot.Functions
             i--
         ar
 
+    @arrayReverse: (ar) ->
+        res = []
+        len = ar.length
+        i = len - 1
+        while i isnt -1
+            res.push ar[i]
+            i--
+        res
+
     @lead0: (x, len = 2) ->
         x = @str x
         x = '0' + x while x.length < len
@@ -198,5 +207,30 @@ class DreamPilot.Functions
             else
                 $element.html value
         $element
+
+    @getType: (variable) ->
+        if variable is null
+            'null'
+        else if self.isArray variable
+            'array'
+        else
+            typeof variable
+
+    @print_r: (variable, level = 0) ->
+        res = ''
+        padding = ''
+        j = 0
+        while j < level # + 1
+            j++
+            padding += '    '
+        if self.getType(variable) in ['object', 'array']
+            for item, value of variable
+                if typeof value is 'object'
+                    res += "#{padding}'#{item}':\n" + self.print_r value, level + 1
+                else
+                    res += "#{padding}'#{item}' => \"#{value}\"\n"
+            if res then "#{padding}{\n#{res}\n#{padding}}" else '{}'
+        else
+            padding + '(' + self.getType(variable) + ') ' + variable
 
 $dp.fn = DreamPilot.Functions if $dp

@@ -83,6 +83,8 @@ class DreamPilot.Parser
     @evalNode: (node, Scope) ->
         unless Scope instanceof DreamPilot.Model
             throw 'Scope should be a DreamPilot.Model instance, but ' + typeof Scope + " given (#{Scope})"
+        #if $dp.fn.getType(Scope) isnt 'object'
+        #    throw 'Scope should be an object, but ' + $dp.fn.getType(Scope) + " given: #{$dp.fn.print_r(Scope)}"
         switch node.type
             when 'CallExpression'
                 if node.callee.type? and node.callee.type is 'Identifier' and node.callee.name
@@ -111,16 +113,27 @@ class DreamPilot.Parser
                 self.evalNode node.property, obj
             when 'Identifier'
                 self.lastUsedVariables.push node.name
-                Scope.get node.name
+                if Scope instanceof DreamPilot.Model
+                    Scope.get node.name
+                else
+                    if Scope[node.name]? then Scope[node.name] else null
             when 'Literal' then node.value
             else throw 'Unknown node type ' + node.type
 
     @getScopeOf: (expr, Scope) ->
         node = jsep expr
-        if node.type is 'MemberExpression'
-            self.evalNode node.object, Scope
-        else
+        if node.type isnt 'MemberExpression'
             Scope
+
+        namespace = []
+        while true
+            namespace.push node.name or node.property.name or node.property.value
+            break unless node = node.object
+        namespace = $dp.fn.arrayReverse namespace.slice 1
+        for key in namespace
+            Scope = Scope.get key
+            break unless Scope
+        Scope
 
     @getPropertyOfExpression: (expr) ->
         node = jsep expr

@@ -50,6 +50,10 @@
 			<input type="radio" name="drive" value="4" id="drive-4" dp-value-bind="user1.drive">
 			<label for="drive-4">4WD</label>
 		</li>
+		<li>
+			<div>Count in cart:</div>
+			<input type="number" name="count" dp-value-bind="cart.of_user1.count">
+		</li>
 	</ul>
 </form>
 
@@ -76,6 +80,10 @@
 			<div>Phone:</div>
 			<input type="text" name="phone" dp-value-bind="user2.phone">
 		</li>
+		<li>
+			<div>Count in cart:</div>
+			<input type="number" name="count" dp-value-bind="cart[2].count">
+		</li>
 	</ul>
 </form>
 
@@ -100,6 +108,10 @@
 			<div>Phone:</div>
 			<input type="text" name="phone" dp-value-bind="user3.phone">
 		</li>
+		<li>
+			<div>Count in cart:</div>
+			<input type="number" name="count" dp-value-bind="cart[3].count">
+		</li>
 	</ul>
 </form>
 
@@ -107,6 +119,8 @@
 <script type="text/javascript" src="../../bower_components/jsep/build/jsep.min.js"></script>
 <script type="text/javascript" src="../../dist/dp.js"></script>
 <script type="text/javascript" src="UserModel.js"></script>
+<script type="text/javascript" src="CartModel.js"></script>
+<script type="text/javascript" src="CartItemModel.js"></script>
 <script type="text/javascript" src="ModelApp.js"></script>
 
 </body>

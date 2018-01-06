@@ -146,7 +146,6 @@ class DreamPilot.Attributes
 
     setupValueBindAttribute: ->
         that = @
-
         @eachByAttr self.valueBindAttr, ->
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueBindAttr
@@ -154,7 +153,6 @@ class DreamPilot.Attributes
             return true if self.bindValueCheckScope field, $el, Scope, that
             self.bindValueWriteToAttribute field, $el, Scope
             self.bindValueReadFromAttribute field, $el, Scope
-
         @
 
     @bindValueCheckScope: (field, $el, Scope, that) ->

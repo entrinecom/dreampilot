@@ -15,13 +15,21 @@ ModelApp = (function(superClass) {
   };
 
   ModelApp.prototype.initModels = function() {
+    this.cart = new CartModel;
+    this.cart.set({
+      of_user1: new CartItemModel({
+        count: 2
+      }),
+      2: new CartItemModel(),
+      3: new CartItemModel()
+    });
     this.user1 = new UserModel(this.e('ul[data-user1]').data('user1'));
     this.user2 = new UserModel(this.e('script[data-of="user2"]').html());
     this.user3 = new UserModel(this.user2);
-    this.linkToScope('user1', 'user2', 'user3');
+    this.linkToScope('user1', 'user2', 'user3', 'cart');
     console.log(this.getScope().get('user1.name'));
     this.user1.onChange('*', function(field, value) {
-      return console.log(field, '=', value);
+      return console.log('user1.' + field, '=', value);
     });
     return this;
   };

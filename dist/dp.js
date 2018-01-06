@@ -772,6 +772,57 @@ DreamPilot.Scope = (function(superClass) {
 
 })(DreamPilot.Model);
 
+DreamPilot.Router = (function() {
+  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
+
+  WORK_MODE_HASH = 1;
+
+  WORK_MODE_URL = 2;
+
+  ELSE_PATH = null;
+
+  Router.prototype.steps = {};
+
+  function Router(App, options) {
+    this.App = App;
+    if (options == null) {
+      options = {};
+    }
+    this.options = $.extend({
+      workMode: WORK_MODE_HASH,
+      attrName: 'data-step'
+    }, options);
+  }
+
+  Router.prototype.when = function(path, opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[path] = opts;
+    return this;
+  };
+
+  Router.prototype["else"] = function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[ELSE_PATH] = opts;
+    return this;
+  };
+
+  return Router;
+
+})();
+
+var Router;
+
+Router = (function() {
+  function Router() {}
+
+  return Router;
+
+})();
+
 var slice = [].slice;
 
 DreamPilot.Functions = (function() {
@@ -1012,6 +1063,18 @@ DreamPilot.Functions = (function() {
     return ar;
   };
 
+  Functions.arrayReverse = function(ar) {
+    var i, len, res;
+    res = [];
+    len = ar.length;
+    i = len - 1;
+    while (i !== -1) {
+      res.push(ar[i]);
+      i--;
+    }
+    return res;
+  };
+
   Functions.lead0 = function(x, len) {
     var results;
     if (len == null) {
@@ -1158,6 +1221,47 @@ DreamPilot.Functions = (function() {
       }
     }
     return $element;
+  };
+
+  Functions.getType = function(variable) {
+    if (variable === null) {
+      return 'null';
+    } else if (self.isArray(variable)) {
+      return 'array';
+    } else {
+      return typeof variable;
+    }
+  };
+
+  Functions.print_r = function(variable, level) {
+    var item, j, padding, ref, res, value;
+    if (level == null) {
+      level = 0;
+    }
+    res = '';
+    padding = '';
+    j = 0;
+    while (j < level) {
+      j++;
+      padding += '    ';
+    }
+    if ((ref = self.getType(variable)) === 'object' || ref === 'array') {
+      for (item in variable) {
+        value = variable[item];
+        if (typeof value === 'object') {
+          res += (padding + "'" + item + "':\n") + self.print_r(value, level + 1);
+        } else {
+          res += padding + "'" + item + "' => \"" + value + "\"\n";
+        }
+      }
+      if (res) {
+        return padding + "{\n" + res + "\n" + padding + "}";
+      } else {
+        return '{}';
+      }
+    } else {
+      return padding + '(' + self.getType(variable) + ') ' + variable;
+    }
   };
 
   return Functions;
@@ -1373,7 +1477,16 @@ DreamPilot.Parser = (function() {
         return self.evalNode(node.property, obj);
       case 'Identifier':
         self.lastUsedVariables.push(node.name);
-        return Scope.get(node.name);
+        if (Scope instanceof DreamPilot.Model) {
+          return Scope.get(node.name);
+        } else {
+          if (Scope[node.name] != null) {
+            return Scope[node.name];
+          } else {
+            return null;
+          }
+        }
+        break;
       case 'Literal':
         return node.value;
       default:
@@ -1382,13 +1495,27 @@ DreamPilot.Parser = (function() {
   };
 
   Parser.getScopeOf = function(expr, Scope) {
-    var node;
+    var j, key, len, namespace, node;
     node = jsep(expr);
-    if (node.type === 'MemberExpression') {
-      return self.evalNode(node.object, Scope);
-    } else {
-      return Scope;
+    if (node.type !== 'MemberExpression') {
+      Scope;
     }
+    namespace = [];
+    while (true) {
+      namespace.push(node.name || node.property.name || node.property.value);
+      if (!(node = node.object)) {
+        break;
+      }
+    }
+    namespace = $dp.fn.arrayReverse(namespace.slice(1));
+    for (j = 0, len = namespace.length; j < len; j++) {
+      key = namespace[j];
+      Scope = Scope.get(key);
+      if (!Scope) {
+        break;
+      }
+    }
+    return Scope;
   };
 
   Parser.getPropertyOfExpression = function(expr) {
@@ -1599,56 +1726,5 @@ Transport = (function() {
   function Transport() {}
 
   return Transport;
-
-})();
-
-DreamPilot.Router = (function() {
-  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
-
-  WORK_MODE_HASH = 1;
-
-  WORK_MODE_URL = 2;
-
-  ELSE_PATH = null;
-
-  Router.prototype.steps = {};
-
-  function Router(App, options) {
-    this.App = App;
-    if (options == null) {
-      options = {};
-    }
-    this.options = $.extend({
-      workMode: WORK_MODE_HASH,
-      attrName: 'data-step'
-    }, options);
-  }
-
-  Router.prototype.when = function(path, opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[path] = opts;
-    return this;
-  };
-
-  Router.prototype["else"] = function(opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[ELSE_PATH] = opts;
-    return this;
-  };
-
-  return Router;
-
-})();
-
-var Router;
-
-Router = (function() {
-  function Router() {}
-
-  return Router;
 
 })();

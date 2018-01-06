@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "CartItemModel.js",
+  "sourceRoot": "",
+  "sources": [
+    "CartItemModel.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA,IAAA,aAAA;EAAA;;;AAAM;;;;;;;;;GAAsB,UAAU,CAAC"
+}

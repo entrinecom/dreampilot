@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "CartModel.js",
+  "sourceRoot": "",
+  "sources": [
+    "CartModel.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA,IAAA,SAAA;EAAA;;;AAAM;;;;;;;;;GAAkB,UAAU,CAAC"
+}
