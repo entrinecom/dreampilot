@@ -32,7 +32,7 @@ BasicApp = (function(superClass) {
         return alert('let it out!');
       }
     });
-    this.linkToScope(['someMethod', 'postRequest', 'getRequest']);
+    this.linkToScope('someMethod', ['postRequest', 'getRequest']);
     setTimeout((function(_this) {
       return function() {
         return _this.getScope().set({

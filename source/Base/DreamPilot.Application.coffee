@@ -7,6 +7,8 @@ class DreamPilot.Application
         classSource = $dp.fn.stringToFunction className
         return new classSource $wrapper
 
+    activeElement: null
+
     constructor: (@$wrapper) ->
         @setupScope()
         .setupAttributes()
@@ -32,6 +34,14 @@ class DreamPilot.Application
     getAttributes: ->
         @Attributes
 
+    setActiveElement: (element) ->
+        @activeElement = element
+        @
+
+    resetActiveElement: -> @setActiveElement null
+
+    getActiveElement: -> @activeElement
+
     setupScope: ->
         @Scope = new $dp.Scope()
         @
@@ -51,7 +61,7 @@ class DreamPilot.Application
                 continue
             type = typeof @[key]
             if type is 'function'
-                @getScope().set key, (args...) => @[key] args...
+                do (key) => @getScope().set key, (args...) => @[key] args...
             else if type isnt 'undefined'
                 obj = @[key]
                 obj.setParent @getScope(), key if obj instanceof DreamPilot.Model

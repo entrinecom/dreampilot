@@ -45,18 +45,19 @@ class DreamPilot.Attributes
         that = @
 
         @eachByAttr self.classAttr, ->
-            $el = $dp.e @
+            el = @
+            $el = $dp.e el
             obj = $dp.Parser.object $el.attr $dp.attribute self.classAttr
 
             # todo: keep parsed expressions as closures connected to elements
             for cssClass, expression of obj
-                $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp()
+                $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el
 
             # setting up watchers
             for field in $dp.Parser.getLastUsedVariables()
                 that.getScope().onChange field, (field, value) ->
                     # console.log 'changed CLASS: ', field, '=', value, ':', cssClass
-                    $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp()
+                    $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el
 
             true
 
@@ -66,16 +67,17 @@ class DreamPilot.Attributes
         that = @
 
         @eachByAttr self.showAttr, ->
-            $el = $dp.e @
+            el = @
+            $el = $dp.e el
             expression = $el.attr $dp.attribute self.showAttr
 
-            $el.toggle $dp.Parser.isExpressionTrue expression, that.getApp()
+            $el.toggle $dp.Parser.isExpressionTrue expression, that.getApp(), el
 
             # setting up watchers
             for field in $dp.Parser.getLastUsedVariables()
                 that.getScope().onChange field, (field, value) ->
                     # console.log 'changed SHOW: ', field, '=', value
-                    $el.toggle $dp.Parser.isExpressionTrue expression, that.getApp()
+                    $el.toggle $dp.Parser.isExpressionTrue expression, that.getApp(), el
 
             true
 
@@ -104,16 +106,17 @@ class DreamPilot.Attributes
         that = @
 
         @eachByAttr self.ifAttr, ->
-            $el = $dp.e @
+            el = @
+            $el = $dp.e el
             expression = $el.attr $dp.attribute self.ifAttr
 
-            that.toggleElementExistence $el, $dp.Parser.isExpressionTrue(expression, that.getApp()), expression
+            that.toggleElementExistence $el, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression
 
             # setting up watchers
             for field in $dp.Parser.getLastUsedVariables()
                 that.getScope().onChange field, (field, value) ->
                     # console.log 'changed IF: ', field, '=', value, expression
-                    that.toggleElementExistence $el, $dp.Parser.isExpressionTrue(expression, that.getApp()), expression
+                    that.toggleElementExistence $el, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression
 
             true
 
@@ -122,16 +125,19 @@ class DreamPilot.Attributes
     setupInitAttribute: ->
         that = @
         @eachByAttr self.initAttr, ->
-            $el = $dp.e @
+            el = @
+            $el = $dp.e el
             expression = $el.attr $dp.attribute self.initAttr
-            $dp.Parser.executeExpressions expression, that
+            $dp.Parser.executeExpressions expression, that, el
             true
         @
 
     setupValueWriteToAttribute: ->
+        that = @
         @eachByAttr self.valueWriteToAttr, ->
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueWriteToAttr
+            Scope = $dp.Parser.getScopeOf field, that.getScope()
             self.bindValueWriteToAttribute field, $el, Scope
         @
 
@@ -140,6 +146,7 @@ class DreamPilot.Attributes
         @eachByAttr self.valueReadFromAttr, ->
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueReadFromAttr
+            Scope = $dp.Parser.getScopeOf field, that.getScope()
             return true if self.bindValueCheckScope field, $el, Scope, that
             self.bindValueReadFromAttribute field, $el, Scope
         @

@@ -15,7 +15,7 @@ class BasicApp extends DreamPilot.Application
             letItOut: ->
                 alert 'let it out!'
 
-        @linkToScope ['someMethod', 'postRequest', 'getRequest']
+        @linkToScope 'someMethod', ['postRequest', 'getRequest']
 
         setTimeout =>
             @getScope().set

@@ -18,6 +18,10 @@ class DreamPilot.Events
     constructor: (@App) ->
         @setupEvents()
 
+    getApp: -> @App
+
+    getScope: -> @getApp().getScope()
+
     setupEvents: ->
         @setupSingleEvent event for event in @events
         @
@@ -31,7 +35,9 @@ class DreamPilot.Events
 
             $el.on name, (event) ->
                 #event = event || window.event
-                $dp.Parser.executeExpressions expression, that.App
+                that.App.setActiveElement @
+                $dp.Parser.executeExpressions expression, that.App, @
+                that.App.resetActiveElement()
 
             true
 

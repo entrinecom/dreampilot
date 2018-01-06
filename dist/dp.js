@@ -89,6 +89,8 @@ DreamPilot.Application = (function() {
     return new classSource($wrapper);
   };
 
+  Application.prototype.activeElement = null;
+
   function Application($wrapper1) {
     this.$wrapper = $wrapper1;
     this.setupScope().setupAttributes().setupEvents().init();
@@ -118,6 +120,19 @@ DreamPilot.Application = (function() {
     return this.Attributes;
   };
 
+  Application.prototype.setActiveElement = function(element) {
+    this.activeElement = element;
+    return this;
+  };
+
+  Application.prototype.resetActiveElement = function() {
+    return this.setActiveElement(null);
+  };
+
+  Application.prototype.getActiveElement = function() {
+    return this.activeElement;
+  };
+
   Application.prototype.setupScope = function() {
     this.Scope = new $dp.Scope();
     return this;
@@ -144,13 +159,15 @@ DreamPilot.Application = (function() {
       }
       type = typeof this[key];
       if (type === 'function') {
-        this.getScope().set(key, (function(_this) {
-          return function() {
-            var args;
-            args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-            return _this[key].apply(_this, args);
-          };
-        })(this));
+        (function(_this) {
+          return (function(key) {
+            return _this.getScope().set(key, function() {
+              var args;
+              args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+              return _this[key].apply(_this, args);
+            });
+          });
+        })(this)(key);
       } else if (type !== 'undefined') {
         obj = this[key];
         if (obj instanceof DreamPilot.Model) {
@@ -224,18 +241,19 @@ DreamPilot.Attributes = (function() {
     var that;
     that = this;
     this.eachByAttr(self.classAttr, function() {
-      var $el, cssClass, expression, field, i, len, obj, ref;
-      $el = $dp.e(this);
+      var $el, cssClass, el, expression, field, i, len, obj, ref;
+      el = this;
+      $el = $dp.e(el);
       obj = $dp.Parser.object($el.attr($dp.attribute(self.classAttr)));
       for (cssClass in obj) {
         expression = obj[cssClass];
-        $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp()));
+        $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp(), el));
       }
       ref = $dp.Parser.getLastUsedVariables();
       for (i = 0, len = ref.length; i < len; i++) {
         field = ref[i];
         that.getScope().onChange(field, function(field, value) {
-          return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp()));
+          return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp(), el));
         });
       }
       return true;
@@ -247,15 +265,16 @@ DreamPilot.Attributes = (function() {
     var that;
     that = this;
     this.eachByAttr(self.showAttr, function() {
-      var $el, expression, field, i, len, ref;
-      $el = $dp.e(this);
+      var $el, el, expression, field, i, len, ref;
+      el = this;
+      $el = $dp.e(el);
       expression = $el.attr($dp.attribute(self.showAttr));
-      $el.toggle($dp.Parser.isExpressionTrue(expression, that.getApp()));
+      $el.toggle($dp.Parser.isExpressionTrue(expression, that.getApp(), el));
       ref = $dp.Parser.getLastUsedVariables();
       for (i = 0, len = ref.length; i < len; i++) {
         field = ref[i];
         that.getScope().onChange(field, function(field, value) {
-          return $el.toggle($dp.Parser.isExpressionTrue(expression, that.getApp()));
+          return $el.toggle($dp.Parser.isExpressionTrue(expression, that.getApp(), el));
         });
       }
       return true;
@@ -290,15 +309,16 @@ DreamPilot.Attributes = (function() {
     var that;
     that = this;
     this.eachByAttr(self.ifAttr, function() {
-      var $el, expression, field, i, len, ref;
-      $el = $dp.e(this);
+      var $el, el, expression, field, i, len, ref;
+      el = this;
+      $el = $dp.e(el);
       expression = $el.attr($dp.attribute(self.ifAttr));
-      that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that.getApp()), expression);
+      that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression);
       ref = $dp.Parser.getLastUsedVariables();
       for (i = 0, len = ref.length; i < len; i++) {
         field = ref[i];
         that.getScope().onChange(field, function(field, value) {
-          return that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that.getApp()), expression);
+          return that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression);
         });
       }
       return true;
@@ -310,20 +330,24 @@ DreamPilot.Attributes = (function() {
     var that;
     that = this;
     this.eachByAttr(self.initAttr, function() {
-      var $el, expression;
-      $el = $dp.e(this);
+      var $el, el, expression;
+      el = this;
+      $el = $dp.e(el);
       expression = $el.attr($dp.attribute(self.initAttr));
-      $dp.Parser.executeExpressions(expression, that);
+      $dp.Parser.executeExpressions(expression, that, el);
       return true;
     });
     return this;
   };
 
   Attributes.prototype.setupValueWriteToAttribute = function() {
+    var that;
+    that = this;
     this.eachByAttr(self.valueWriteToAttr, function() {
-      var $el, field;
+      var $el, Scope, field;
       $el = $dp.e(this);
       field = $el.attr($dp.attribute(self.valueWriteToAttr));
+      Scope = $dp.Parser.getScopeOf(field, that.getScope());
       return self.bindValueWriteToAttribute(field, $el, Scope);
     });
     return this;
@@ -333,9 +357,10 @@ DreamPilot.Attributes = (function() {
     var that;
     that = this;
     this.eachByAttr(self.valueReadFromAttr, function() {
-      var $el, field;
+      var $el, Scope, field;
       $el = $dp.e(this);
       field = $el.attr($dp.attribute(self.valueReadFromAttr));
+      Scope = $dp.Parser.getScopeOf(field, that.getScope());
       if (self.bindValueCheckScope(field, $el, Scope, that)) {
         return true;
       }
@@ -425,6 +450,14 @@ DreamPilot.Events = (function() {
     this.setupEvents();
   }
 
+  Events.prototype.getApp = function() {
+    return this.App;
+  };
+
+  Events.prototype.getScope = function() {
+    return this.getApp().getScope();
+  };
+
   Events.prototype.setupEvents = function() {
     var event, i, len, ref;
     ref = this.events;
@@ -443,7 +476,9 @@ DreamPilot.Events = (function() {
       $el = $dp.e(this);
       expression = $el.attr($dp.attribute(name));
       $el.on(name, function(event) {
-        return $dp.Parser.executeExpressions(expression, that.App);
+        that.App.setActiveElement(this);
+        $dp.Parser.executeExpressions(expression, that.App, this);
+        return that.App.resetActiveElement();
       });
       return true;
     });
@@ -809,15 +844,6 @@ DreamPilot.Router = (function() {
     this.steps[ELSE_PATH] = opts;
     return this;
   };
-
-  return Router;
-
-})();
-
-var Router;
-
-Router = (function() {
-  function Router() {}
 
   return Router;
 
@@ -1429,21 +1455,24 @@ DreamPilot.Parser = (function() {
     return o;
   };
 
-  Parser.evalNode = function(node, Scope) {
-    var arg, args, fn, obj;
-    if (!(Scope instanceof DreamPilot.Model)) {
+  Parser.evalNode = function(node, Scope, element) {
+    var arg, args, fn, obj, ref;
+    if (element == null) {
+      element = null;
+    }
+    if (!(Scope instanceof DreamPilot.Model || ((ref = node.type) === 'Literal' || ref === 'ThisExpression'))) {
       throw 'Scope should be a DreamPilot.Model instance, but ' + typeof Scope + (" given (" + Scope + ")");
     }
     switch (node.type) {
       case 'CallExpression':
         if ((node.callee.type != null) && node.callee.type === 'Identifier' && node.callee.name) {
           args = (function() {
-            var j, len, ref, results;
-            ref = node["arguments"];
+            var j, len, ref1, results;
+            ref1 = node["arguments"];
             results = [];
-            for (j = 0, len = ref.length; j < len; j++) {
-              arg = ref[j];
-              results.push(self.evalNode(arg));
+            for (j = 0, len = ref1.length; j < len; j++) {
+              arg = ref1[j];
+              results.push(self.evalNode(arg, Scope, element));
             }
             return results;
           })();
@@ -1451,7 +1480,12 @@ DreamPilot.Parser = (function() {
           if (fn && typeof fn === 'function') {
             return fn.apply(null, args);
           } else {
-            return $dp.log.error("No function '" + node.callee.name + "' found in scope");
+            fn = Scope[node.callee.name];
+            if (fn && typeof fn === 'function') {
+              return Scope[node.callee.name].apply(Scope, args);
+            } else {
+              return $dp.log.error("No function '" + node.callee.name + "' found in scope");
+            }
           }
         } else {
           throw 'Unable to call node, type: ' + node.callee.type + ', name: ' + node.callee.name;
@@ -1461,20 +1495,20 @@ DreamPilot.Parser = (function() {
         if (typeof self.operators.binary[node.operator] === 'undefined') {
           throw 'No callback for binary operator ' + node.operator;
         }
-        return self.operators.binary[node.operator](self.evalNode(node.left, Scope), self.evalNode(node.right, Scope));
+        return self.operators.binary[node.operator](self.evalNode(node.left, Scope, element), self.evalNode(node.right, Scope, element));
       case 'UnaryExpression':
         if (typeof self.operators.unary[node.operator] === 'undefined') {
           throw 'No callback for unary operator ' + node.operator;
         }
-        return self.operators.unary[node.operator](self.evalNode(node.argument, Scope));
+        return self.operators.unary[node.operator](self.evalNode(node.argument, Scope, element));
       case 'LogicalExpression':
         if (typeof self.operators.logical[node.operator] === 'undefined') {
           throw 'No callback for logical operator ' + node.operator;
         }
-        return self.operators.logical[node.operator](self.evalNode(node.left, Scope), self.evalNode(node.right, Scope));
+        return self.operators.logical[node.operator](self.evalNode(node.left, Scope, element), self.evalNode(node.right, Scope, element));
       case 'MemberExpression':
-        obj = self.evalNode(node.object, Scope);
-        return self.evalNode(node.property, obj);
+        obj = self.evalNode(node.object, Scope, element);
+        return self.evalNode(node.property, obj, element);
       case 'Identifier':
         self.lastUsedVariables.push(node.name);
         if (Scope instanceof DreamPilot.Model) {
@@ -1489,16 +1523,17 @@ DreamPilot.Parser = (function() {
         break;
       case 'Literal':
         return node.value;
+      case 'ThisExpression':
+        return element;
       default:
         throw 'Unknown node type ' + node.type;
     }
   };
 
-  Parser.getScopeOf = function(expr, Scope) {
-    var j, key, len, namespace, node;
-    node = jsep(expr);
-    if (node.type !== 'MemberExpression') {
-      Scope;
+  Parser.getExpressionNamespace = function(node, useLast) {
+    var namespace;
+    if (useLast == null) {
+      useLast = false;
     }
     namespace = [];
     while (true) {
@@ -1507,7 +1542,21 @@ DreamPilot.Parser = (function() {
         break;
       }
     }
-    namespace = $dp.fn.arrayReverse(namespace.slice(1));
+    return $dp.fn.arrayReverse(namespace.slice(useLast ? 0 : 1));
+  };
+
+  Parser.getScopeOf = function(expr, Scope) {
+    var j, key, len, namespace, node, ref, useLast;
+    node = jsep(expr);
+    useLast = false;
+    if (node.type === 'CallExpression' && (((ref = node.callee) != null ? ref.object : void 0) != null)) {
+      node = node.callee.object;
+      useLast = true;
+    }
+    if (node.type !== 'MemberExpression') {
+      return Scope;
+    }
+    namespace = self.getExpressionNamespace(node, useLast);
     for (j = 0, len = namespace.length; j < len; j++) {
       key = namespace[j];
       Scope = Scope.get(key);
@@ -1519,20 +1568,29 @@ DreamPilot.Parser = (function() {
   };
 
   Parser.getPropertyOfExpression = function(expr) {
-    var node;
+    var node, ref, ref1;
     node = jsep(expr);
     if (node.type === 'MemberExpression') {
       return node.property.name;
+    } else if (node.type === 'CallExpression' && (((ref = node.callee) != null ? (ref1 = ref.property) != null ? ref1.name : void 0 : void 0) != null)) {
+      return {
+        "arguments": node["arguments"],
+        callee: node.callee.property,
+        type: node.type
+      };
     } else {
       return expr;
     }
   };
 
-  Parser.isExpressionTrue = function(expr, App) {
+  Parser.isExpressionTrue = function(expr, App, element) {
     var e;
+    if (element == null) {
+      element = App.getActiveElement();
+    }
     try {
       self.lastUsedVariables = [];
-      return !!self.evalNode(jsep(expr), App.getScope());
+      return !!self.evalNode(jsep(expr), App.getScope(), element);
     } catch (error) {
       e = error;
       $dp.log.error('Expression parsing (isExpressionTrue) error ', e, expr);
@@ -1540,8 +1598,11 @@ DreamPilot.Parser = (function() {
     }
   };
 
-  Parser.executeExpressions = function(allExpr, App) {
-    var e, expr, key, rows;
+  Parser.executeExpressions = function(allExpr, App, element) {
+    var Scope, e, expr, key, method, rows;
+    if (element == null) {
+      element = App.getActiveElement();
+    }
     rows = this.object(allExpr, {
       delimiter: ';',
       assign: '=',
@@ -1552,12 +1613,23 @@ DreamPilot.Parser = (function() {
       expr = rows[key];
       try {
         if (key.indexOf('(') > -1 && expr === '') {
-          self.evalNode(jsep(key), App.getScope());
+          Scope = $dp.Parser.getScopeOf(key, App.getScope());
+          method = $dp.Parser.getPropertyOfExpression(key);
+          if ($dp.fn.getType(method) === 'string') {
+            method = jsep(method);
+          }
+          self.evalNode(method, Scope, element);
         } else {
-          App.getScope().set(key, self.evalNode(jsep(expr), App.getScope()));
+          Scope = $dp.Parser.getScopeOf(expr, App.getScope());
+          method = $dp.Parser.getPropertyOfExpression(expr);
+          if ($dp.fn.getType(method) === 'string') {
+            method = jsep(method);
+          }
+          App.getScope().set(key, self.evalNode(method, Scope, element));
         }
       } catch (error) {
         e = error;
+        throw e;
         $dp.log.error('Expression parsing (executeExpressions) error', e, ':', key, expr);
         false;
       }
@@ -1719,12 +1791,3 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
-
-var Transport;
-
-Transport = (function() {
-  function Transport() {}
-
-  return Transport;
-
-})();

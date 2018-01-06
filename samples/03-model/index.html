@@ -53,6 +53,7 @@
 		<li>
 			<div>Count in cart:</div>
 			<input type="number" name="count" dp-value-bind="cart.of_user1.count">
+			<button type="button" dp-click="cart.of_user1.shout('hello', this)">Shout!</button>
 		</li>
 	</ul>
 </form>
