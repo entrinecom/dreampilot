@@ -15,7 +15,15 @@ class BasicApp extends DreamPilot.Application
             letItOut: ->
                 alert 'let it out!'
 
-        @linkToScope 'someMethod', ['postRequest', 'getRequest']
+        @linkToScope 'someMethod', [
+            'getRequest'
+            'postRequest'
+            'putRequest'
+            'deleteRequest'
+            'postPayloadRequest'
+            'putPayloadRequest'
+            'deletePayloadRequest'
+        ]
 
         setTimeout =>
             @getScope().set
@@ -37,17 +45,47 @@ class BasicApp extends DreamPilot.Application
         @
 
     getRequest: ->
-        $dp.transport.get '/api/controller/method/get/', (res) ->
-            console.log 'get', res
+        $dp.transport.get '/api/controller/method/hey/', id: 100500, (res) -> console.log 'get', res
         @
 
     postRequest: ->
         data =
             name: 'James'
             band: 'Metallica'
+        $dp.transport.post '/api/controller/method/hey/', data, (res) -> console.log 'post', res
+        @
 
-        $dp.transport.post '/api/controller/method/post/', data, (res) ->
-            console.log 'post', res
+    putRequest: ->
+        data =
+            name: 'Kirk'
+            band: 'Metallica'
+        $dp.transport.put '/api/controller/method/hey/', data, (res) -> console.log 'put', res
+        @
+
+    deleteRequest: ->
+        data =
+            id: 100500
+        $dp.transport.delete '/api/controller/method/hey/', data, (res) -> console.log 'delete', res
+        @
+
+    postPayloadRequest: ->
+        data =
+            name: 'James'
+            band: 'Metallica'
+        $dp.transport.postPayload '/api/controller/method/hey/', data, (res) -> console.log 'post', res
+        @
+
+    putPayloadRequest: ->
+        data =
+            name: 'Kirk'
+            band: 'Metallica'
+        $dp.transport.putPayload '/api/controller/method/hey/', data, (res) -> console.log 'put', res
+        @
+
+    deletePayloadRequest: ->
+        data =
+            id: 100500
+        $dp.transport.deletePayload  '/api/controller/method/hey/', data, (res) -> console.log 'delete', res
         @
 
     someMethod: (var1, var2) ->

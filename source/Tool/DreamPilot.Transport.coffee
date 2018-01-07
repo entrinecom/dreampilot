@@ -1,58 +1,61 @@
 class DreamPilot.Transport
     self = @
 
-    @GET: 1
-    @POST: 2
-    @PUT: 3
-    @DELETE: 4
-    @HEAD: 5
-    @OPTIONS: 6
-    @CONNECT: 7
+    @GET: 'GET'
+    @POST: 'POST'
+    @PUT: 'PUT'
+    @DELETE: 'DELETE'
+    @HEAD: 'HEAD'
+    @OPTIONS: 'OPTIONS'
+    @CONNECT: 'CONNECT'
 
     @FORM_DATA: 1
     @PAYLOAD: 2
 
     @request: (method, url, data, callback) ->
-        if typeof method isnt 'object'
+        if $dp.fn.getType(method) is 'object'
+            options = $dp.fn.extend
+                method: self.GET
+                dataType: self.FORM_DATA
+                url: url
+                data: data
+                complete: callback
+            , method
+        else
             options =
                 method: method
-                type: @FORM_DATA
-        else
-            options = $dp.fn.extend
-                method: @GET
-                type: @FORM_DATA
-            , options
+                dataType: self.FORM_DATA
+                url: url
+                data: data
+                complete: callback
 
-        switch options.method
-            when @GET
-                url += '?' + jQuery.serialize data
-                self.get url, callback
+        if options.dataType is self.PAYLOAD
+            options = $dp.fn.extend options,
+                dataType: 'json'
+                contentType: 'application/json'
+                data: JSON.stringify options.data
+        else if options.dataType is self.FORM_DATA
+            delete options.dataType
 
-            when @POST
-                switch options.type
-                    when @FORM_DATA
-                        self.post url, data, callback
-                    when @PAYLOAD
-                        self.postPayload url, data, callback
-                    else
-                        throw 'Unknown request type'
+        if options.method is self.GET
+            options.url += '?' + jQuery.serialize options.data
+            options.data = null
 
-            else
-                throw 'This method not implemented yet'
+        options.type = options.dataType if options.type and not options.dataType
+        options.type = options.method
+        delete options.method
 
-    @get: (args...) ->
-        jQuery.get args...
+        jQuery.ajax options
 
-    @post: (args...) ->
-        jQuery.post args...
+    @get: (args...) -> jQuery.get args...
 
-    @postPayload: (url, data, callback) ->
-        jQuery.ajax
-            url: url
-            type: 'POST'
-            dataType: 'json'
-            data: data
-            contentType: 'application/json'
-            complete: callback
+    @post: (args...) -> jQuery.post args...
+    @postPayload: (url, data, callback) -> self.request {method: self.POST, dataType: self.PAYLOAD}, url, data, callback
+
+    @put: (url, data, callback) -> self.request {method: self.PUT, dataType: self.FORM_DATA}, url, data, callback
+    @putPayload: (url, data, callback) -> self.request {method: self.PUT, dataType: self.PAYLOAD}, url, data, callback
+
+    @delete: (url, data, callback) -> self.request {method: self.DELETE, dataType: self.FORM_DATA}, url, data, callback
+    @deletePayload: (url, data, callback) -> self.request {method: self.DELETE, dataType: self.PAYLOAD}, url, data, callback
 
 $dp.transport = DreamPilot.Transport if $dp

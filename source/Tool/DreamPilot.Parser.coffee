@@ -28,7 +28,7 @@ class DreamPilot.Parser
     @lastUsedVariables: []
 
     @object: (dataStr, options = {}) ->
-        options = jQuery.extend
+        options = $dp.fn.extend
             delimiter: ','
             assign: ':'
             curlyBracketsNeeded: true

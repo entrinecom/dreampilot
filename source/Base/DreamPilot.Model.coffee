@@ -18,9 +18,9 @@ class DreamPilot.Model
 
         if typeof _data is 'object'
             if _data instanceof DreamPilot.Model
-                @data = jQuery.extend true, {}, _data.get()
+                @data = $dp.fn.extend true, {}, _data.get()
             else
-                @data = jQuery.extend true, {}, _data
+                @data = $dp.fn.extend true, {}, _data
         else
             throw 'Data should be an object'
 

@@ -514,9 +514,9 @@ DreamPilot.Model = (function() {
     }
     if (typeof _data === 'object') {
       if (_data instanceof DreamPilot.Model) {
-        this.data = jQuery.extend(true, {}, _data.get());
+        this.data = $dp.fn.extend(true, {}, _data.get());
       } else {
-        this.data = jQuery.extend(true, {}, _data);
+        this.data = $dp.fn.extend(true, {}, _data);
       }
     } else {
       throw 'Data should be an object';
@@ -1395,7 +1395,7 @@ DreamPilot.Parser = (function() {
     if (options == null) {
       options = {};
     }
-    options = jQuery.extend({
+    options = $dp.fn.extend({
       delimiter: ',',
       assign: ':',
       curlyBracketsNeeded: true
@@ -1707,19 +1707,19 @@ DreamPilot.Transport = (function() {
 
   self = Transport;
 
-  Transport.GET = 1;
+  Transport.GET = 'GET';
 
-  Transport.POST = 2;
+  Transport.POST = 'POST';
 
-  Transport.PUT = 3;
+  Transport.PUT = 'PUT';
 
-  Transport.DELETE = 4;
+  Transport.DELETE = 'DELETE';
 
-  Transport.HEAD = 5;
+  Transport.HEAD = 'HEAD';
 
-  Transport.OPTIONS = 6;
+  Transport.OPTIONS = 'OPTIONS';
 
-  Transport.CONNECT = 7;
+  Transport.CONNECT = 'CONNECT';
 
   Transport.FORM_DATA = 1;
 
@@ -1727,34 +1727,42 @@ DreamPilot.Transport = (function() {
 
   Transport.request = function(method, url, data, callback) {
     var options;
-    if (typeof method !== 'object') {
+    if ($dp.fn.getType(method) === 'object') {
+      options = $dp.fn.extend({
+        method: self.GET,
+        dataType: self.FORM_DATA,
+        url: url,
+        data: data,
+        complete: callback
+      }, method);
+    } else {
       options = {
         method: method,
-        type: this.FORM_DATA
+        dataType: self.FORM_DATA,
+        url: url,
+        data: data,
+        complete: callback
       };
-    } else {
-      options = $dp.fn.extend({
-        method: this.GET,
-        type: this.FORM_DATA
-      }, options);
     }
-    switch (options.method) {
-      case this.GET:
-        url += '?' + jQuery.serialize(data);
-        return self.get(url, callback);
-      case this.POST:
-        switch (options.type) {
-          case this.FORM_DATA:
-            return self.post(url, data, callback);
-          case this.PAYLOAD:
-            return self.postPayload(url, data, callback);
-          default:
-            throw 'Unknown request type';
-        }
-        break;
-      default:
-        throw 'This method not implemented yet';
+    if (options.dataType === self.PAYLOAD) {
+      options = $dp.fn.extend(options, {
+        dataType: 'json',
+        contentType: 'application/json',
+        data: JSON.stringify(options.data)
+      });
+    } else if (options.dataType === self.FORM_DATA) {
+      delete options.dataType;
     }
+    if (options.method === self.GET) {
+      options.url += '?' + jQuery.serialize(options.data);
+      options.data = null;
+    }
+    if (options.type && !options.dataType) {
+      options.type = options.dataType;
+    }
+    options.type = options.method;
+    delete options.method;
+    return jQuery.ajax(options);
   };
 
   Transport.get = function() {
@@ -1770,14 +1778,38 @@ DreamPilot.Transport = (function() {
   };
 
   Transport.postPayload = function(url, data, callback) {
-    return jQuery.ajax({
-      url: url,
-      type: 'POST',
-      dataType: 'json',
-      data: data,
-      contentType: 'application/json',
-      complete: callback
-    });
+    return self.request({
+      method: self.POST,
+      dataType: self.PAYLOAD
+    }, url, data, callback);
+  };
+
+  Transport.put = function(url, data, callback) {
+    return self.request({
+      method: self.PUT,
+      dataType: self.FORM_DATA
+    }, url, data, callback);
+  };
+
+  Transport.putPayload = function(url, data, callback) {
+    return self.request({
+      method: self.PUT,
+      dataType: self.PAYLOAD
+    }, url, data, callback);
+  };
+
+  Transport["delete"] = function(url, data, callback) {
+    return self.request({
+      method: self.DELETE,
+      dataType: self.FORM_DATA
+    }, url, data, callback);
+  };
+
+  Transport.deletePayload = function(url, data, callback) {
+    return self.request({
+      method: self.DELETE,
+      dataType: self.PAYLOAD
+    }, url, data, callback);
   };
 
   return Transport;
