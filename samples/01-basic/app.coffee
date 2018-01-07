@@ -26,6 +26,7 @@ class BasicApp extends DreamPilot.Application
             'putPayloadRequest'
             'deletePayloadRequest'
             'showVal1'
+            'showVal2'
             'someModel'
         ]
 
@@ -50,6 +51,10 @@ class BasicApp extends DreamPilot.Application
 
     showVal1: ->
         alert @someModel.get 'val1'
+        @
+
+    showVal2: ->
+        alert @getScope().get 'val2'
         @
 
     getRequest: ->

@@ -33,7 +33,7 @@ BasicApp = (function(superClass) {
         return alert('let it out!');
       }
     });
-    this.linkToScope('someMethod', ['getRequest', 'postRequest', 'putRequest', 'deleteRequest', 'postPayloadRequest', 'putPayloadRequest', 'deletePayloadRequest', 'showVal1', 'someModel']);
+    this.linkToScope('someMethod', ['getRequest', 'postRequest', 'putRequest', 'deleteRequest', 'postPayloadRequest', 'putPayloadRequest', 'deletePayloadRequest', 'showVal1', 'showVal2', 'someModel']);
     setTimeout((function(_this) {
       return function() {
         return _this.getScope().set({
@@ -63,6 +63,11 @@ BasicApp = (function(superClass) {
 
   BasicApp.prototype.showVal1 = function() {
     alert(this.someModel.get('val1'));
+    return this;
+  };
+
+  BasicApp.prototype.showVal2 = function() {
+    alert(this.getScope().get('val2'));
     return this;
   };
 

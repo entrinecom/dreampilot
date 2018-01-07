@@ -427,7 +427,7 @@ DreamPilot.Attributes = (function() {
       value = $dp.fn.getValueOfElement($el);
       return Scope.set(field, value);
     });
-    if ($el.val()) {
+    if ($dp.fn.getValueOfElement($el)) {
       $el.trigger(eventName);
     }
     return true;

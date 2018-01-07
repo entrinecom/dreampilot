@@ -184,7 +184,7 @@ class DreamPilot.Attributes
         $el.on eventName, ->
             value = $dp.fn.getValueOfElement $el
             Scope.set field, value
-        $el.trigger eventName if $el.val()
+        $el.trigger eventName if $dp.fn.getValueOfElement $el
         true
 
     @bindValueReadFromAttribute: (field, $el, Scope) ->
