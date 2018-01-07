@@ -17,6 +17,7 @@ BasicApp = (function(superClass) {
   };
 
   BasicApp.prototype.initVariables = function() {
+    this.someModel = new DreamPilot.Model();
     this.getScope().set({
       assignItOut: function() {
         var i, len, x, y;
@@ -32,7 +33,7 @@ BasicApp = (function(superClass) {
         return alert('let it out!');
       }
     });
-    this.linkToScope('someMethod', ['getRequest', 'postRequest', 'putRequest', 'deleteRequest', 'postPayloadRequest', 'putPayloadRequest', 'deletePayloadRequest']);
+    this.linkToScope('someMethod', ['getRequest', 'postRequest', 'putRequest', 'deleteRequest', 'postPayloadRequest', 'putPayloadRequest', 'deletePayloadRequest', 'showVal1', 'someModel']);
     setTimeout((function(_this) {
       return function() {
         return _this.getScope().set({
@@ -57,6 +58,11 @@ BasicApp = (function(superClass) {
         });
       };
     })(this), 7000);
+    return this;
+  };
+
+  BasicApp.prototype.showVal1 = function() {
+    alert(this.someModel.get('val1'));
     return this;
   };
 

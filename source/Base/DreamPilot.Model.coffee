@@ -121,7 +121,6 @@ class DreamPilot.Model
     on: (actions, fields, callback, callbackId = null) ->
         actions = [actions] unless $dp.fn.isArray actions
         fields = [fields] unless $dp.fn.isArray fields
-        #console.log actions, fields
         for action in actions
             for field in fields
                 while not callbackId or @callbacks[action]?[field]?[callbackId]?

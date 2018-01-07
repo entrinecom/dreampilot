@@ -5,6 +5,8 @@ class BasicApp extends DreamPilot.Application
         @initVariables()
 
     initVariables: ->
+        @someModel = new DreamPilot.Model()
+
         @getScope().set
             assignItOut: ->
                 console.log 'assignItOut called with args: ', arguments
@@ -23,6 +25,8 @@ class BasicApp extends DreamPilot.Application
             'postPayloadRequest'
             'putPayloadRequest'
             'deletePayloadRequest'
+            'showVal1'
+            'someModel'
         ]
 
         setTimeout =>
@@ -42,6 +46,10 @@ class BasicApp extends DreamPilot.Application
                 lolo: 12
                 pepe: 8
         , 7000
+        @
+
+    showVal1: ->
+        alert @someModel.get 'val1'
         @
 
     getRequest: ->

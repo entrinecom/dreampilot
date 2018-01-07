@@ -49,8 +49,9 @@
 
 <div>
 	<h2>bind input to div</h2>
-	<input dp-value-write-to="val1">
-	<span class="green" dp-value-read-from="val1"></span>
+	<input dp-value-write-to="someModel.val1" value="some text">
+	<span class="green" dp-value-read-from="someModel.val1"></span>
+	<button dp-click="showVal1()">show the value</button>
 </div>
 
 <div>

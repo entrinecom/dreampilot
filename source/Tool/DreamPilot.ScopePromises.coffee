@@ -1,17 +1,17 @@
 class DreamPilot.ScopePromises
-    list: {}
+    list: []
     interval: null
     delay: 20
 
     constructor: ->
 
     add: (options) ->
-        @list[options.field] = options
+        @list.push options
         @initCheck()
         @
 
-    remove: (field) ->
-        delete @list[field]
+    remove: (idx) ->
+        @list.splice idx, 1
         @resetCheck() unless @list.length
         @
 
@@ -22,10 +22,10 @@ class DreamPilot.ScopePromises
     initCheck: ->
         return @ if @interval
         @interval = setInterval =>
-            for field, rec of @list
-                Scope = $dp.Parser.getScopeOf field, rec['scope']
+            for idx, rec of @list
+                Scope = $dp.Parser.getScopeOf rec['field'], rec['scope']
                 if Scope
                     rec.cb Scope
-                    @remove field
+                    @remove idx
         , @delay
         @

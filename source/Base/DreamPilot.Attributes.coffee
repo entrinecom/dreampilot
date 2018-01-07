@@ -138,6 +138,7 @@ class DreamPilot.Attributes
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueWriteToAttr
             Scope = $dp.Parser.getScopeOf field, that.getScope()
+            return true if self.bindValueCheckScope field, $el, Scope, that, false, true
             self.bindValueWriteToAttribute field, $el, Scope
         @
 
@@ -147,7 +148,7 @@ class DreamPilot.Attributes
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueReadFromAttr
             Scope = $dp.Parser.getScopeOf field, that.getScope()
-            return true if self.bindValueCheckScope field, $el, Scope, that
+            return true if self.bindValueCheckScope field, $el, Scope, that, true, false
             self.bindValueReadFromAttribute field, $el, Scope
         @
 
@@ -157,21 +158,20 @@ class DreamPilot.Attributes
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueBindAttr
             Scope = $dp.Parser.getScopeOf field, that.getScope()
-            return true if self.bindValueCheckScope field, $el, Scope, that
+            return true if self.bindValueCheckScope field, $el, Scope, that, true, true
             self.bindValueWriteToAttribute field, $el, Scope
             self.bindValueReadFromAttribute field, $el, Scope
         @
 
-    @bindValueCheckScope: (field, $el, Scope, that) ->
+    @bindValueCheckScope: (field, $el, Scope, that, read = false, write = false) ->
         if Scope is null
             that.ScopePromises.add
                 field: field
-                # $element: $el
                 scope: that.getScope()
                 cb: (_scope) ->
                     field = $dp.Parser.getPropertyOfExpression field
-                    self.bindValueWriteToAttribute field, $el, _scope
-                    self.bindValueReadFromAttribute field, $el, _scope
+                    self.bindValueWriteToAttribute field, $el, _scope if write
+                    self.bindValueReadFromAttribute field, $el, _scope if read
 
             return true
         false
