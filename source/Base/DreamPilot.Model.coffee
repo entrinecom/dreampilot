@@ -4,6 +4,8 @@ class DreamPilot.Model
         @relatedData = {}
         @parent = null
         @parentField = null
+        @saveTimeout = null
+        @saveDelay = 1000
         @callbacks =
             change: {}
         @initFrom _data
@@ -94,6 +96,13 @@ class DreamPilot.Model
     save: ->
         $dp.transport.request @getSaveMethod(), @getSaveUrl(), @getSaveData(), (result) =>
             @onSaved result
+        @
+
+    delayedSave: ->
+        clearTimeout @saveTimeout if @saveTimeout
+        @saveTimeout = setTimeout =>
+            @save()
+        , @saveDelay
         @
 
     onSaved: (result) ->

@@ -507,6 +507,8 @@ DreamPilot.Model = (function() {
     this.relatedData = {};
     this.parent = null;
     this.parentField = null;
+    this.saveTimeout = null;
+    this.saveDelay = 1000;
     this.callbacks = {
       change: {}
     };
@@ -674,6 +676,18 @@ DreamPilot.Model = (function() {
         return _this.onSaved(result);
       };
     })(this));
+    return this;
+  };
+
+  Model.prototype.delayedSave = function() {
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+    }
+    this.saveTimeout = setTimeout((function(_this) {
+      return function() {
+        return _this.save();
+      };
+    })(this), this.saveDelay);
     return this;
   };
 
