@@ -52,6 +52,8 @@
 	<input dp-value-write-to="someModel.val1" value="some text">
 	<span class="green" dp-value-read-from="someModel.val1"></span>
 	<button dp-click="showVal1()">show the value</button>
+	<div dp-value-bind="someModel.message" style="padding: 5px; border: 1px blue dotted; margin: 10px 0;"></div>
+	<button dp-click="someModel.add('hello?')">model method call test</button>
 </div>
 
 <div>
@@ -81,6 +83,7 @@
 <script type="text/javascript" src="../../bower_components/jquery/dist/jquery.min.js"></script>
 <script type="text/javascript" src="../../bower_components/jsep/build/jsep.min.js"></script>
 <script type="text/javascript" src="../../dist/dp.js"></script>
+<script type="text/javascript" src="myModel.js"></script>
 <script type="text/javascript" src="app.js"></script>
 
 </body>

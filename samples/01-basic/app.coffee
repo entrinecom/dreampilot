@@ -5,7 +5,8 @@ class BasicApp extends DreamPilot.Application
         @initVariables()
 
     initVariables: ->
-        @someModel = new DreamPilot.Model()
+        @someModel = new myModel()
+        @someModel.set 'message', 'Hello I am a model'
 
         @getScope().set
             assignItOut: ->

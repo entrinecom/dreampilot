@@ -17,7 +17,8 @@ BasicApp = (function(superClass) {
   };
 
   BasicApp.prototype.initVariables = function() {
-    this.someModel = new DreamPilot.Model();
+    this.someModel = new myModel();
+    this.someModel.set('message', 'Hello I am a model');
     this.getScope().set({
       assignItOut: function() {
         var i, len, x, y;

@@ -138,7 +138,7 @@ class DreamPilot.Parser
         if node.type is 'CallExpression' and node.callee?.object?
             node = node.callee.object
             useLast = true
-        if node.type isnt 'MemberExpression'
+        else if node.type isnt 'MemberExpression'
             return Scope
 
         namespace = self.getExpressionNamespace node, useLast

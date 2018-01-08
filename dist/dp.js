@@ -858,6 +858,15 @@ DreamPilot.Router = (function() {
 
 })();
 
+var Router;
+
+Router = (function() {
+  function Router() {}
+
+  return Router;
+
+})();
+
 var slice = [].slice;
 
 DreamPilot.Functions = (function() {
@@ -1561,8 +1570,7 @@ DreamPilot.Parser = (function() {
     if (node.type === 'CallExpression' && (((ref = node.callee) != null ? ref.object : void 0) != null)) {
       node = node.callee.object;
       useLast = true;
-    }
-    if (node.type !== 'MemberExpression') {
+    } else if (node.type !== 'MemberExpression') {
       return Scope;
     }
     namespace = self.getExpressionNamespace(node, useLast);
@@ -1832,3 +1840,12 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
+
+var Transport;
+
+Transport = (function() {
+  function Transport() {}
+
+  return Transport;
+
+})();
