@@ -128,7 +128,8 @@ class DreamPilot.Model
         @
 
     getDeleteMethod: ->
-        $dp.transport.DELETE
+        method: $dp.transport.DELETE
+        dataType: $dp.transport.PAYLOAD
 
     getDeleteUrl: ->
         throw 'Redefine Model.getDeleteUrl() method first'

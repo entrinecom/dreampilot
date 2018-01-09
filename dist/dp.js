@@ -723,7 +723,10 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.getDeleteMethod = function() {
-    return $dp.transport.DELETE;
+    return {
+      method: $dp.transport.DELETE,
+      dataType: $dp.transport.PAYLOAD
+    };
   };
 
   Model.prototype.getDeleteUrl = function() {
