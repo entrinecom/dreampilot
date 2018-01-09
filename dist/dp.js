@@ -722,6 +722,32 @@ DreamPilot.Model = (function() {
     return this;
   };
 
+  Model.prototype.getDeleteMethod = function() {
+    return $dp.transport.DELETE;
+  };
+
+  Model.prototype.getDeleteUrl = function() {
+    throw 'Redefine Model.getDeleteUrl() method first';
+  };
+
+  Model.prototype.getDeleteData = function() {
+    return null;
+  };
+
+  Model.prototype["delete"] = function() {
+    $dp.transport.request(this.getDeleteMethod(), this.getDeleteUrl(), this.getDeleteData(), (function(_this) {
+      return function(result) {
+        return _this.onDeleted(result);
+      };
+    })(this));
+    return this;
+  };
+
+  Model.prototype.onDeleted = function(result) {
+    $dp.log.print('onDeleted', result);
+    return this;
+  };
+
   Model.prototype.on = function(actions, fields, callback, callbackId) {
     var action, field, i, j, len, len1, ref, ref1;
     if (callbackId == null) {
@@ -867,15 +893,6 @@ DreamPilot.Router = (function() {
     this.steps[ELSE_PATH] = opts;
     return this;
   };
-
-  return Router;
-
-})();
-
-var Router;
-
-Router = (function() {
-  function Router() {}
 
   return Router;
 
@@ -1854,12 +1871,3 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
-
-var Transport;
-
-Transport = (function() {
-  function Transport() {}
-
-  return Transport;
-
-})();

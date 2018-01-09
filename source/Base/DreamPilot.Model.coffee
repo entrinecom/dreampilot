@@ -127,6 +127,24 @@ class DreamPilot.Model
         $dp.log.print 'onFetched', result
         @
 
+    getDeleteMethod: ->
+        $dp.transport.DELETE
+
+    getDeleteUrl: ->
+        throw 'Redefine Model.getDeleteUrl() method first'
+
+    getDeleteData: ->
+        null
+
+    delete: ->
+        $dp.transport.request @getDeleteMethod(), @getDeleteUrl(), @getDeleteData(), (result) =>
+            @onDeleted result
+        @
+
+    onDeleted: (result) ->
+        $dp.log.print 'onDeleted', result
+        @
+
     on: (actions, fields, callback, callbackId = null) ->
         actions = [actions] unless $dp.fn.isArray actions
         fields = [fields] unless $dp.fn.isArray fields
