@@ -1788,7 +1788,7 @@ DreamPilot.Transport = (function() {
         dataType: self.FORM_DATA,
         url: url,
         data: data,
-        complete: callback
+        success: callback
       }, method);
     } else {
       options = {
@@ -1796,7 +1796,7 @@ DreamPilot.Transport = (function() {
         dataType: self.FORM_DATA,
         url: url,
         data: data,
-        complete: callback
+        success: callback
       };
     }
     if (options.dataType === self.PAYLOAD) {

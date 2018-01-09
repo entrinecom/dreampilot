@@ -19,7 +19,7 @@ class DreamPilot.Transport
                 dataType: self.FORM_DATA
                 url: url
                 data: data
-                complete: callback
+                success: callback
             , method
         else
             options =
@@ -27,7 +27,7 @@ class DreamPilot.Transport
                 dataType: self.FORM_DATA
                 url: url
                 data: data
-                complete: callback
+                success: callback
 
         if options.dataType is self.PAYLOAD
             options = $dp.fn.extend options,
