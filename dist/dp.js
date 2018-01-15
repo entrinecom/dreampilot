@@ -1534,7 +1534,7 @@ DreamPilot.Parser = (function() {
       if (!Scope) {
         return false;
       }
-      throw 'Scope should be a DreamPilot.Model instance, but ' + $dp.fn.getType(Scope) + (" given (" + Scope + ")");
+      throw 'Scope should be a DreamPilot.Model instance, but ' + $dp.fn.getType(Scope) + (" given: '" + Scope + "'");
     }
     switch (node.type) {
       case 'CallExpression':
@@ -1595,7 +1595,12 @@ DreamPilot.Parser = (function() {
         }
         break;
       case 'Literal':
-        return node.value;
+        if (Scope) {
+          return node.value;
+        } else {
+          return null;
+        }
+        break;
       case 'ThisExpression':
         return element;
       default:
@@ -1665,7 +1670,7 @@ DreamPilot.Parser = (function() {
       return !!self.evalNode(jsep(expr), App.getScope(), element);
     } catch (error) {
       e = error;
-      $dp.log.error('Expression parsing (isExpressionTrue) error ', e, expr);
+      $dp.log.error('Expression parsing (isExpressionTrue) error ', e, ' Full expression:', expr);
       return false;
     }
   };

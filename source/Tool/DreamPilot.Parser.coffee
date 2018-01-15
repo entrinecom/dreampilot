@@ -101,7 +101,7 @@ class DreamPilot.Parser
         unless Scope instanceof DreamPilot.Model or node.type in ['Literal', 'ThisExpression']
             #return false if self.leaveNodeInPromise node, Scope, element, -> self.evalNode node, Scope, element
             return false unless Scope
-            throw 'Scope should be a DreamPilot.Model instance, but ' + $dp.fn.getType(Scope) + " given (#{Scope})"
+            throw 'Scope should be a DreamPilot.Model instance, but ' + $dp.fn.getType(Scope) + " given: '#{Scope}'"
         #if $dp.fn.getType(Scope) isnt 'object'
         #    throw 'Scope should be an object, but ' + $dp.fn.getType(Scope) + " given: #{$dp.fn.print_r(Scope)}"
         switch node.type
@@ -140,7 +140,9 @@ class DreamPilot.Parser
                     Scope.get node.name
                 else
                     if Scope[node.name]? then Scope[node.name] else null
-            when 'Literal' then node.value
+            #when 'Literal' then node.value
+            when 'Literal'
+                if Scope then node.value else null
             when 'ThisExpression' then element
             else throw 'Unknown node type ' + node.type
 
@@ -182,7 +184,7 @@ class DreamPilot.Parser
             self.lastUsedVariables = []
             !! self.evalNode jsep(expr), App.getScope(), element
         catch e
-            $dp.log.error 'Expression parsing (isExpressionTrue) error ', e, expr
+            $dp.log.error 'Expression parsing (isExpressionTrue) error ', e, ' Full expression:', expr
             false
 
     @executeExpressions: (allExpr, App, element = App.getActiveElement()) ->
