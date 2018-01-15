@@ -1507,13 +1507,34 @@ DreamPilot.Parser = (function() {
     return o;
   };
 
+
+  /*
+  @leaveNodeInPromise: (node, Scope, element, callback) ->
+      if Scope is null
+          console.log node, Scope, element, callback
+          return true
+          that.ScopePromises.add
+              node: node
+              scope: Scope
+              cb: (_scope) ->
+                  field = $dp.Parser.getPropertyOfExpression field
+                  self.bindValueWriteToAttribute field, $el, _scope if write
+                  self.bindValueReadFromAttribute field, $el, _scope if read
+  
+          return true
+      false
+   */
+
   Parser.evalNode = function(node, Scope, element) {
     var arg, args, fn, obj, ref;
     if (element == null) {
       element = null;
     }
     if (!(Scope instanceof DreamPilot.Model || ((ref = node.type) === 'Literal' || ref === 'ThisExpression'))) {
-      throw 'Scope should be a DreamPilot.Model instance, but ' + typeof Scope + (" given (" + Scope + ")");
+      if (!Scope) {
+        return false;
+      }
+      throw 'Scope should be a DreamPilot.Model instance, but ' + $dp.fn.getType(Scope) + (" given (" + Scope + ")");
     }
     switch (node.type) {
       case 'CallExpression':

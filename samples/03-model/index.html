@@ -4,6 +4,10 @@
 	<meta charset="UTF-8">
 	<title>DreamPilot Model</title>
 	<style type="text/css">
+		.voldemarr {
+			background: red;
+			color: white;
+		}
 	</style>
 </head>
 <body dp-app="ModelApp">
@@ -13,7 +17,7 @@
 <form>
 	<input type="hidden" name="id" dp-value-bind="user1.id">
 	<ul data-user1="{&quot;name&quot;:&quot;Voldemarr Hippopotamus&quot;,&quot;email&quot;:&quot;vol@hip.com&quot;,&quot;position&quot;:&quot;CEO&quot;,&quot;phone&quot;:&quot;&quot;,&quot;id&quot;:&quot;1&quot;}">
-		<li>
+		<li dp-class="{voldemarr: user1.name == 'Voldemarr Hippopotamus'}">
 			<div>Name:</div>
 			<input type="text" name="name" dp-value-bind="user1.name">
 		</li>

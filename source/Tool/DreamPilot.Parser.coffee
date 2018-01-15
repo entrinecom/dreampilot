@@ -80,9 +80,28 @@ class DreamPilot.Parser
         addPair() if pair.key or pair.value
         o
 
+    ###
+    @leaveNodeInPromise: (node, Scope, element, callback) ->
+        if Scope is null
+            console.log node, Scope, element, callback
+            return true
+            that.ScopePromises.add
+                node: node
+                scope: Scope
+                cb: (_scope) ->
+                    field = $dp.Parser.getPropertyOfExpression field
+                    self.bindValueWriteToAttribute field, $el, _scope if write
+                    self.bindValueReadFromAttribute field, $el, _scope if read
+
+            return true
+        false
+    ###
+
     @evalNode: (node, Scope, element = null) ->
         unless Scope instanceof DreamPilot.Model or node.type in ['Literal', 'ThisExpression']
-            throw 'Scope should be a DreamPilot.Model instance, but ' + typeof Scope + " given (#{Scope})"
+            #return false if self.leaveNodeInPromise node, Scope, element, -> self.evalNode node, Scope, element
+            return false unless Scope
+            throw 'Scope should be a DreamPilot.Model instance, but ' + $dp.fn.getType(Scope) + " given (#{Scope})"
         #if $dp.fn.getType(Scope) isnt 'object'
         #    throw 'Scope should be an object, but ' + $dp.fn.getType(Scope) + " given: #{$dp.fn.print_r(Scope)}"
         switch node.type
