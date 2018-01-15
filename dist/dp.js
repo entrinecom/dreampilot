@@ -1414,10 +1414,13 @@ DreamPilot.Parser = (function() {
         return a <= b;
       },
       '==': function(a, b) {
-        return a == b;
+        return a == b || (!a && !b);
       },
       '===': function(a, b) {
         return a === b;
+      },
+      '!==': function(a, b) {
+        return a !== b;
       },
       '!=': function(a, b) {
         return a != b;
@@ -1444,7 +1447,7 @@ DreamPilot.Parser = (function() {
     }
   };
 
-  Parser.lastUsedVariables = [];
+  Parser.lastUsedVariables = {};
 
   Parser.object = function(dataStr, options) {
     var addPair, ch, i, isQuote, isSpace, j, len, o, pair, quoteOpened, skip, underCursor;
@@ -1534,7 +1537,7 @@ DreamPilot.Parser = (function() {
       if (!Scope) {
         return false;
       }
-      throw 'Scope should be a DreamPilot.Model instance, but ' + $dp.fn.getType(Scope) + (" given: '" + Scope + "'");
+      throw "Scope should be a DreamPilot.Model instance, but " + ($dp.fn.getType(Scope)) + " given: '" + Scope + "'";
     }
     switch (node.type) {
       case 'CallExpression':
@@ -1581,9 +1584,13 @@ DreamPilot.Parser = (function() {
         return self.operators.logical[node.operator](self.evalNode(node.left, Scope, element), self.evalNode(node.right, Scope, element));
       case 'MemberExpression':
         obj = self.evalNode(node.object, Scope, element);
+        if (!(obj instanceof DreamPilot.Model)) {
+          self.addToLastUsedVariables(node.object.name);
+          return null;
+        }
         return self.evalNode(node.property, obj, element);
       case 'Identifier':
-        self.lastUsedVariables.push(node.name);
+        self.addToLastUsedVariables(node.name);
         if (Scope instanceof DreamPilot.Model) {
           return Scope.get(node.name);
         } else {
@@ -1666,7 +1673,7 @@ DreamPilot.Parser = (function() {
       element = App.getActiveElement();
     }
     try {
-      self.lastUsedVariables = [];
+      self.resetLastUsedVariables();
       return !!self.evalNode(jsep(expr), App.getScope(), element);
     } catch (error) {
       e = error;
@@ -1685,7 +1692,7 @@ DreamPilot.Parser = (function() {
       assign: '=',
       curlyBracketsNeeded: false
     });
-    self.lastUsedVariables = [];
+    self.resetLastUsedVariables();
     for (key in rows) {
       expr = rows[key];
       try {
@@ -1714,8 +1721,18 @@ DreamPilot.Parser = (function() {
     return true;
   };
 
+  Parser.resetLastUsedVariables = function() {
+    return self.lastUsedVariables = {};
+  };
+
   Parser.getLastUsedVariables = function() {
-    return self.lastUsedVariables;
+    return $dp.fn.keys(self.lastUsedVariables);
+  };
+
+  Parser.addToLastUsedVariables = function(key) {
+    if (key) {
+      return self.lastUsedVariables[key] = true;
+    }
   };
 
   return Parser;

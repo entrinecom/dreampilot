@@ -56,7 +56,7 @@ class DreamPilot.Attributes
             # setting up watchers
             for field in $dp.Parser.getLastUsedVariables()
                 that.getScope().onChange field, (field, value) ->
-                    # console.log 'changed CLASS: ', field, '=', value, ':', cssClass
+                    # console.log expression, 'changed CLASS: ', field, '=', value, ':', cssClass
                     $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el
 
             true

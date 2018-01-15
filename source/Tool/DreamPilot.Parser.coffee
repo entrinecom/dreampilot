@@ -15,8 +15,9 @@ class DreamPilot.Parser
             '>=': (a, b) -> a >= b
             '<': (a, b) -> a < b
             '<=': (a, b) -> a <= b
-            '==': (a, b) -> `a == b`
+            '==': (a, b) -> `a == b` or (not a and not b)
             '===': (a, b) -> a is b
+            '!==': (a, b) -> a isnt b
             '!=': (a, b) -> `a != b`
         unary:
             '-': (a) -> -a
@@ -25,7 +26,7 @@ class DreamPilot.Parser
         logical:
             '&&': (a, b) -> a and b
             '||': (a, b) -> a or b
-    @lastUsedVariables: []
+    @lastUsedVariables: {}
 
     @object: (dataStr, options = {}) ->
         options = $dp.fn.extend
@@ -98,10 +99,11 @@ class DreamPilot.Parser
     ###
 
     @evalNode: (node, Scope, element = null) ->
+        # console.log 'evalNode', node, Scope, element
         unless Scope instanceof DreamPilot.Model or node.type in ['Literal', 'ThisExpression']
             #return false if self.leaveNodeInPromise node, Scope, element, -> self.evalNode node, Scope, element
             return false unless Scope
-            throw 'Scope should be a DreamPilot.Model instance, but ' + $dp.fn.getType(Scope) + " given: '#{Scope}'"
+            throw "Scope should be a DreamPilot.Model instance, but #{$dp.fn.getType(Scope)} given: '#{Scope}'"
         #if $dp.fn.getType(Scope) isnt 'object'
         #    throw 'Scope should be an object, but ' + $dp.fn.getType(Scope) + " given: #{$dp.fn.print_r(Scope)}"
         switch node.type
@@ -133,9 +135,14 @@ class DreamPilot.Parser
                 self.operators.logical[node.operator] self.evalNode(node.left, Scope, element), self.evalNode(node.right, Scope, element)
             when 'MemberExpression'
                 obj = self.evalNode node.object, Scope, element
+                unless obj instanceof DreamPilot.Model
+                    # console.log 'node', node
+                    self.addToLastUsedVariables node.object.name
+                    return null
+                # console.log 'MemberExpression obj', obj, 'property', node.property, 'object', node.object, 'scope', Scope
                 self.evalNode node.property, obj, element
             when 'Identifier'
-                self.lastUsedVariables.push node.name
+                self.addToLastUsedVariables node.name
                 if Scope instanceof DreamPilot.Model
                     Scope.get node.name
                 else
@@ -181,7 +188,7 @@ class DreamPilot.Parser
 
     @isExpressionTrue: (expr, App, element = App.getActiveElement()) ->
         try
-            self.lastUsedVariables = []
+            self.resetLastUsedVariables()
             !! self.evalNode jsep(expr), App.getScope(), element
         catch e
             $dp.log.error 'Expression parsing (isExpressionTrue) error ', e, ' Full expression:', expr
@@ -192,7 +199,7 @@ class DreamPilot.Parser
             delimiter: ';'
             assign: '='
             curlyBracketsNeeded: false
-        self.lastUsedVariables = []
+        self.resetLastUsedVariables()
         for key, expr of rows
             try
                 if key.indexOf('(') > -1 and expr is ''
@@ -211,5 +218,11 @@ class DreamPilot.Parser
                 false
         true
 
+    @resetLastUsedVariables: ->
+        self.lastUsedVariables = {}
+
     @getLastUsedVariables: ->
-        self.lastUsedVariables
+        $dp.fn.keys self.lastUsedVariables
+
+    @addToLastUsedVariables: (key) ->
+        self.lastUsedVariables[key] = true if key

@@ -14,6 +14,7 @@
 
 <h2>Model #1 (initiated from data attribute)</h2>
 
+<!--
 <form>
 	<input type="hidden" name="id" dp-value-bind="user1.id">
 	<ul data-user1="{&quot;name&quot;:&quot;Voldemarr Hippopotamus&quot;,&quot;email&quot;:&quot;vol@hip.com&quot;,&quot;position&quot;:&quot;CEO&quot;,&quot;phone&quot;:&quot;&quot;,&quot;id&quot;:&quot;1&quot;}">
@@ -61,11 +62,17 @@
 		</li>
 	</ul>
 
-	<div dp-class="{highlighted: card['of_user1'].id == 17}">
+	<div dp-class="{highlighted: cart['of_some_user'].id == 0}">
 		<button dp-click="cart.of_user1.delete()" type="button">Delete this model from server</button>
 	</div>
 </form>
+-->
 
+<div dp-class="{highlighted: cart['of_some_user'].id == false}">
+	<button type="button">Delete this model from server</button>
+</div>
+
+<!--
 <h2>Model #2 (initiated from script json)</h2>
 
 <script type="application/json" data-of="user2">{"name":"James Hetfield","email":"james@metla.com","position":"Rock concert specialist","phone":"111222","id":"2"}</script>
@@ -123,6 +130,7 @@
 		</li>
 	</ul>
 </form>
+-->
 
 <script type="text/javascript" src="../../bower_components/jquery/dist/jquery.min.js"></script>
 <script type="text/javascript" src="../../bower_components/jsep/build/jsep.min.js"></script>
