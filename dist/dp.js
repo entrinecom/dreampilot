@@ -206,8 +206,8 @@ DreamPilot.Attributes = (function() {
 
   Attributes.prototype.ScopePromises = null;
 
-  function Attributes(App) {
-    this.App = App;
+  function Attributes(App1) {
+    this.App = App1;
     this.setupScopePromises().setupAttributes();
   }
 
@@ -241,17 +241,21 @@ DreamPilot.Attributes = (function() {
     var that;
     that = this;
     this.eachByAttr(self.classAttr, function() {
-      var $el, cssClass, el, expression, field, i, len, obj, ref;
+      var $el, cssClass, el, expression, field, k, len, obj, ref;
       el = this;
       $el = $dp.e(el);
       obj = $dp.Parser.object($el.attr($dp.attribute(self.classAttr)));
       for (cssClass in obj) {
         expression = obj[cssClass];
-        $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp(), el));
+        $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp(), el, (function(_this) {
+          return function() {
+            return that.classAddPromise(cssClass, expression, el);
+          };
+        })(this)));
       }
       ref = $dp.Parser.getLastUsedVariables();
-      for (i = 0, len = ref.length; i < len; i++) {
-        field = ref[i];
+      for (k = 0, len = ref.length; k < len; k++) {
+        field = ref[k];
         that.getScope().onChange(field, function(field, value) {
           return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp(), el));
         });
@@ -261,18 +265,54 @@ DreamPilot.Attributes = (function() {
     return this;
   };
 
+  Attributes.prototype.classAddPromise = function(cssClass, expression, el) {
+    this.ScopePromises.add({
+      expression: expression,
+      app: this.getApp(),
+      scope: this.getScope(),
+      element: el,
+      cb: (function(_this) {
+        return function(App, Scopes, vars) {
+          var i, j, k, ref, results;
+          results = [];
+          for (i = k = ref = vars.length - 1; ref <= 0 ? k <= 0 : k >= 0; i = ref <= 0 ? ++k : --k) {
+            results.push((function() {
+              var l, ref1, results1;
+              results1 = [];
+              for (j = l = ref1 = Scopes.length - 1; ref1 <= 0 ? l <= 0 : l >= 0; j = ref1 <= 0 ? ++l : --l) {
+                if (Scopes[j].exists(vars[i])) {
+                  Scopes[j].onChange(vars[i], function(field, value) {
+                    var $el;
+                    $el = $dp.e(el);
+                    return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, App, el));
+                  });
+                  break;
+                } else {
+                  results1.push(void 0);
+                }
+              }
+              return results1;
+            })());
+          }
+          return results;
+        };
+      })(this)
+    });
+    return this;
+  };
+
   Attributes.prototype.setupShowAttribute = function() {
     var that;
     that = this;
     this.eachByAttr(self.showAttr, function() {
-      var $el, el, expression, field, i, len, ref;
+      var $el, el, expression, field, k, len, ref;
       el = this;
       $el = $dp.e(el);
       expression = $el.attr($dp.attribute(self.showAttr));
       $el.toggle($dp.Parser.isExpressionTrue(expression, that.getApp(), el));
       ref = $dp.Parser.getLastUsedVariables();
-      for (i = 0, len = ref.length; i < len; i++) {
-        field = ref[i];
+      for (k = 0, len = ref.length; k < len; k++) {
+        field = ref[k];
         that.getScope().onChange(field, function(field, value) {
           return $el.toggle($dp.Parser.isExpressionTrue(expression, that.getApp(), el));
         });
@@ -309,14 +349,14 @@ DreamPilot.Attributes = (function() {
     var that;
     that = this;
     this.eachByAttr(self.ifAttr, function() {
-      var $el, el, expression, field, i, len, ref;
+      var $el, el, expression, field, k, len, ref;
       el = this;
       $el = $dp.e(el);
       expression = $el.attr($dp.attribute(self.ifAttr));
       that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression);
       ref = $dp.Parser.getLastUsedVariables();
-      for (i = 0, len = ref.length; i < len; i++) {
-        field = ref[i];
+      for (k = 0, len = ref.length; k < len; k++) {
+        field = ref[k];
         that.getScope().onChange(field, function(field, value) {
           return that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression);
         });
@@ -512,6 +552,7 @@ DreamPilot.Model = (function() {
     this.callbacks = {
       change: {}
     };
+    this.mainScope = false;
     this.initFrom(_data).init();
   }
 
@@ -656,6 +697,10 @@ DreamPilot.Model = (function() {
 
   Model.prototype.existsRelated = function(field) {
     return typeof this.relatedData[field] !== 'undefined';
+  };
+
+  Model.prototype.isMainScope = function() {
+    return this.mainScope;
   };
 
   Model.prototype.getSaveMethod = function() {
@@ -854,6 +899,12 @@ DreamPilot.Scope = (function(superClass) {
   function Scope() {
     return Scope.__super__.constructor.apply(this, arguments);
   }
+
+  Scope.prototype.init = function() {
+    Scope.__super__.init.call(this);
+    this.mainScope = true;
+    return this;
+  };
 
   return Scope;
 
@@ -1449,6 +1500,16 @@ DreamPilot.Parser = (function() {
 
   Parser.lastUsedVariables = {};
 
+  Parser.lastErrors = [];
+
+  Parser.lastScopes = [];
+
+  Parser.SCOPE_IS_UNDEFINED = 1;
+
+  Parser.MEMBER_OBJECT_IS_UNDEFINED = 2;
+
+  Parser.MEMBER_OBJECT_NOT_A_MODEL = 3;
+
   Parser.object = function(dataStr, options) {
     var addPair, ch, i, isQuote, isSpace, j, len, o, pair, quoteOpened, skip, underCursor;
     if (options == null) {
@@ -1510,34 +1571,26 @@ DreamPilot.Parser = (function() {
     return o;
   };
 
-
-  /*
-  @leaveNodeInPromise: (node, Scope, element, callback) ->
-      if Scope is null
-          console.log node, Scope, element, callback
-          return true
-          that.ScopePromises.add
-              node: node
-              scope: Scope
-              cb: (_scope) ->
-                  field = $dp.Parser.getPropertyOfExpression field
-                  self.bindValueWriteToAttribute field, $el, _scope if write
-                  self.bindValueReadFromAttribute field, $el, _scope if read
-  
-          return true
-      false
-   */
-
-  Parser.evalNode = function(node, Scope, element) {
+  Parser.evalNode = function(node, Scope, element, promiseCallback) {
     var arg, args, fn, obj, ref;
     if (element == null) {
       element = null;
     }
+    if (promiseCallback == null) {
+      promiseCallback = null;
+    }
     if (!(Scope instanceof DreamPilot.Model || ((ref = node.type) === 'Literal' || ref === 'ThisExpression'))) {
       if (!Scope) {
+        self.addToLastErrors(self.SCOPE_IS_UNDEFINED);
+        if (promiseCallback) {
+          promiseCallback();
+        }
         return false;
       }
       throw "Scope should be a DreamPilot.Model instance, but " + ($dp.fn.getType(Scope)) + " given: '" + Scope + "'";
+    }
+    if (Scope instanceof DreamPilot.Model && !Scope.isMainScope()) {
+      this.addToLastScopes(Scope);
     }
     switch (node.type) {
       case 'CallExpression':
@@ -1548,7 +1601,7 @@ DreamPilot.Parser = (function() {
             results = [];
             for (j = 0, len = ref1.length; j < len; j++) {
               arg = ref1[j];
-              results.push(self.evalNode(arg, Scope, element));
+              results.push(self.evalNode(arg, Scope, element, promiseCallback));
             }
             return results;
           })();
@@ -1571,24 +1624,32 @@ DreamPilot.Parser = (function() {
         if (typeof self.operators.binary[node.operator] === 'undefined') {
           throw 'No callback for binary operator ' + node.operator;
         }
-        return self.operators.binary[node.operator](self.evalNode(node.left, Scope, element), self.evalNode(node.right, Scope, element));
+        return self.operators.binary[node.operator](self.evalNode(node.left, Scope, element, promiseCallback), self.evalNode(node.right, Scope, element, promiseCallback));
       case 'UnaryExpression':
         if (typeof self.operators.unary[node.operator] === 'undefined') {
           throw 'No callback for unary operator ' + node.operator;
         }
-        return self.operators.unary[node.operator](self.evalNode(node.argument, Scope, element));
+        return self.operators.unary[node.operator](self.evalNode(node.argument, Scope, element, promiseCallback));
       case 'LogicalExpression':
         if (typeof self.operators.logical[node.operator] === 'undefined') {
           throw 'No callback for logical operator ' + node.operator;
         }
-        return self.operators.logical[node.operator](self.evalNode(node.left, Scope, element), self.evalNode(node.right, Scope, element));
+        return self.operators.logical[node.operator](self.evalNode(node.left, Scope, element, promiseCallback), self.evalNode(node.right, Scope, element, promiseCallback));
       case 'MemberExpression':
-        obj = self.evalNode(node.object, Scope, element);
+        if (node.property.type === 'Literal') {
+          node.property.type = 'Identifier';
+          node.property.name = node.property.value;
+        }
+        obj = self.evalNode(node.object, Scope, element, promiseCallback);
         if (!(obj instanceof DreamPilot.Model)) {
+          self.addToLastErrors(obj ? self.MEMBER_OBJECT_NOT_A_MODEL : self.MEMBER_OBJECT_IS_UNDEFINED);
+          if (promiseCallback) {
+            promiseCallback();
+          }
           self.addToLastUsedVariables(node.object.name);
           return null;
         }
-        return self.evalNode(node.property, obj, element);
+        return self.evalNode(node.property, obj, element, promiseCallback);
       case 'Identifier':
         self.addToLastUsedVariables(node.name);
         if (Scope instanceof DreamPilot.Model) {
@@ -1667,16 +1728,21 @@ DreamPilot.Parser = (function() {
     }
   };
 
-  Parser.isExpressionTrue = function(expr, App, element) {
+  Parser.isExpressionTrue = function(expr, App, element, promiseCallback) {
     var e;
     if (element == null) {
       element = App.getActiveElement();
     }
+    if (promiseCallback == null) {
+      promiseCallback = null;
+    }
     try {
       self.resetLastUsedVariables();
-      return !!self.evalNode(jsep(expr), App.getScope(), element);
-    } catch (error) {
-      e = error;
+      self.resetLastErrors();
+      self.resetLastScopes();
+      return !!self.evalNode(jsep(expr), App.getScope(), element, promiseCallback);
+    } catch (error1) {
+      e = error1;
       $dp.log.error('Expression parsing (isExpressionTrue) error ', e, ' Full expression:', expr);
       return false;
     }
@@ -1693,6 +1759,8 @@ DreamPilot.Parser = (function() {
       curlyBracketsNeeded: false
     });
     self.resetLastUsedVariables();
+    self.resetLastErrors();
+    self.resetLastScopes();
     for (key in rows) {
       expr = rows[key];
       try {
@@ -1711,8 +1779,8 @@ DreamPilot.Parser = (function() {
           }
           App.getScope().set(key, self.evalNode(method, Scope, element));
         }
-      } catch (error) {
-        e = error;
+      } catch (error1) {
+        e = error1;
         throw e;
         $dp.log.error('Expression parsing (executeExpressions) error', e, ':', key, expr);
         false;
@@ -1735,6 +1803,38 @@ DreamPilot.Parser = (function() {
     }
   };
 
+  Parser.resetLastErrors = function() {
+    return self.lastErrors = [];
+  };
+
+  Parser.getLastErrors = function() {
+    return self.lastErrors;
+  };
+
+  Parser.hasLastErrors = function() {
+    return self.lastErrors.length > 0;
+  };
+
+  Parser.addToLastErrors = function(error) {
+    return self.lastErrors.push(error);
+  };
+
+  Parser.resetLastScopes = function() {
+    return self.lastScopes = [];
+  };
+
+  Parser.getLastScopes = function() {
+    return self.lastScopes;
+  };
+
+  Parser.hasLastScopes = function() {
+    return self.lastScopes.length > 0;
+  };
+
+  Parser.addToLastScopes = function(scope) {
+    return self.lastScopes.push(scope);
+  };
+
   return Parser;
 
 })();
@@ -1749,6 +1849,14 @@ DreamPilot.ScopePromises = (function() {
   function ScopePromises() {}
 
   ScopePromises.prototype.add = function(options) {
+    var idx, rec, ref;
+    ref = this.list;
+    for (idx in ref) {
+      rec = ref[idx];
+      if ((rec['expression'] != null) && (options['expression'] != null) && rec['expression'] === options['expression']) {
+        return this;
+      }
+    }
     this.list.push(options);
     this.initCheck();
     return this;
@@ -1773,17 +1881,30 @@ DreamPilot.ScopePromises = (function() {
     }
     this.interval = setInterval((function(_this) {
       return function() {
-        var Scope, idx, rec, ref, results;
+        var Scope, Scopes, idx, rec, ref, results, vars;
         ref = _this.list;
         results = [];
         for (idx in ref) {
           rec = ref[idx];
-          Scope = $dp.Parser.getScopeOf(rec['field'], rec['scope']);
-          if (Scope) {
-            rec.cb(Scope);
-            results.push(_this.remove(idx));
+          if (rec['expression'] != null) {
+            console.log('lets check', rec['expression']);
+            $dp.Parser.isExpressionTrue(rec['expression'], rec['app'], rec['element']);
+            if (!$dp.Parser.hasLastErrors()) {
+              Scopes = $dp.Parser.getLastScopes();
+              vars = $dp.Parser.getLastUsedVariables();
+              rec.cb(rec['app'], Scopes, vars);
+              results.push(_this.remove(idx));
+            } else {
+              results.push(void 0);
+            }
           } else {
-            results.push(void 0);
+            Scope = $dp.Parser.getScopeOf(rec['field'], rec['scope']);
+            if (Scope) {
+              rec.cb(Scope);
+              results.push(_this.remove(idx));
+            } else {
+              results.push(void 0);
+            }
           }
         }
         return results;

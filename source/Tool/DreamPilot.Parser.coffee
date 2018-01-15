@@ -26,7 +26,14 @@ class DreamPilot.Parser
         logical:
             '&&': (a, b) -> a and b
             '||': (a, b) -> a or b
+
     @lastUsedVariables: {}
+    @lastErrors: []
+    @lastScopes: []
+
+    @SCOPE_IS_UNDEFINED = 1
+    @MEMBER_OBJECT_IS_UNDEFINED = 2
+    @MEMBER_OBJECT_NOT_A_MODEL = 3
 
     @object: (dataStr, options = {}) ->
         options = $dp.fn.extend
@@ -81,35 +88,21 @@ class DreamPilot.Parser
         addPair() if pair.key or pair.value
         o
 
-    ###
-    @leaveNodeInPromise: (node, Scope, element, callback) ->
-        if Scope is null
-            console.log node, Scope, element, callback
-            return true
-            that.ScopePromises.add
-                node: node
-                scope: Scope
-                cb: (_scope) ->
-                    field = $dp.Parser.getPropertyOfExpression field
-                    self.bindValueWriteToAttribute field, $el, _scope if write
-                    self.bindValueReadFromAttribute field, $el, _scope if read
-
-            return true
-        false
-    ###
-
-    @evalNode: (node, Scope, element = null) ->
+    @evalNode: (node, Scope, element = null, promiseCallback = null) ->
         # console.log 'evalNode', node, Scope, element
         unless Scope instanceof DreamPilot.Model or node.type in ['Literal', 'ThisExpression']
-            #return false if self.leaveNodeInPromise node, Scope, element, -> self.evalNode node, Scope, element
-            return false unless Scope
+            unless Scope
+                self.addToLastErrors self.SCOPE_IS_UNDEFINED
+                promiseCallback() if promiseCallback
+                return false
             throw "Scope should be a DreamPilot.Model instance, but #{$dp.fn.getType(Scope)} given: '#{Scope}'"
         #if $dp.fn.getType(Scope) isnt 'object'
         #    throw 'Scope should be an object, but ' + $dp.fn.getType(Scope) + " given: #{$dp.fn.print_r(Scope)}"
+        @addToLastScopes Scope if Scope instanceof DreamPilot.Model and not Scope.isMainScope()
         switch node.type
             when 'CallExpression'
                 if node.callee.type? and node.callee.type is 'Identifier' and node.callee.name
-                    args = (self.evalNode arg, Scope, element for arg in node.arguments)
+                    args = (self.evalNode arg, Scope, element, promiseCallback for arg in node.arguments)
                     fn = Scope.get node.callee.name
                     if fn and typeof fn is 'function'
                         fn args...
@@ -124,23 +117,31 @@ class DreamPilot.Parser
             when 'BinaryExpression'
                 if typeof self.operators.binary[node.operator] is 'undefined'
                     throw 'No callback for binary operator ' + node.operator
-                self.operators.binary[node.operator] self.evalNode(node.left, Scope, element), self.evalNode(node.right, Scope, element)
+                self.operators.binary[node.operator] self.evalNode(node.left, Scope, element, promiseCallback), self.evalNode(node.right, Scope, element, promiseCallback)
             when 'UnaryExpression'
                 if typeof self.operators.unary[node.operator] is 'undefined'
                     throw 'No callback for unary operator ' + node.operator
-                self.operators.unary[node.operator] self.evalNode(node.argument, Scope, element)
+                self.operators.unary[node.operator] self.evalNode(node.argument, Scope, element, promiseCallback)
             when 'LogicalExpression'
                 if typeof self.operators.logical[node.operator] is 'undefined'
                     throw 'No callback for logical operator ' + node.operator
-                self.operators.logical[node.operator] self.evalNode(node.left, Scope, element), self.evalNode(node.right, Scope, element)
+                self.operators.logical[node.operator] self.evalNode(node.left, Scope, element, promiseCallback), self.evalNode(node.right, Scope, element, promiseCallback)
             when 'MemberExpression'
-                obj = self.evalNode node.object, Scope, element
+                #console.log '[1]', node.object
+                if node.property.type is 'Literal'
+                    node.property.type = 'Identifier'
+                    node.property.name = node.property.value
+                obj = self.evalNode node.object, Scope, element, promiseCallback
+                #if obj is 'of_user1'
+                #console.log '[2]', obj, node, Scope
+                #console.log 'MemberExpression obj', obj, 'property', node.property, 'object', node.object, 'scope', Scope
                 unless obj instanceof DreamPilot.Model
-                    # console.log 'node', node
+                    #console.log '[2.5]', obj, node, Scope
+                    self.addToLastErrors if obj then self.MEMBER_OBJECT_NOT_A_MODEL else self.MEMBER_OBJECT_IS_UNDEFINED
+                    promiseCallback() if promiseCallback
                     self.addToLastUsedVariables node.object.name
                     return null
-                # console.log 'MemberExpression obj', obj, 'property', node.property, 'object', node.object, 'scope', Scope
-                self.evalNode node.property, obj, element
+                self.evalNode node.property, obj, element, promiseCallback
             when 'Identifier'
                 self.addToLastUsedVariables node.name
                 if Scope instanceof DreamPilot.Model
@@ -149,6 +150,7 @@ class DreamPilot.Parser
                     if Scope[node.name]? then Scope[node.name] else null
             #when 'Literal' then node.value
             when 'Literal'
+                #if Scope then Scope.get(node.value) or node.value else null
                 if Scope then node.value else null
             when 'ThisExpression' then element
             else throw 'Unknown node type ' + node.type
@@ -186,10 +188,12 @@ class DreamPilot.Parser
         else
             expr
 
-    @isExpressionTrue: (expr, App, element = App.getActiveElement()) ->
+    @isExpressionTrue: (expr, App, element = App.getActiveElement(), promiseCallback = null) ->
         try
             self.resetLastUsedVariables()
-            !! self.evalNode jsep(expr), App.getScope(), element
+            self.resetLastErrors()
+            self.resetLastScopes()
+            !! self.evalNode jsep(expr), App.getScope(), element, promiseCallback
         catch e
             $dp.log.error 'Expression parsing (isExpressionTrue) error ', e, ' Full expression:', expr
             false
@@ -200,6 +204,8 @@ class DreamPilot.Parser
             assign: '='
             curlyBracketsNeeded: false
         self.resetLastUsedVariables()
+        self.resetLastErrors()
+        self.resetLastScopes()
         for key, expr of rows
             try
                 if key.indexOf('(') > -1 and expr is ''
@@ -226,3 +232,27 @@ class DreamPilot.Parser
 
     @addToLastUsedVariables: (key) ->
         self.lastUsedVariables[key] = true if key
+
+    @resetLastErrors: ->
+        self.lastErrors = []
+
+    @getLastErrors: ->
+        self.lastErrors
+
+    @hasLastErrors: ->
+        self.lastErrors.length > 0
+
+    @addToLastErrors: (error) ->
+        self.lastErrors.push error
+
+    @resetLastScopes: ->
+        self.lastScopes = []
+
+    @getLastScopes: ->
+        self.lastScopes
+
+    @hasLastScopes: ->
+        self.lastScopes.length > 0
+
+    @addToLastScopes: (scope) ->
+        self.lastScopes.push scope

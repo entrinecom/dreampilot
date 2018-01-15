@@ -51,7 +51,8 @@ class DreamPilot.Attributes
 
             # todo: keep parsed expressions as closures connected to elements
             for cssClass, expression of obj
-                $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el
+                $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el, =>
+                    that.classAddPromise cssClass, expression, el
 
             # setting up watchers
             for field in $dp.Parser.getLastUsedVariables()
@@ -61,6 +62,23 @@ class DreamPilot.Attributes
 
             true
 
+        @
+
+    classAddPromise: (cssClass, expression, el) ->
+        @ScopePromises.add
+            expression: expression
+            app: @getApp()
+            scope: @getScope()
+            element: el
+            cb: (App, Scopes, vars) =>
+                for i in [vars.length - 1..0]
+                    for j in [Scopes.length - 1..0]
+                        if Scopes[j].exists vars[i]
+                            Scopes[j].onChange vars[i], (field, value) ->
+                                $el = $dp.e el
+                                $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, App, el
+                            break
+                # console.log 'we got', cssClass, expression
         @
 
     setupShowAttribute: ->

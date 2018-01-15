@@ -6,6 +6,9 @@ class DreamPilot.ScopePromises
     constructor: ->
 
     add: (options) ->
+        for idx, rec of @list
+            if rec['expression']? and options['expression']? and rec['expression'] is options['expression']
+                return @
         @list.push options
         @initCheck()
         @
@@ -23,9 +26,18 @@ class DreamPilot.ScopePromises
         return @ if @interval
         @interval = setInterval =>
             for idx, rec of @list
-                Scope = $dp.Parser.getScopeOf rec['field'], rec['scope']
-                if Scope
-                    rec.cb Scope
-                    @remove idx
+                if rec['expression']?
+                    console.log 'lets check', rec['expression']
+                    $dp.Parser.isExpressionTrue rec['expression'], rec['app'], rec['element']
+                    unless $dp.Parser.hasLastErrors()
+                        Scopes = $dp.Parser.getLastScopes()
+                        vars = $dp.Parser.getLastUsedVariables()
+                        rec.cb rec['app'], Scopes, vars
+                        @remove idx
+                else
+                    Scope = $dp.Parser.getScopeOf rec['field'], rec['scope']
+                    if Scope
+                        rec.cb Scope
+                        @remove idx
         , @delay
         @

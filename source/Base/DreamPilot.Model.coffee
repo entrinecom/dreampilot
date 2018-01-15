@@ -8,6 +8,7 @@ class DreamPilot.Model
         @saveDelay = 1000
         @callbacks =
             change: {}
+        @mainScope = false
         @initFrom _data
         .init()
 
@@ -83,6 +84,8 @@ class DreamPilot.Model
 
     existsRelated: (field) ->
         typeof @relatedData[field] isnt 'undefined'
+
+    isMainScope: -> @mainScope
 
     getSaveMethod: ->
         $dp.transport.POST
