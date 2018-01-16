@@ -29,10 +29,15 @@
 			background: green;
 			color: white;
 		}
+
+		.shadow {
+			box-shadow: 0 0 5px rgba(0,0,0,.75);
+		}
 	</style>
 </head>
 <body dp-app="BasicApp">
 
+<div dp-init="iii = 1; jjj = 2; kkk = 3;" dp-class="{blue: jjj > iii && '0' == 0, 'shadow': kkk > iii || 1 / 3 > '0', red: someModel.message == ''}">several classes test</div>
 <div dp-class="{hey: 1 > 0, 'lolo-and-pepe': lolo > 8 && pepe == 7}">class: hey!</div>
 <div dp-class="{yo: lolo != 6, comeon: 1 === '1'}">class: yo</div>
 <div dp-show="lolo > 10">show: lolo &gt; 10</div>

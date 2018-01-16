@@ -1535,7 +1535,12 @@ DreamPilot.Parser = (function() {
       value: ''
     };
     addPair = function() {
-      o[$dp.fn.trim(pair.key)] = pair.value;
+      var ref;
+      pair.key = $dp.fn.trim(pair.key);
+      if ((ref = pair.key.charAt(0), indexOf.call(self.quotes, ref) >= 0) && pair.key.charAt(0) === pair.key.charAt(pair.key.length - 1)) {
+        pair.key = pair.key.substr(1, pair.key.length - 2);
+      }
+      o[pair.key] = pair.value;
       return pair.key = pair.value = '';
     };
     quoteOpened = null;

@@ -52,7 +52,10 @@ class DreamPilot.Parser
             key: ''
             value: ''
         addPair = ->
-            o[$dp.fn.trim(pair.key)] = pair.value #$dp.fn.trim
+            pair.key = $dp.fn.trim pair.key
+            if pair.key.charAt(0) in self.quotes and pair.key.charAt(0) is pair.key.charAt(pair.key.length - 1)
+                pair.key = pair.key.substr 1, pair.key.length - 2
+            o[pair.key] = pair.value #$dp.fn.trim
             pair.key = pair.value = ''
         quoteOpened = null
         underCursor = 'key'
