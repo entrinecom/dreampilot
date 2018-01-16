@@ -63,7 +63,6 @@ class DreamPilot.Application
                 do (key) => @getScope().set key, (args...) => @[key] args...
             else if type isnt 'undefined'
                 obj = @[key]
-                obj.setParent @getScope(), key if obj instanceof DreamPilot.Model
                 @getScope().set key, obj
                 #console.log 'set parent', key, obj
             else

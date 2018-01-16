@@ -4,6 +4,8 @@ class DreamPilot.Model
         @relatedData = {}
         @parent = null
         @parentField = null
+        @assignModelToParent = true
+        @assignChildModels = true
         @saveTimeout = null
         @saveDelay = 1000
         @callbacks =
@@ -61,6 +63,8 @@ class DreamPilot.Model
         if typeof field is 'object' and value is null
             @set k, v for k, v of field
         else
+            if value instanceof DreamPilot.Model and @assignChildModels and value.assignModelToParent
+                value.setParent @, field
             @data[field] = value
             @trigger 'change', field
         @

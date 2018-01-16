@@ -170,9 +170,6 @@ DreamPilot.Application = (function() {
         })(this)(key);
       } else if (type !== 'undefined') {
         obj = this[key];
-        if (obj instanceof DreamPilot.Model) {
-          obj.setParent(this.getScope(), key);
-        }
         this.getScope().set(key, obj);
       } else {
         $dp.log.print("Key " + key + " not found in application");
@@ -547,6 +544,8 @@ DreamPilot.Model = (function() {
     this.relatedData = {};
     this.parent = null;
     this.parentField = null;
+    this.assignModelToParent = true;
+    this.assignChildModels = true;
     this.saveTimeout = null;
     this.saveDelay = 1000;
     this.callbacks = {
@@ -647,6 +646,9 @@ DreamPilot.Model = (function() {
         this.set(k, v);
       }
     } else {
+      if (value instanceof DreamPilot.Model && this.assignChildModels && value.assignModelToParent) {
+        value.setParent(this, field);
+      }
       this.data[field] = value;
       this.trigger('change', field);
     }
@@ -1887,7 +1889,6 @@ DreamPilot.ScopePromises = (function() {
         for (idx in ref) {
           rec = ref[idx];
           if (rec['expression'] != null) {
-            console.log('lets check', rec['expression']);
             $dp.Parser.isExpressionTrue(rec['expression'], rec['app'], rec['element']);
             if (!$dp.Parser.hasLastErrors()) {
               Scopes = $dp.Parser.getLastScopes();

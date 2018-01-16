@@ -60,12 +60,12 @@
 		</li>
 		<li>
 			<div>Count in cart:</div>
-			<input type="number" name="count" dp-value-bind="cart.of_user1.count">
+			<input type="number" name="count" dp-value-bind="cart['of_user1'].count">
 			<button type="button" dp-click="cart.of_user1.shout('hello', this)">Shout!</button>
 		</li>
 	</ul>
 
-	<div dp-class="{highlighted: cart['of_user1'].count == 3}">
+	<div dp-class="{highlighted: cart['of_user1'].count == '3'}">
 		<button dp3-click2="cart.of_user1.delete()" type="button">Delete this model from server</button>
 	</div>
 </form>

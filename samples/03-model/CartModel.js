@@ -10,6 +10,16 @@ CartModel = (function(superClass) {
     return CartModel.__super__.constructor.apply(this, arguments);
   }
 
+  CartModel.prototype.init = function() {
+    CartModel.__super__.init.call(this);
+    this.onChange(['of_user1'], (function(_this) {
+      return function(field, value) {
+        return console.log('cart: item changed', field, '=', value);
+      };
+    })(this));
+    return this;
+  };
+
   return CartModel;
 
 })(DreamPilot.Model);

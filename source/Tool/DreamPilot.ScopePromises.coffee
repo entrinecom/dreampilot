@@ -27,7 +27,6 @@ class DreamPilot.ScopePromises
         @interval = setInterval =>
             for idx, rec of @list
                 if rec['expression']?
-                    console.log 'lets check', rec['expression']
                     $dp.Parser.isExpressionTrue rec['expression'], rec['app'], rec['element']
                     unless $dp.Parser.hasLastErrors()
                         Scopes = $dp.Parser.getLastScopes()
