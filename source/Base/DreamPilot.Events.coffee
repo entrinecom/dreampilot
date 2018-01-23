@@ -3,6 +3,7 @@ class DreamPilot.Events
 
     events: [
         'click'
+        'dblclick'
         'focus'
         'blur'
         'change'
@@ -11,8 +12,13 @@ class DreamPilot.Events
         'keydown'
         'mouseover'
         'mouseout'
+        'mousemove'
+        'mousedown'
+        'mouseup'
+        'wheel'
         'paste'
         'input'
+        'submit'
     ]
 
     constructor: (@App) ->

@@ -489,7 +489,7 @@ DreamPilot.Events = (function() {
 
   self = Events;
 
-  Events.prototype.events = ['click', 'focus', 'blur', 'change', 'keypress', 'keyup', 'keydown', 'mouseover', 'mouseout', 'paste', 'input'];
+  Events.prototype.events = ['click', 'dblclick', 'focus', 'blur', 'change', 'keypress', 'keyup', 'keydown', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mouseup', 'wheel', 'paste', 'input', 'submit'];
 
   function Events(App) {
     this.App = App;
@@ -1206,6 +1206,12 @@ DreamPilot.Functions = (function() {
     return res;
   };
 
+  Functions.arrayUnique = function(ar) {
+    return jQuery.grep(ar, function(el, index) {
+      return index === jQuery.inArray(el, ar);
+    });
+  };
+
   Functions.lead0 = function(x, len) {
     var results;
     if (len == null) {
@@ -1313,10 +1319,20 @@ DreamPilot.Functions = (function() {
   };
 
   Functions.getValueOfElement = function($element) {
+    var val;
     if ($element.is('input')) {
       switch ($element.attr('type')) {
         case 'checkbox':
-          return $element.prop('checked');
+          val = $element.val();
+          if (val === 'on') {
+            val = true;
+          }
+          if ($element.prop('checked')) {
+            return val;
+          } else {
+            return false;
+          }
+          break;
         case 'radio':
           if ($element.prop('checked')) {
             return $element.val();

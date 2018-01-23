@@ -129,6 +129,8 @@ class DreamPilot.Functions
             i--
         res
 
+    @arrayUnique: (ar) -> jQuery.grep ar, (el, index) -> index is jQuery.inArray el, ar
+
     @lead0: (x, len = 2) ->
         x = @str x
         x = '0' + x while x.length < len
@@ -183,7 +185,9 @@ class DreamPilot.Functions
         if $element.is 'input'
             switch $element.attr 'type'
                 when 'checkbox'
-                    $element.prop 'checked'
+                    val = $element.val()
+                    val = true if val is 'on'
+                    if $element.prop 'checked' then val else false
                 when 'radio'
                     $element.val() if $element.prop 'checked' # todo
                 else
