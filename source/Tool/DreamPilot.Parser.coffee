@@ -146,11 +146,15 @@ class DreamPilot.Parser
                     return null
                 self.evalNode node.property, obj, element, promiseCallback
             when 'Identifier'
-                self.addToLastUsedVariables node.name
-                if Scope instanceof DreamPilot.Model
-                    Scope.get node.name
-                else
-                    if Scope[node.name]? then Scope[node.name] else null
+                switch node.name
+                    when '$event'
+                        element.dpEvent
+                    else
+                        self.addToLastUsedVariables node.name
+                        if Scope instanceof DreamPilot.Model
+                            Scope.get node.name
+                        else
+                            if Scope[node.name]? then Scope[node.name] else null
             #when 'Literal' then node.value
             when 'Literal'
                 #if Scope then Scope.get(node.value) or node.value else null
@@ -201,7 +205,7 @@ class DreamPilot.Parser
             $dp.log.error 'Expression parsing (isExpressionTrue) error ', e, ' Full expression:', expr
             false
 
-    @executeExpressions: (allExpr, App, element = App.getActiveElement()) ->
+    @executeExpressions: (allExpr, App, element = App.getActiveElement(), event = null) ->
         rows = @object allExpr,
             delimiter: ';'
             assign: '='
@@ -209,6 +213,7 @@ class DreamPilot.Parser
         self.resetLastUsedVariables()
         self.resetLastErrors()
         self.resetLastScopes()
+        element.dpEvent = event
         for key, expr of rows
             try
                 if key.indexOf('(') > -1 and expr is ''

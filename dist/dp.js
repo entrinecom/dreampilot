@@ -522,8 +522,9 @@ DreamPilot.Events = (function() {
       $el = $dp.e(this);
       expression = $el.attr($dp.attribute(name));
       $el.on(name, function(event) {
+        event = event || window.event;
         that.App.setActiveElement(this);
-        $dp.Parser.executeExpressions(expression, that.App, this);
+        $dp.Parser.executeExpressions(expression, that.App, this, event);
         return that.App.resetActiveElement();
       });
       return true;
@@ -912,48 +913,6 @@ DreamPilot.Scope = (function(superClass) {
 
 })(DreamPilot.Model);
 
-DreamPilot.Router = (function() {
-  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
-
-  WORK_MODE_HASH = 1;
-
-  WORK_MODE_URL = 2;
-
-  ELSE_PATH = null;
-
-  Router.prototype.steps = {};
-
-  function Router(App, options) {
-    this.App = App;
-    if (options == null) {
-      options = {};
-    }
-    this.options = $.extend({
-      workMode: WORK_MODE_HASH,
-      attrName: 'data-step'
-    }, options);
-  }
-
-  Router.prototype.when = function(path, opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[path] = opts;
-    return this;
-  };
-
-  Router.prototype["else"] = function(opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[ELSE_PATH] = opts;
-    return this;
-  };
-
-  return Router;
-
-})();
-
 var slice = [].slice;
 
 DreamPilot.Functions = (function() {
@@ -1330,7 +1289,7 @@ DreamPilot.Functions = (function() {
           if ($element.prop('checked')) {
             return val;
           } else {
-            return false;
+            return null;
           }
           break;
         case 'radio':
@@ -1674,15 +1633,20 @@ DreamPilot.Parser = (function() {
         }
         return self.evalNode(node.property, obj, element, promiseCallback);
       case 'Identifier':
-        self.addToLastUsedVariables(node.name);
-        if (Scope instanceof DreamPilot.Model) {
-          return Scope.get(node.name);
-        } else {
-          if (Scope[node.name] != null) {
-            return Scope[node.name];
-          } else {
-            return null;
-          }
+        switch (node.name) {
+          case '$event':
+            return element.dpEvent;
+          default:
+            self.addToLastUsedVariables(node.name);
+            if (Scope instanceof DreamPilot.Model) {
+              return Scope.get(node.name);
+            } else {
+              if (Scope[node.name] != null) {
+                return Scope[node.name];
+              } else {
+                return null;
+              }
+            }
         }
         break;
       case 'Literal':
@@ -1771,10 +1735,13 @@ DreamPilot.Parser = (function() {
     }
   };
 
-  Parser.executeExpressions = function(allExpr, App, element) {
+  Parser.executeExpressions = function(allExpr, App, element, event) {
     var Scope, e, expr, key, method, rows;
     if (element == null) {
       element = App.getActiveElement();
+    }
+    if (event == null) {
+      event = null;
     }
     rows = this.object(allExpr, {
       delimiter: ';',
@@ -1784,6 +1751,7 @@ DreamPilot.Parser = (function() {
     self.resetLastUsedVariables();
     self.resetLastErrors();
     self.resetLastScopes();
+    element.dpEvent = event;
     for (key in rows) {
       expr = rows[key];
       try {
@@ -2060,3 +2028,45 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
+
+DreamPilot.Router = (function() {
+  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
+
+  WORK_MODE_HASH = 1;
+
+  WORK_MODE_URL = 2;
+
+  ELSE_PATH = null;
+
+  Router.prototype.steps = {};
+
+  function Router(App, options) {
+    this.App = App;
+    if (options == null) {
+      options = {};
+    }
+    this.options = $.extend({
+      workMode: WORK_MODE_HASH,
+      attrName: 'data-step'
+    }, options);
+  }
+
+  Router.prototype.when = function(path, opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[path] = opts;
+    return this;
+  };
+
+  Router.prototype["else"] = function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[ELSE_PATH] = opts;
+    return this;
+  };
+
+  return Router;
+
+})();

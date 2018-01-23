@@ -187,7 +187,7 @@ class DreamPilot.Functions
                 when 'checkbox'
                     val = $element.val()
                     val = true if val is 'on'
-                    if $element.prop 'checked' then val else false
+                    if $element.prop 'checked' then val else null
                 when 'radio'
                     $element.val() if $element.prop 'checked' # todo
                 else

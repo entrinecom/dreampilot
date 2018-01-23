@@ -40,9 +40,9 @@ class DreamPilot.Events
             expression = $el.attr $dp.attribute name
 
             $el.on name, (event) ->
-                #event = event || window.event
+                event = event or window.event
                 that.App.setActiveElement @
-                $dp.Parser.executeExpressions expression, that.App, @
+                $dp.Parser.executeExpressions expression, that.App, @, event
                 that.App.resetActiveElement()
 
             true

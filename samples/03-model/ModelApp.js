@@ -34,12 +34,17 @@ ModelApp = (function(superClass) {
     this.user3.set({
       name: 'Lars Ulrich'
     });
-    this.linkToScope('user1', 'user2', 'user3', 'cart');
-    console.log(this.getScope().get('user1.name'));
+    this.linkToScope('user1', 'user2', 'user3', 'cart', 'formSubmit');
+    console.log('(init) user1.name = ', this.getScope().get('user1.name'));
     this.user1.onChange('*', function(field, value) {
       return console.log('user1.' + field, '=', value);
     });
     return this;
+  };
+
+  ModelApp.prototype.formSubmit = function(event) {
+    event.preventDefault();
+    return alert('form submitted, login: ' + this.getScope().get('formLogin') + ', checkbox: ' + this.getScope().get('formCheckBox'));
   };
 
   return ModelApp;

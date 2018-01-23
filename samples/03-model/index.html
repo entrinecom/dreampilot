@@ -16,6 +16,7 @@
 </head>
 <body dp-app="ModelApp">
 
+<!--
 <h2>Model #1 (initiated from data attribute)</h2>
 
 <form>
@@ -126,6 +127,15 @@
 			<input type="number" name="count" dp-value-bind="cart[3].count">
 		</li>
 	</ul>
+</form>
+-->
+
+<button type="button" dp-click="formSubmit($event)">Click</button>
+
+<form dp-submit="formSubmit($event)">
+	<input type="text" name="login" dp-value-bind="formLogin">
+	<input type="checkbox" name="test" value="10500" dp-value-bind="formCheckBox">
+	<button type="submit">Submit</button>
 </form>
 
 <script type="text/javascript" src="../../bower_components/jquery/dist/jquery.min.js"></script>
