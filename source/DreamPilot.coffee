@@ -3,7 +3,7 @@ class DreamPilot
     self = @
 
     constructor: ->
-        $ =>
+        jQuery =>
             @checkDependencies()
             .setupApps()
 
@@ -25,14 +25,13 @@ class DreamPilot
 
     setupApps: ->
         @e(self.selectorForAttribute($dp.Application.appAttr)).each ->
-            $app = self.e @
-            name = $app.attr self.attribute $dp.Application.appAttr
+            $appWrapper = self.e @
+            name = $appWrapper.attr self.attribute $dp.Application.appAttr
             throw 'Application with empty name found' unless name
             unless apps[name]?
-                apps[name] = $dp.Application.create name, $app
+                apps[name] = $dp.Application.create name, $appWrapper
             else
-                $dp.log.print "Application '#{name}' has been already created"
-                console.trace()
+                $dp.log.error "Application '#{name}' has been already created"
         @
 
     getApp: (name) ->
