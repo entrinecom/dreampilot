@@ -143,6 +143,7 @@ class DreamPilot.Parser
                     self.addToLastErrors if obj then self.MEMBER_OBJECT_NOT_A_MODEL else self.MEMBER_OBJECT_IS_UNDEFINED
                     promiseCallback() if promiseCallback
                     self.addToLastUsedVariables node.object.name
+                    #self.addToLastUsedVariables node.object.name + '.' + node.property.name
                     return null
                 self.evalNode node.property, obj, element, promiseCallback
             when 'Identifier'

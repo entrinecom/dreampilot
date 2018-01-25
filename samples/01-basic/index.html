@@ -85,11 +85,15 @@
 <div dp-click="putPayloadRequest()">PUT Payload</div>
 <div dp-click="deletePayloadRequest()">DELETE Payload</div>
 
+<!--
 <div dp-value-read-from="mm.title"></div>
-<button type="button" dp-click="mm.title = 'another title';">change title</button>
+-->
+<h2 dp-show="mm.show == true">mm.obj</h2>
+<button type="button" dp-click="mm.title = 'another title'; mm.show = true;">change title</button>
 
 <div dp-value-read-from="mm_title">---</div>
-<button type="button" dp-click="mm_title = 'another title2';">change title2</button>
+<h2 dp-show="mm_show == true">mm_var</h2>
+<button type="button" dp-click="mm_title = 'another title2'; mm_show = true;">change title2</button>
 
 <script type="text/javascript" src="../../bower_components/jquery/dist/jquery.min.js"></script>
 <script type="text/javascript" src="../../bower_components/jsep/build/jsep.min.js"></script>

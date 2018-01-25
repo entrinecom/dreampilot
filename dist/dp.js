@@ -280,7 +280,7 @@ DreamPilot.Attributes = (function() {
               var l, ref1, results1;
               results1 = [];
               for (j = l = ref1 = Scopes.length - 1; ref1 <= 0 ? l <= 0 : l >= 0; j = ref1 <= 0 ? ++l : --l) {
-                if (Scopes[j].exists(vars[i])) {
+                if (true) {
                   Scopes[j].onChange(vars[i], function(field, value) {
                     var $el;
                     $el = $dp.e(el);
@@ -309,7 +309,11 @@ DreamPilot.Attributes = (function() {
       el = this;
       $el = $dp.e(el);
       expression = $el.attr($dp.attribute(self.showAttr));
-      $el.toggle($dp.Parser.isExpressionTrue(expression, that.getApp(), el));
+      $el.toggle($dp.Parser.isExpressionTrue(expression, that.getApp(), el, (function(_this) {
+        return function() {
+          return that.showAddPromise(expression, el);
+        };
+      })(this)));
       ref = $dp.Parser.getLastUsedVariables();
       for (k = 0, len = ref.length; k < len; k++) {
         field = ref[k];
@@ -318,6 +322,42 @@ DreamPilot.Attributes = (function() {
         });
       }
       return true;
+    });
+    return this;
+  };
+
+  Attributes.prototype.showAddPromise = function(expression, el) {
+    this.ScopePromises.add({
+      expression: expression,
+      app: this.getApp(),
+      scope: this.getScope(),
+      element: el,
+      cb: (function(_this) {
+        return function(App, Scopes, vars) {
+          var i, j, k, ref, results;
+          results = [];
+          for (i = k = ref = vars.length - 1; ref <= 0 ? k <= 0 : k >= 0; i = ref <= 0 ? ++k : --k) {
+            results.push((function() {
+              var l, ref1, results1;
+              results1 = [];
+              for (j = l = ref1 = Scopes.length - 1; ref1 <= 0 ? l <= 0 : l >= 0; j = ref1 <= 0 ? ++l : --l) {
+                if (true) {
+                  Scopes[j].onChange(vars[i], function(field, value) {
+                    var $el;
+                    $el = $dp.e(el);
+                    return $el.toggle($dp.Parser.isExpressionTrue(expression, App, el));
+                  });
+                  break;
+                } else {
+                  results1.push(void 0);
+                }
+              }
+              return results1;
+            })());
+          }
+          return results;
+        };
+      })(this)
     });
     return this;
   };
@@ -353,7 +393,11 @@ DreamPilot.Attributes = (function() {
       el = this;
       $el = $dp.e(el);
       expression = $el.attr($dp.attribute(self.ifAttr));
-      that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression);
+      that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression, (function(_this) {
+        return function() {
+          return that.ifAddPromise(expression, el);
+        };
+      })(this));
       ref = $dp.Parser.getLastUsedVariables();
       for (k = 0, len = ref.length; k < len; k++) {
         field = ref[k];
@@ -362,6 +406,44 @@ DreamPilot.Attributes = (function() {
         });
       }
       return true;
+    });
+    return this;
+  };
+
+  Attributes.prototype.ifAddPromise = function(expression, el) {
+    var that;
+    that = this;
+    this.ScopePromises.add({
+      expression: expression,
+      app: this.getApp(),
+      scope: this.getScope(),
+      element: el,
+      cb: (function(_this) {
+        return function(App, Scopes, vars) {
+          var i, j, k, ref, results;
+          results = [];
+          for (i = k = ref = vars.length - 1; ref <= 0 ? k <= 0 : k >= 0; i = ref <= 0 ? ++k : --k) {
+            results.push((function() {
+              var l, ref1, results1;
+              results1 = [];
+              for (j = l = ref1 = Scopes.length - 1; ref1 <= 0 ? l <= 0 : l >= 0; j = ref1 <= 0 ? ++l : --l) {
+                if (true) {
+                  Scopes[j].onChange(vars[i], function(field, value) {
+                    var $el;
+                    $el = $dp.e(el);
+                    return that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, App, el), expression);
+                  });
+                  break;
+                } else {
+                  results1.push(void 0);
+                }
+              }
+              return results1;
+            })());
+          }
+          return results;
+        };
+      })(this)
     });
     return this;
   };

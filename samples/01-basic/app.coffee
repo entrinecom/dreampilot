@@ -9,7 +9,7 @@ class BasicApp extends DreamPilot.Application
         @someModel.set 'message', 'Hello I am a model'
 
         @mm = new myModel
-        @mm.set title: 'initial title'
+        @mm.set title: 'initial title'#, show: null
 
         @getScope().set
             assignItOut: ->

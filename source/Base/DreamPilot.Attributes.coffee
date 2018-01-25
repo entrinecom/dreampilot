@@ -73,7 +73,7 @@ class DreamPilot.Attributes
             cb: (App, Scopes, vars) =>
                 for i in [vars.length - 1..0]
                     for j in [Scopes.length - 1..0]
-                        if Scopes[j].exists vars[i]
+                        if true #Scopes[j].exists vars[i]
                             Scopes[j].onChange vars[i], (field, value) ->
                                 $el = $dp.e el
                                 $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, App, el
@@ -89,7 +89,8 @@ class DreamPilot.Attributes
             $el = $dp.e el
             expression = $el.attr $dp.attribute self.showAttr
 
-            $el.toggle $dp.Parser.isExpressionTrue expression, that.getApp(), el
+            $el.toggle $dp.Parser.isExpressionTrue expression, that.getApp(), el, =>
+                that.showAddPromise expression, el
 
             # setting up watchers
             for field in $dp.Parser.getLastUsedVariables()
@@ -99,6 +100,23 @@ class DreamPilot.Attributes
 
             true
 
+        @
+
+    showAddPromise: (expression, el) ->
+        @ScopePromises.add
+            expression: expression
+            app: @getApp()
+            scope: @getScope()
+            element: el
+            cb: (App, Scopes, vars) =>
+                for i in [vars.length - 1..0]
+                    for j in [Scopes.length - 1..0]
+                        if true #Scopes[j].exists vars[i]
+                            Scopes[j].onChange vars[i], (field, value) ->
+                                $el = $dp.e el
+                                $el.toggle $dp.Parser.isExpressionTrue expression, App, el
+                            break
+                # console.log 'we got', expression
         @
 
     getReplacerFor: ($element, expression) ->
@@ -128,7 +146,8 @@ class DreamPilot.Attributes
             $el = $dp.e el
             expression = $el.attr $dp.attribute self.ifAttr
 
-            that.toggleElementExistence $el, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression
+            that.toggleElementExistence $el, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression, =>
+                that.ifAddPromise expression, el
 
             # setting up watchers
             for field in $dp.Parser.getLastUsedVariables()
@@ -138,6 +157,24 @@ class DreamPilot.Attributes
 
             true
 
+        @
+
+    ifAddPromise: (expression, el) ->
+        that = @
+
+        @ScopePromises.add
+            expression: expression
+            app: @getApp()
+            scope: @getScope()
+            element: el
+            cb: (App, Scopes, vars) =>
+                for i in [vars.length - 1..0]
+                    for j in [Scopes.length - 1..0]
+                        if true #Scopes[j].exists vars[i]
+                            Scopes[j].onChange vars[i], (field, value) ->
+                                $el = $dp.e el
+                                that.toggleElementExistence $el, $dp.Parser.isExpressionTrue(expression, App, el), expression
+                            break
         @
 
     setupInitAttribute: ->
