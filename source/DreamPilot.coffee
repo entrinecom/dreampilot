@@ -27,15 +27,13 @@ class DreamPilot
         @e(self.selectorForAttribute($dp.Application.appAttr)).each ->
             $appWrapper = self.e @
             name = $appWrapper.attr self.attribute $dp.Application.appAttr
-            throw 'Application with empty name found' unless name
-            unless apps[name]?
-                apps[name] = $dp.Application.create name, $appWrapper
-            else
-                $dp.log.error "Application '#{name}' has been already created"
+            throw 'Application can not have an empty name' unless name
+            $dp.log.error "Application '#{name}' has been already created" if apps[name]?
+            apps[name] = $dp.Application.create name, $appWrapper
         @
 
     getApp: (name) ->
-        throw 'Application can not have an empty name' unless name
+        throw 'Application name not specified' unless name
         throw "Application '#{name}' not found" unless apps[name]
         apps[name]
 

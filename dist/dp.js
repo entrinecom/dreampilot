@@ -49,20 +49,19 @@ DreamPilot = (function() {
       $appWrapper = self.e(this);
       name = $appWrapper.attr(self.attribute($dp.Application.appAttr));
       if (!name) {
-        throw 'Application with empty name found';
+        throw 'Application can not have an empty name';
       }
-      if (apps[name] == null) {
-        return apps[name] = $dp.Application.create(name, $appWrapper);
-      } else {
-        return $dp.log.error("Application '" + name + "' has been already created");
+      if (apps[name] != null) {
+        $dp.log.error("Application '" + name + "' has been already created");
       }
+      return apps[name] = $dp.Application.create(name, $appWrapper);
     });
     return this;
   };
 
   DreamPilot.prototype.getApp = function(name) {
     if (!name) {
-      throw 'Application can not have an empty name';
+      throw 'Application name not specified';
     }
     if (!apps[name]) {
       throw "Application '" + name + "' not found";
@@ -917,6 +916,48 @@ DreamPilot.Scope = (function(superClass) {
 
 })(DreamPilot.Model);
 
+DreamPilot.Router = (function() {
+  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
+
+  WORK_MODE_HASH = 1;
+
+  WORK_MODE_URL = 2;
+
+  ELSE_PATH = null;
+
+  Router.prototype.steps = {};
+
+  function Router(App, options) {
+    this.App = App;
+    if (options == null) {
+      options = {};
+    }
+    this.options = $.extend({
+      workMode: WORK_MODE_HASH,
+      attrName: 'data-step'
+    }, options);
+  }
+
+  Router.prototype.when = function(path, opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[path] = opts;
+    return this;
+  };
+
+  Router.prototype["else"] = function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[ELSE_PATH] = opts;
+    return this;
+  };
+
+  return Router;
+
+})();
+
 var slice = [].slice;
 
 DreamPilot.Functions = (function() {
@@ -1740,7 +1781,7 @@ DreamPilot.Parser = (function() {
   };
 
   Parser.executeExpressions = function(allExpr, App, element, event) {
-    var Scope, e, expr, key, method, rows;
+    var Scope, e, expr, key, keyMethod, keyScope, method, rows;
     if (element == null) {
       element = App.getActiveElement();
     }
@@ -1767,12 +1808,14 @@ DreamPilot.Parser = (function() {
           }
           self.evalNode(method, Scope, element);
         } else {
+          keyScope = $dp.Parser.getScopeOf(key, App.getScope());
+          keyMethod = $dp.Parser.getPropertyOfExpression(key);
           Scope = $dp.Parser.getScopeOf(expr, App.getScope());
           method = $dp.Parser.getPropertyOfExpression(expr);
           if ($dp.fn.getType(method) === 'string') {
             method = jsep(method);
           }
-          App.getScope().set(key, self.evalNode(method, Scope, element));
+          keyScope.set(keyMethod, self.evalNode(method, Scope, element));
         }
       } catch (error1) {
         e = error1;
@@ -2032,45 +2075,3 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
-
-DreamPilot.Router = (function() {
-  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
-
-  WORK_MODE_HASH = 1;
-
-  WORK_MODE_URL = 2;
-
-  ELSE_PATH = null;
-
-  Router.prototype.steps = {};
-
-  function Router(App, options) {
-    this.App = App;
-    if (options == null) {
-      options = {};
-    }
-    this.options = $.extend({
-      workMode: WORK_MODE_HASH,
-      attrName: 'data-step'
-    }, options);
-  }
-
-  Router.prototype.when = function(path, opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[path] = opts;
-    return this;
-  };
-
-  Router.prototype["else"] = function(opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[ELSE_PATH] = opts;
-    return this;
-  };
-
-  return Router;
-
-})();

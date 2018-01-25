@@ -222,10 +222,15 @@ class DreamPilot.Parser
                     method = jsep method if $dp.fn.getType(method) is 'string'
                     self.evalNode method, Scope, element
                 else
+                    keyScope = $dp.Parser.getScopeOf key, App.getScope()
+                    keyMethod = $dp.Parser.getPropertyOfExpression key
+                    #keyMethod = jsep keyMethod if $dp.fn.getType(keyMethod) is 'string'
+                    #console.log 'keyScope', keyScope, 'keyMethod', keyMethod
+
                     Scope = $dp.Parser.getScopeOf expr, App.getScope()
                     method = $dp.Parser.getPropertyOfExpression expr
                     method = jsep method if $dp.fn.getType(method) is 'string'
-                    App.getScope().set key, self.evalNode method, Scope, element
+                    keyScope.set keyMethod, self.evalNode method, Scope, element
             catch e
                 throw e
                 $dp.log.error 'Expression parsing (executeExpressions) error', e, ':', key, expr
