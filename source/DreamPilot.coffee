@@ -28,7 +28,11 @@ class DreamPilot
             $app = self.e @
             name = $app.attr self.attribute $dp.Application.appAttr
             throw 'Application with empty name found' unless name
-            apps[name] = $dp.Application.create name, $app
+            unless apps[name]?
+                apps[name] = $dp.Application.create name, $app
+            else
+                $dp.log.print "Application '#{name}' has been already created"
+                console.trace()
         @
 
     getApp: (name) ->
