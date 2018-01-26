@@ -1158,6 +1158,18 @@ DreamPilot.Functions = (function() {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
+  Functions.formatFloat = function(num, afterDot) {
+    var a, d;
+    d = Math.pow(10, afterDot);
+    num = Math.round(num * d) / d;
+    a = num.toString().split('.');
+    a[1] = a[1] || '';
+    while (a[1].length < afterDot) {
+      a[1] += '0';
+    }
+    return a[0] + '.' + a[1];
+  };
+
   Functions.escapeHtml = function(text) {
     var map;
     map = {
@@ -1500,6 +1512,20 @@ DreamPilot.Functions = (function() {
   return Functions;
 
 })();
+
+if (!String.prototype.format) {
+  String.prototype.format = function() {
+    var args;
+    args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) {
+      if (typeof args[number] !== 'undefined') {
+        return args[number];
+      } else {
+        return match;
+      }
+    });
+  };
+}
 
 if ($dp) {
   $dp.fn = DreamPilot.Functions;

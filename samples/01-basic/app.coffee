@@ -1,6 +1,6 @@
 class BasicApp extends DreamPilot.Application
     init: ->
-        console.log 'I am the basic app!'
+        console.log 'I am the {0} app!'.format 'basic'
         @someVar = 'some value'
         @initVariables()
 

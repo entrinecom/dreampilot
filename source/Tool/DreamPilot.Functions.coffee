@@ -56,6 +56,14 @@ class DreamPilot.Functions
     @randomInt: (min, max) ->
         Math.floor(Math.random() * (max - min + 1)) + min
 
+    @formatFloat: (num, afterDot) ->
+        d = Math.pow 10, afterDot
+        num = Math.round(num * d) / d;
+        a = num.toString().split '.'
+        a[1] = a[1] or ''
+        a[1] += '0' while a[1].length < afterDot
+        a[0] + '.' + a[1];
+
     @escapeHtml: (text) ->
         map =
             '&': '&amp;'
@@ -236,5 +244,11 @@ class DreamPilot.Functions
             if res then "#{padding}{\n#{res}\n#{padding}}" else '{}'
         else
             padding + '(' + self.getType(variable) + ') ' + variable
+
+unless String.prototype.format
+    # Usage: 'Hello, {0}! {1} to see you'.format('James', 'Nice');
+	String::format = ->
+		args = arguments
+		@replace /{(\d+)}/g, (match, number) -> if typeof args[number] isnt 'undefined' then args[number] else match
 
 $dp.fn = DreamPilot.Functions if $dp

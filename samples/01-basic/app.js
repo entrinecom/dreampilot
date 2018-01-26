@@ -11,7 +11,7 @@ BasicApp = (function(superClass) {
   }
 
   BasicApp.prototype.init = function() {
-    console.log('I am the basic app!');
+    console.log('I am the {0} app!'.format('basic'));
     this.someVar = 'some value';
     return this.initVariables();
   };
