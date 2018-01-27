@@ -73,9 +73,12 @@ DreamPilot = (function() {
 
 })();
 
-$dp = DreamPilot;
-
-dp = new DreamPilot();
+if (!((typeof $dp !== "undefined" && $dp !== null) && (typeof dp !== "undefined" && dp !== null))) {
+  $dp = DreamPilot;
+  dp = new DreamPilot();
+} else {
+  throw 'DreamPilot has been already initialized. May the script be double included?';
+}
 
 var slice = [].slice;
 
@@ -743,6 +746,26 @@ DreamPilot.Model = (function() {
 
   Model.prototype.exists = function(field) {
     return typeof this.data[field] !== 'undefined';
+  };
+
+  Model.prototype.kill = function(field) {
+    var f, i, len;
+    if (field == null) {
+      field = null;
+    }
+    if (field === null) {
+      this.data = {};
+    } else if ($dp.fn.getType(field) === 'array') {
+      for (i = 0, len = field.length; i < len; i++) {
+        f = field[i];
+        this.kill(f);
+      }
+    } else {
+      if (this.data[field] != null) {
+        delete this.data[field];
+      }
+    }
+    return this;
   };
 
   Model.prototype.getRelated = function(field) {

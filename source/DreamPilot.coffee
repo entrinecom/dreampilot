@@ -37,5 +37,8 @@ class DreamPilot
         throw "Application '#{name}' not found" unless apps[name]
         apps[name]
 
-$dp = DreamPilot
-dp = new DreamPilot()
+unless $dp? and dp?
+    $dp = DreamPilot
+    dp = new DreamPilot()
+else
+    throw 'DreamPilot has been already initialized. May the script be double included?'

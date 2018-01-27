@@ -72,6 +72,15 @@ class DreamPilot.Model
     exists: (field) ->
         typeof @data[field] isnt 'undefined'
 
+    kill: (field = null) ->
+        if field is null
+            @data = {}
+        else if $dp.fn.getType(field) is 'array'
+            @kill f for f in field
+        else
+            delete @data[field] if @data[field]?
+        @
+
     getRelated: (field = null) ->
         return @relatedData if field is null
         if @existsRelated field then @relatedData[field] else null
