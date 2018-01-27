@@ -114,6 +114,10 @@ DreamPilot.Application = (function() {
     return this.$wrapper;
   };
 
+  Application.prototype.getWrapperData = function(key) {
+    return this.getWrapper().data(key);
+  };
+
   Application.prototype.getScope = function() {
     return this.Scope;
   };
@@ -560,7 +564,9 @@ DreamPilot.Attributes = (function() {
 
   Attributes.bindValueReadFromAttribute = function(field, $el, Scope) {
     Scope.onChange(field, function(field, value) {
-      return $dp.fn.setValueOfElement($el, value);
+      if ($dp.fn.getValueOfElement($el) !== value) {
+        return $dp.fn.setValueOfElement($el, value);
+      }
     });
     if (Scope.get(field)) {
       Scope.trigger('change', field);

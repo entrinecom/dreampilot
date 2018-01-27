@@ -18,20 +18,13 @@ class DreamPilot.Application
     # override this method in child classes
     init: -> @
 
-    e: (selector) ->
-        $dp.e selector, @$wrapper
+    e: (selector) -> $dp.e selector, @$wrapper
 
-    getWrapper: ->
-        @$wrapper
-
-    getScope: ->
-        @Scope
-
-    getEvents: ->
-        @Events
-
-    getAttributes: ->
-        @Attributes
+    getWrapper: -> @$wrapper
+    getWrapperData: (key) -> @getWrapper().data key
+    getScope: -> @Scope
+    getEvents: -> @Events
+    getAttributes: -> @Attributes
 
     setActiveElement: (element) ->
         @activeElement = element

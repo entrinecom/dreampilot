@@ -244,6 +244,6 @@ class DreamPilot.Attributes
 
     @bindValueReadFromAttribute: (field, $el, Scope) ->
         Scope.onChange field, (field, value) ->
-            $dp.fn.setValueOfElement $el, value
+            $dp.fn.setValueOfElement $el, value if $dp.fn.getValueOfElement($el) isnt value
         Scope.trigger 'change', field if Scope.get field
         true
