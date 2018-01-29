@@ -1097,15 +1097,15 @@ DreamPilot.Functions = (function() {
   };
 
   Functions.trim = function(s) {
-    return s.replace(/^\s+|\s+$/g, '');
+    return self.str(s).replace(/^\s+|\s+$/g, '');
   };
 
   Functions.ltrim = function(s) {
-    return s.replace(/^\s+/, '');
+    return self.str(s).replace(/^\s+/, '');
   };
 
   Functions.rtrim = function(s) {
-    return s.replace(/\s+$/, '');
+    return self.str(s).replace(/\s+$/, '');
   };
 
   Functions.underscore = function(s) {

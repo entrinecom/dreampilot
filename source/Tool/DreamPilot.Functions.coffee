@@ -2,27 +2,15 @@ class DreamPilot.Functions
     self = @
 
     @extend: (args...) -> jQuery.extend args...
-
     @int: (s) -> ~~s
-
     @str: (s) -> s + ''
-
     @float: (s) -> parseFloat(s) or .0
-
-    @trim: (s) -> s.replace /^\s+|\s+$/g, ''
-
-    @ltrim: (s) -> s.replace /^\s+/, ''
-
-    @rtrim: (s) -> s.replace /\s+$/, ''
-
-    @underscore: (s) ->
-        self.str(s).replace /(\-[a-z])/g, ($1) -> $1.toUpperCase().replace '-', ''
-
-    @camelize: (s) ->
-        self.str(s).replace /([A-Z])/g, ($1) -> '_' + $1.toLowerCase()
-
+    @trim: (s) -> self.str(s).replace /^\s+|\s+$/g, ''
+    @ltrim: (s) -> self.str(s).replace /^\s+/, ''
+    @rtrim: (s) -> self.str(s).replace /\s+$/, ''
+    @underscore: (s) -> self.str(s).replace /(\-[a-z])/g, ($1) -> $1.toUpperCase().replace '-', ''
+    @camelize: (s) -> self.str(s).replace /([A-Z])/g, ($1) -> '_' + $1.toLowerCase()
     @urlencode: (s) -> encodeURIComponent s
-
     @urldecode: (s) -> decodeURIComponent self.str(s).replace /\+/g, '%20'
 
     @parseQueryString: (url = window.location.href, start = '?', delimiter = '&', equal = '=') ->
