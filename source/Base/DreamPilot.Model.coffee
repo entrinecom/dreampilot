@@ -18,8 +18,7 @@ class DreamPilot.Model
     init: -> @
 
     initFrom: (_data = {}) ->
-        if typeof _data is 'string'
-            _data = JSON.parse _data
+        _data = JSON.parse _data if typeof _data is 'string'
 
         if typeof _data is 'object'
             if _data instanceof DreamPilot.Model
@@ -29,14 +28,14 @@ class DreamPilot.Model
         else
             throw 'Data should be an object'
 
-        for field, value of _data
-            @trigger 'change', field
+        @trigger 'change', field for field, value of _data
 
         @
 
     setParent: (@parent, @parentField) ->
         if @parent and not @parent instanceof DreamPilot.Model
             throw 'Parent can be only DreamPilot.Model'
+        @
 
     get: (field = null) ->
         # model inside model logic
@@ -74,11 +73,14 @@ class DreamPilot.Model
 
     kill: (field = null) ->
         if field is null
+            keys = $dp.fn.keys @data
             @data = {}
+            @trigger 'change', f for f in keys
         else if $dp.fn.getType(field) is 'array'
             @kill f for f in field
         else
             delete @data[field] if @data[field]?
+            @trigger 'change', field
         @
 
     getRelated: (field = null) ->
@@ -100,14 +102,9 @@ class DreamPilot.Model
 
     isMainScope: -> @mainScope
 
-    getSaveMethod: ->
-        $dp.transport.POST
-
-    getSaveUrl: ->
-        throw 'Redefine Model.getSaveUrl() method first'
-
-    getSaveData: ->
-        @get()
+    getSaveMethod: -> $dp.transport.POST
+    getSaveUrl: -> throw 'Redefine Model.getSaveUrl() method first'
+    getSaveData: -> @get()
 
     save: ->
         $dp.transport.request @getSaveMethod(), @getSaveUrl(), @getSaveData(), (result) =>
@@ -147,11 +144,8 @@ class DreamPilot.Model
         method: $dp.transport.DELETE
         dataType: $dp.transport.PAYLOAD
 
-    getDeleteUrl: ->
-        throw 'Redefine Model.getDeleteUrl() method first'
-
-    getDeleteData: ->
-        null
+    getDeleteUrl: -> throw 'Redefine Model.getDeleteUrl() method first'
+    getDeleteData: -> null
 
     delete: ->
         $dp.transport.request @getDeleteMethod(), @getDeleteUrl(), @getDeleteData(), (result) =>
