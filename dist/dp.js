@@ -288,12 +288,11 @@ DreamPilot.Attributes = (function() {
               results1 = [];
               for (j = l = ref1 = Scopes.length - 1; ref1 <= 0 ? l <= 0 : l >= 0; j = ref1 <= 0 ? ++l : --l) {
                 if (true) {
-                  Scopes[j].onChange(vars[i], function(field, value) {
+                  results1.push(Scopes[j].onChange(vars[i], function(field, value) {
                     var $el;
                     $el = $dp.e(el);
                     return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, App, el));
-                  });
-                  break;
+                  }));
                 } else {
                   results1.push(void 0);
                 }
@@ -349,12 +348,11 @@ DreamPilot.Attributes = (function() {
               results1 = [];
               for (j = l = ref1 = Scopes.length - 1; ref1 <= 0 ? l <= 0 : l >= 0; j = ref1 <= 0 ? ++l : --l) {
                 if (true) {
-                  Scopes[j].onChange(vars[i], function(field, value) {
+                  results1.push(Scopes[j].onChange(vars[i], function(field, value) {
                     var $el;
                     $el = $dp.e(el);
                     return $el.toggle($dp.Parser.isExpressionTrue(expression, App, el));
-                  });
-                  break;
+                  }));
                 } else {
                   results1.push(void 0);
                 }
@@ -435,12 +433,11 @@ DreamPilot.Attributes = (function() {
               results1 = [];
               for (j = l = ref1 = Scopes.length - 1; ref1 <= 0 ? l <= 0 : l >= 0; j = ref1 <= 0 ? ++l : --l) {
                 if (true) {
-                  Scopes[j].onChange(vars[i], function(field, value) {
+                  results1.push(Scopes[j].onChange(vars[i], function(field, value) {
                     var $el;
                     $el = $dp.e(el);
                     return that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, App, el), expression);
-                  });
-                  break;
+                  }));
                 } else {
                   results1.push(void 0);
                 }
@@ -1664,7 +1661,7 @@ DreamPilot.Parser = (function() {
     }
   };
 
-  Parser.lastUsedVariables = {};
+  Parser.lastUsedVariables = [];
 
   Parser.lastErrors = [];
 
@@ -1972,16 +1969,20 @@ DreamPilot.Parser = (function() {
   };
 
   Parser.resetLastUsedVariables = function() {
-    return self.lastUsedVariables = {};
+    return self.lastUsedVariables = [];
+  };
+
+  Parser.inLastUsedVariables = function(key) {
+    return self.lastUsedVariables.indexOf(key) !== -1;
   };
 
   Parser.getLastUsedVariables = function() {
-    return $dp.fn.keys(self.lastUsedVariables);
+    return self.lastUsedVariables;
   };
 
   Parser.addToLastUsedVariables = function(key) {
-    if (key) {
-      return self.lastUsedVariables[key] = true;
+    if (key && !self.inLastUsedVariables(key)) {
+      return self.lastUsedVariables.push(key);
     }
   };
 

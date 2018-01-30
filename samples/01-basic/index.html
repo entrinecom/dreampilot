@@ -105,6 +105,17 @@
 </div>
 -->
 
+<div style="margin-top: 20px;">
+	<span dp-show="nn.f1.id" dp-value-read-from="nn.f1.id"></span>
+	<span dp-show="nn.f1.id" dp-value-read-from="nn.f2.id"></span>
+	<span dp-show="nn.f1.id" dp-value-read-from="nn.f3.id"></span>
+	<span dp-show="nn.f1.id" dp-value-read-from="nn.f4.id"></span>
+	<span dp-show="bbb">--</span>
+	<span dp-show="bbb">++</span>
+	<button dp-click="nn.f1.id = 1; nn.f2.id = 2; nn.f3.id = 3; nn.f4.id = 4; bbb = true;">go</button>
+	<button dp-click="nn.f1.id = null; bbb = false">ungo</button>
+</div>
+
 <script type="text/javascript" src="../../bower_components/jquery/dist/jquery.min.js"></script>
 <script type="text/javascript" src="../../bower_components/jsep/build/jsep.min.js"></script>
 <script type="text/javascript" src="../../dist/dp.js"></script>

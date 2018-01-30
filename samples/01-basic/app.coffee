@@ -11,6 +11,13 @@ class BasicApp extends DreamPilot.Application
         @mm = new myModel
         @mm.set title: 'initial title'#, show: null
 
+        @nn = new myModel()
+        @nn.set
+            f1: new myModel()
+            f2: new myModel()
+            f3: new myModel()
+            f4: new myModel()
+
         @getScope().set
             assignItOut: ->
                 console.log 'assignItOut called with args: ', arguments
@@ -21,7 +28,7 @@ class BasicApp extends DreamPilot.Application
             letItOut: ->
                 alert 'let it out!'
 
-        @linkToScope 'someMethod', 'mm', [
+        @linkToScope 'someMethod', 'mm', 'nn', [
             'getRequest'
             'postRequest'
             'putRequest'

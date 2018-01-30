@@ -23,6 +23,13 @@ BasicApp = (function(superClass) {
     this.mm.set({
       title: 'initial title'
     });
+    this.nn = new myModel();
+    this.nn.set({
+      f1: new myModel(),
+      f2: new myModel(),
+      f3: new myModel(),
+      f4: new myModel()
+    });
     this.getScope().set({
       assignItOut: function() {
         var i, len, x, y;
@@ -38,7 +45,7 @@ BasicApp = (function(superClass) {
         return alert('let it out!');
       }
     });
-    this.linkToScope('someMethod', 'mm', ['getRequest', 'postRequest', 'putRequest', 'deleteRequest', 'postPayloadRequest', 'putPayloadRequest', 'deletePayloadRequest', 'showVal1', 'showVal2', 'someModel']);
+    this.linkToScope('someMethod', 'mm', 'nn', ['getRequest', 'postRequest', 'putRequest', 'deleteRequest', 'postPayloadRequest', 'putPayloadRequest', 'deletePayloadRequest', 'showVal1', 'showVal2', 'someModel']);
     setTimeout((function(_this) {
       return function() {
         return _this.getScope().set({

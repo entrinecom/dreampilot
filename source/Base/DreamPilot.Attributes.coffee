@@ -77,7 +77,7 @@ class DreamPilot.Attributes
                             Scopes[j].onChange vars[i], (field, value) ->
                                 $el = $dp.e el
                                 $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, App, el
-                            break
+                            #break
                 # console.log 'we got', cssClass, expression
         @
 
@@ -115,7 +115,7 @@ class DreamPilot.Attributes
                             Scopes[j].onChange vars[i], (field, value) ->
                                 $el = $dp.e el
                                 $el.toggle $dp.Parser.isExpressionTrue expression, App, el
-                            break
+                            #break
                 # console.log 'we got', expression
         @
 
@@ -174,7 +174,7 @@ class DreamPilot.Attributes
                             Scopes[j].onChange vars[i], (field, value) ->
                                 $el = $dp.e el
                                 that.toggleElementExistence $el, $dp.Parser.isExpressionTrue(expression, App, el), expression
-                            break
+                            #break
         @
 
     setupInitAttribute: ->

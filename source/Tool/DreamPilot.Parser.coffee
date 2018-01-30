@@ -27,7 +27,7 @@ class DreamPilot.Parser
             '&&': (a, b) -> a and b
             '||': (a, b) -> a or b
 
-    @lastUsedVariables: {}
+    @lastUsedVariables: []
     @lastErrors: []
     @lastScopes: []
 
@@ -239,13 +239,16 @@ class DreamPilot.Parser
         true
 
     @resetLastUsedVariables: ->
-        self.lastUsedVariables = {}
+        self.lastUsedVariables = []
+
+    @inLastUsedVariables: (key) ->
+        self.lastUsedVariables.indexOf(key) isnt -1
 
     @getLastUsedVariables: ->
-        $dp.fn.keys self.lastUsedVariables
+        self.lastUsedVariables
 
     @addToLastUsedVariables: (key) ->
-        self.lastUsedVariables[key] = true if key
+        self.lastUsedVariables.push key if key and not self.inLastUsedVariables key
 
     @resetLastErrors: ->
         self.lastErrors = []
