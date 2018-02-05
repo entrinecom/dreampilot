@@ -575,6 +575,63 @@ DreamPilot.Attributes = (function() {
 
 })();
 
+var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+DreamPilot.Collection = (function(superClass) {
+  extend(Collection, superClass);
+
+  function Collection() {
+    return Collection.__super__.constructor.apply(this, arguments);
+  }
+
+  Collection.prototype.init = function() {
+    Collection.__super__.init.call(this);
+    this.modelClassName = null;
+    this.items = {};
+    return this;
+  };
+
+  Collection.prototype.getCount = function() {
+    return $dp.fn.arrayCount(this.items);
+  };
+
+  Collection.prototype.addItems = function(dataRows) {
+    var data, i, len, results;
+    results = [];
+    for (i = 0, len = dataRows.length; i < len; i++) {
+      data = dataRows[i];
+      results.push(this.addItem(data));
+    }
+    return results;
+  };
+
+  Collection.prototype.addItem = function(data) {
+    var className, model;
+    data = this.extendDataBeforeAdd(data);
+    className = $dp.fn.stringToFunction(this.modelClassName);
+    model = new className(data);
+    this.tuneModelAfterCreation(model);
+    return model;
+  };
+
+  Collection.prototype.extendDataBeforeAdd = function(data) {
+    return data;
+  };
+
+  Collection.prototype.tuneModelAfterCreation = function(model) {
+    return this;
+  };
+
+  Collection.prototype.putModelToList = function(model) {
+    this.list[model.getId()] = model;
+    return this;
+  };
+
+  return Collection;
+
+})(DreamPilot.Model);
+
 DreamPilot.Events = (function() {
   var self;
 
@@ -644,6 +701,7 @@ DreamPilot.Model = (function() {
       change: {}
     };
     this.mainScope = false;
+    this.idField = 'id';
     this.initFrom(_data).init();
   }
 
@@ -776,6 +834,18 @@ DreamPilot.Model = (function() {
       this.trigger('change', field);
     }
     return this;
+  };
+
+  Model.prototype.getId = function() {
+    return this.get(this.idField);
+  };
+
+  Model.prototype.hasId = function() {
+    return this.has(this.idField);
+  };
+
+  Model.prototype.setId = function(id) {
+    return this.set(this.idField, id);
   };
 
   Model.prototype.getRelated = function(field) {

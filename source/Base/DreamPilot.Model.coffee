@@ -11,6 +11,7 @@ class DreamPilot.Model
         @callbacks =
             change: {}
         @mainScope = false
+        @idField = 'id'
         @initFrom _data
         .init()
 
@@ -82,6 +83,10 @@ class DreamPilot.Model
             delete @data[field] if @data[field]?
             @trigger 'change', field
         @
+
+    getId: -> @get @idField
+    hasId: -> @has @idField
+    setId: (id) -> @set @idField, id
 
     getRelated: (field = null) ->
         return @relatedData if field is null
