@@ -1,9 +1,10 @@
-class DreamPilot.Collection extends DreamPilot.Model
-    init: ->
-        super()
+class DreamPilot.Collection
+    constructor: ->
         @modelClassName = null
         @items = {}
-        @
+        @init()
+
+    init: -> @
 
     getCount: -> $dp.fn.arrayCount @items
 

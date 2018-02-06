@@ -575,20 +575,14 @@ DreamPilot.Attributes = (function() {
 
 })();
 
-var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  hasProp = {}.hasOwnProperty;
-
-DreamPilot.Collection = (function(superClass) {
-  extend(Collection, superClass);
-
+DreamPilot.Collection = (function() {
   function Collection() {
-    return Collection.__super__.constructor.apply(this, arguments);
+    this.modelClassName = null;
+    this.items = {};
+    this.init();
   }
 
   Collection.prototype.init = function() {
-    Collection.__super__.init.call(this);
-    this.modelClassName = null;
-    this.items = {};
     return this;
   };
 
@@ -630,7 +624,7 @@ DreamPilot.Collection = (function(superClass) {
 
   return Collection;
 
-})(DreamPilot.Model);
+})();
 
 DreamPilot.Events = (function() {
   var self;
@@ -702,6 +696,7 @@ DreamPilot.Model = (function() {
     };
     this.mainScope = false;
     this.idField = 'id';
+    this.idIsInt = true;
     this.initFrom(_data).init();
   }
 
@@ -837,7 +832,12 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.getId = function() {
-    return this.get(this.idField);
+    var id;
+    id = this.get(this.idField);
+    if (this.idIsInt) {
+      id = $dp.fn.int(id);
+    }
+    return id;
   };
 
   Model.prototype.hasId = function() {
@@ -845,6 +845,9 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.setId = function(id) {
+    if (this.idIsInt) {
+      id = $dp.fn.int(id);
+    }
     return this.set(this.idField, id);
   };
 

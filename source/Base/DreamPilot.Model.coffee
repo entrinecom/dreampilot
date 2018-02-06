@@ -12,6 +12,7 @@ class DreamPilot.Model
             change: {}
         @mainScope = false
         @idField = 'id'
+        @idIsInt = true
         @initFrom _data
         .init()
 
@@ -84,9 +85,16 @@ class DreamPilot.Model
             @trigger 'change', field
         @
 
-    getId: -> @get @idField
+    getId: ->
+        id = @get @idField
+        id = $dp.fn.int id if @idIsInt
+        id
+
     hasId: -> @has @idField
-    setId: (id) -> @set @idField, id
+
+    setId: (id) ->
+        id = $dp.fn.int id if @idIsInt
+        @set @idField, id
 
     getRelated: (field = null) ->
         return @relatedData if field is null
