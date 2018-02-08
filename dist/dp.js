@@ -2390,7 +2390,7 @@ DreamPilot.Transport = (function() {
       delete options.dataType;
     }
     if (options.data && options.method === self.GET) {
-      options.url += '?' + jQuery.serialize(options.data);
+      options.url += '?' + jQuery.fn.serialize(options.data);
       options.data = null;
     }
     if (options.type && !options.dataType) {
