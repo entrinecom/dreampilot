@@ -1,5 +1,5 @@
 class DreamPilot.Scope extends DreamPilot.Model
-    init: ->
+    defineBasics: ->
         super()
         @mainScope = true
         @

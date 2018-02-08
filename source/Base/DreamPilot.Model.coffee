@@ -1,5 +1,10 @@
 class DreamPilot.Model
     constructor: (_data = {}) ->
+        @defineBasics()
+        @initFrom _data
+        .init()
+
+    defineBasics: ->
         @data = {}
         @relatedData = {}
         @parent = null
@@ -13,8 +18,7 @@ class DreamPilot.Model
         @mainScope = false
         @idField = 'id'
         @idIsInt = true
-        @initFrom _data
-        .init()
+        @
 
     # override this method in child classes
     init: -> @

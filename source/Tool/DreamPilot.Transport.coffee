@@ -37,7 +37,7 @@ class DreamPilot.Transport
         else if options.dataType is self.FORM_DATA
             delete options.dataType
 
-        if options.method is self.GET
+        if options.data and options.method is self.GET
             options.url += '?' + jQuery.serialize options.data
             options.data = null
 

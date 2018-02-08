@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "CollectionApp.js",
+  "sourceRoot": "",
+  "sources": [
+    "CollectionApp.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA,IAAA,aAAA;EAAA;;;AAAM;;;;;;;0BACF,IAAA,GAAM,SAAA;WACF,IAAC,CAAA,QAAD,CAAA;EADE;;0BAGN,QAAA,GAAU,SAAA;IACN,IAAC,CAAA,GAAD,GAAO,IAAI,cAAJ,CAAA,CACP,CAAC,MADM,CACC,SAAC,GAAD;aACJ,GAAG,CAAC,GAAJ,CAAQ,SAAC,KAAD;eACJ,KAAK,CAAC,OAAN,CAAA;MADI,CAAR;IADI,CADD,CAIP,CAAC,IAJM,CAAA;WAKP;EANM;;;;GAJc,UAAU,CAAC"
+}

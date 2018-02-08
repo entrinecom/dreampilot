@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "ChatCollection.js",
+  "sourceRoot": "",
+  "sources": [
+    "ChatCollection.coffee"
+  ],
+  "names": [],
+  "mappings": ";AAAA,IAAA,cAAA;EAAA;;;AAAM;;;;;;;2BACF,YAAA,GAAc,SAAA;IACV,+CAAA;IACA,IAAC,CAAA,cAAD,GAAkB;WAClB;EAHU;;2BAKd,UAAA,GAAY,SAAA;WAAG;EAAH;;2BACZ,mBAAA,GAAqB,SAAA;WAAG;EAAH;;;;GAPI,UAAU,CAAC"
+}
