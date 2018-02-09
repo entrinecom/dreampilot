@@ -788,7 +788,7 @@ DreamPilot.Events = (function() {
 
   self = Events;
 
-  Events.prototype.events = ['click', 'dblclick', 'focus', 'blur', 'change', 'keypress', 'keyup', 'keydown', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mouseup', 'wheel', 'paste', 'input', 'submit'];
+  Events.prototype.events = ['load', 'click', 'dblclick', 'focus', 'blur', 'change', 'keypress', 'keyup', 'keydown', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mouseup', 'wheel', 'paste', 'input', 'submit'];
 
   function Events(App) {
     this.App = App;

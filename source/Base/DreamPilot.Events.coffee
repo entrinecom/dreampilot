@@ -2,6 +2,7 @@ class DreamPilot.Events
     self = @
 
     events: [
+        'load'
         'click'
         'dblclick'
         'focus'

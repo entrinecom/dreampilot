@@ -7,6 +7,33 @@ Package is in bower, so type
 
 ## Attributes
 
+### Events
+
+#### dp-<event_name>, e.g. `dp-click="clickHandler($event)"`
+
+`$event` and `this` variables are supported
+
+Supported events:
+
+	load
+	click
+	dblclick
+	focus
+	blur
+	change
+	keypress
+	keyup
+	keydown
+	mouseover
+	mouseout
+	mousemove
+	mousedown
+	mouseup
+	wheel
+	paste
+	input
+	submit
+
 ### Binding
 
 #### dp-value-bind
