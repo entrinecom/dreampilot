@@ -18,6 +18,15 @@ class BasicApp extends DreamPilot.Application
             f3: new myModel()
             f4: new myModel()
 
+        setTimeout =>
+            @img = new myModel
+            @img.set
+                source: 'https://www.aeroportolisboa.pt/sites/default/files/media/lisboa_630_x_374.jpg'
+                city: 'Lisboa'
+                href: 'http://lisboa.pr'
+            @linkToScope 'img'
+        , 1000
+
         @getScope().set
             assignItOut: ->
                 console.log 'assignItOut called with args: ', arguments

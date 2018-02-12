@@ -5,9 +5,16 @@ class DreamPilot.Attributes
     @showAttr = 'show'
     @ifAttr = 'if'
     @initAttr = 'init'
+    @hrefAttr = 'href'
+    @srcAttr = 'src'
     @valueWriteToAttr = 'value-write-to'
     @valueReadFromAttr = 'value-read-from'
     @valueBindAttr = 'value-bind'
+
+    @simpleAttributes = [
+        self.hrefAttr
+        self.srcAttr
+    ]
 
     ScopePromises: null
 
@@ -27,15 +34,11 @@ class DreamPilot.Attributes
         .setupValueBindAttribute()
         .setupValueWriteToAttribute()
         .setupValueReadFromAttribute()
+        .setupSimpleAttributes()
 
-    getApp: ->
-        @App
-
-    getScope: ->
-        @getApp().getScope()
-
-    getWrapper: ->
-        @getApp().getWrapper()
+    getApp: -> @App
+    getScope: -> @getApp().getScope()
+    getWrapper: -> @getApp().getWrapper()
 
     eachByAttr: (attr, callback) ->
         $dp.e($dp.selectorForAttribute(attr), @getWrapper()).each callback
@@ -245,5 +248,34 @@ class DreamPilot.Attributes
     @bindValueReadFromAttribute: (field, $el, Scope) ->
         Scope.onChange field, (field, value) ->
             $dp.fn.setValueOfElement $el, value if $dp.fn.getValueOfElement($el) isnt value
+        Scope.trigger 'change', field if Scope.get field
+        true
+
+    setupSimpleAttributes: () ->
+        that = @
+        jQuery.each [self.srcAttr, self.hrefAttr], (idx, attrName) =>
+            @eachByAttr attrName, ->
+                $el = $dp.e @
+                field = $el.attr $dp.attribute attrName
+                Scope = $dp.Parser.getScopeOf field, that.getScope()
+                return true if self.bindAttributeCheckScope attrName, field, $el, Scope, that
+                self.bindAttribute attrName, field, $el, Scope
+        @
+
+    @bindAttributeCheckScope: (attrName, field, $el, Scope, that) ->
+        if Scope is null
+            that.ScopePromises.add
+                field: field
+                scope: that.getScope()
+                cb: (_scope) ->
+                    field = $dp.Parser.getPropertyOfExpression field
+                    self.bindAttribute attrName, field, $el, _scope
+
+            return true
+        false
+
+    @bindAttribute: (attribute, field, $el, Scope) ->
+        Scope.onChange field, (field, value) ->
+            $el.attr attribute, value if $el.attr(attribute) isnt value
         Scope.trigger 'change', field if Scope.get field
         true

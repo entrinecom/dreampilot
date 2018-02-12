@@ -30,6 +30,17 @@ BasicApp = (function(superClass) {
       f3: new myModel(),
       f4: new myModel()
     });
+    setTimeout((function(_this) {
+      return function() {
+        _this.img = new myModel;
+        _this.img.set({
+          source: 'https://www.aeroportolisboa.pt/sites/default/files/media/lisboa_630_x_374.jpg',
+          city: 'Lisboa',
+          href: 'http://lisboa.pr'
+        });
+        return _this.linkToScope('img');
+      };
+    })(this), 1000);
     this.getScope().set({
       assignItOut: function() {
         var i, len, x, y;

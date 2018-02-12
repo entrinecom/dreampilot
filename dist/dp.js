@@ -205,11 +205,17 @@ DreamPilot.Attributes = (function() {
 
   Attributes.initAttr = 'init';
 
+  Attributes.hrefAttr = 'href';
+
+  Attributes.srcAttr = 'src';
+
   Attributes.valueWriteToAttr = 'value-write-to';
 
   Attributes.valueReadFromAttr = 'value-read-from';
 
   Attributes.valueBindAttr = 'value-bind';
+
+  Attributes.simpleAttributes = [self.hrefAttr, self.srcAttr];
 
   Attributes.prototype.ScopePromises = null;
 
@@ -224,7 +230,7 @@ DreamPilot.Attributes = (function() {
   };
 
   Attributes.prototype.setupAttributes = function() {
-    return this.setupInitAttribute().setupClassAttribute().setupShowAttribute().setupIfAttribute().setupValueBindAttribute().setupValueWriteToAttribute().setupValueReadFromAttribute();
+    return this.setupInitAttribute().setupClassAttribute().setupShowAttribute().setupIfAttribute().setupValueBindAttribute().setupValueWriteToAttribute().setupValueReadFromAttribute().setupSimpleAttributes();
   };
 
   Attributes.prototype.getApp = function() {
@@ -563,6 +569,53 @@ DreamPilot.Attributes = (function() {
     Scope.onChange(field, function(field, value) {
       if ($dp.fn.getValueOfElement($el) !== value) {
         return $dp.fn.setValueOfElement($el, value);
+      }
+    });
+    if (Scope.get(field)) {
+      Scope.trigger('change', field);
+    }
+    return true;
+  };
+
+  Attributes.prototype.setupSimpleAttributes = function() {
+    var that;
+    that = this;
+    jQuery.each([self.srcAttr, self.hrefAttr], (function(_this) {
+      return function(idx, attrName) {
+        return _this.eachByAttr(attrName, function() {
+          var $el, Scope, field;
+          $el = $dp.e(this);
+          field = $el.attr($dp.attribute(attrName));
+          Scope = $dp.Parser.getScopeOf(field, that.getScope());
+          if (self.bindAttributeCheckScope(attrName, field, $el, Scope, that)) {
+            return true;
+          }
+          return self.bindAttribute(attrName, field, $el, Scope);
+        });
+      };
+    })(this));
+    return this;
+  };
+
+  Attributes.bindAttributeCheckScope = function(attrName, field, $el, Scope, that) {
+    if (Scope === null) {
+      that.ScopePromises.add({
+        field: field,
+        scope: that.getScope(),
+        cb: function(_scope) {
+          field = $dp.Parser.getPropertyOfExpression(field);
+          return self.bindAttribute(attrName, field, $el, _scope);
+        }
+      });
+      return true;
+    }
+    return false;
+  };
+
+  Attributes.bindAttribute = function(attribute, field, $el, Scope) {
+    Scope.onChange(field, function(field, value) {
+      if ($el.attr(attribute) !== value) {
+        return $el.attr(attribute, value);
       }
     });
     if (Scope.get(field)) {

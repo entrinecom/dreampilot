@@ -116,6 +116,12 @@
 	<button dp-click="nn.f1.id = null; bbb = false">ungo</button>
 </div>
 
+<div>
+	<a dp-href="img.href" dp-value-bind="img.city"></a>
+	<img dp-src="img.source" alt="lisboa -> madrid">
+	<button type="button" dp-click="img.source = 'https://www.esmadrid.com/sites/default/files/editorial/GranViaMadrid_1398771941838_1401274516.173.jpg'; img.city = 'Madrid'; img.href = 'https://madrid.es'">go to madrid</button>
+</div>
+
 <script type="text/javascript" src="../../bower_components/jquery/dist/jquery.min.js"></script>
 <script type="text/javascript" src="../../bower_components/jsep/build/jsep.min.js"></script>
 <script type="text/javascript" src="../../dist/dp.js"></script>
