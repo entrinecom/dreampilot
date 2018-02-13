@@ -656,6 +656,15 @@ DreamPilot.Collection = (function() {
     return this.items;
   };
 
+  Collection.prototype.setApp = function(App) {
+    this.App = App;
+    return this;
+  };
+
+  Collection.prototype.getApp = function() {
+    return this.App;
+  };
+
   Collection.prototype.addItems = function(dataRows) {
     var data, i, len;
     for (i = 0, len = dataRows.length; i < len; i++) {
@@ -679,6 +688,7 @@ DreamPilot.Collection = (function() {
   };
 
   Collection.prototype.tuneModelAfterCreation = function(model) {
+    model.setApp(this.getApp());
     return this;
   };
 
@@ -941,6 +951,15 @@ DreamPilot.Model = (function() {
       this.trigger('change', field);
     }
     return this;
+  };
+
+  Model.prototype.setApp = function(App) {
+    this.App = App;
+    return this;
+  };
+
+  Model.prototype.getApp = function() {
+    return this.App;
   };
 
   Model.prototype.setParent = function(parent, parentField) {
@@ -1318,48 +1337,6 @@ DreamPilot.Scope = (function(superClass) {
   return Scope;
 
 })(DreamPilot.Model);
-
-DreamPilot.Router = (function() {
-  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
-
-  WORK_MODE_HASH = 1;
-
-  WORK_MODE_URL = 2;
-
-  ELSE_PATH = null;
-
-  Router.prototype.steps = {};
-
-  function Router(App, options) {
-    this.App = App;
-    if (options == null) {
-      options = {};
-    }
-    this.options = $.extend({
-      workMode: WORK_MODE_HASH,
-      attrName: 'data-step'
-    }, options);
-  }
-
-  Router.prototype.when = function(path, opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[path] = opts;
-    return this;
-  };
-
-  Router.prototype["else"] = function(opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[ELSE_PATH] = opts;
-    return this;
-  };
-
-  return Router;
-
-})();
 
 var slice = [].slice;
 
@@ -2508,3 +2485,45 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
+
+DreamPilot.Router = (function() {
+  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
+
+  WORK_MODE_HASH = 1;
+
+  WORK_MODE_URL = 2;
+
+  ELSE_PATH = null;
+
+  Router.prototype.steps = {};
+
+  function Router(App, options) {
+    this.App = App;
+    if (options == null) {
+      options = {};
+    }
+    this.options = $.extend({
+      workMode: WORK_MODE_HASH,
+      attrName: 'data-step'
+    }, options);
+  }
+
+  Router.prototype.when = function(path, opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[path] = opts;
+    return this;
+  };
+
+  Router.prototype["else"] = function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[ELSE_PATH] = opts;
+    return this;
+  };
+
+  return Router;
+
+})();

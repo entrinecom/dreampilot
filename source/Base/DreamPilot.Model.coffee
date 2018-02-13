@@ -38,6 +38,9 @@ class DreamPilot.Model
 
         @
 
+    setApp: (@App) -> @
+    getApp: -> @App
+
     setParent: (@parent, @parentField) ->
         if @parent and not @parent instanceof DreamPilot.Model
             throw 'Parent can be only DreamPilot.Model'

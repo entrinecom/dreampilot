@@ -16,6 +16,9 @@ class DreamPilot.Collection
     getCount: -> $dp.fn.arrayCount @items
     getItems: -> @items
 
+    setApp: (@App) -> @
+    getApp: -> @App
+
     # dataRows: json rows from BE
     addItems: (dataRows) ->
         @addItem data for data in dataRows
@@ -31,7 +34,9 @@ class DreamPilot.Collection
     # can be overridden to set default values for the data
     extendDataBeforeAdd: (data) -> data
 
-    tuneModelAfterCreation: (model) -> @
+    tuneModelAfterCreation: (model) ->
+        model.setApp @getApp()
+        @
 
     getKeyForPut: (model) ->
         if @isIdUnique then model.getId() else $dp.fn.arrayCount @items
