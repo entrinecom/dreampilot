@@ -74,9 +74,19 @@ class DreamPilot.Collection
         @
 
     getKeyForLoadedData: -> 'items'
+    checkIfLoadIsOk: (result) -> result.ok
+    showLoadError: (result) ->
+        if @getApp()
+            @getApp().showCollectionLoadError result.message
+        else
+            alert result.message
+        @
     filterLoadedData: (result) -> if result[@getKeyForLoadedData()]? then result[@getKeyForLoadedData()] else result
 
     onLoaded: (result) ->
+        unless @checkIfLoadIsOk result
+            @showLoadError result
+            return @
         @addItems @filterLoadedData result
         .trigger 'load'
         @

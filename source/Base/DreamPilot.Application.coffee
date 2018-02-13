@@ -61,3 +61,10 @@ class DreamPilot.Application
             else
                 $dp.log.print "Key #{key} not found in application"
         @
+
+    showError: (message) ->
+        alert message
+        @
+    showCollectionLoadError: (message) -> @showError message
+    showModelLoadError: (message) -> @showError message
+    showModelSaveError: (message) -> @showError message

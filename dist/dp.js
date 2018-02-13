@@ -188,6 +188,23 @@ DreamPilot.Application = (function() {
     return this;
   };
 
+  Application.prototype.showError = function(message) {
+    alert(message);
+    return this;
+  };
+
+  Application.prototype.showCollectionLoadError = function(message) {
+    return this.showError(message);
+  };
+
+  Application.prototype.showModelLoadError = function(message) {
+    return this.showError(message);
+  };
+
+  Application.prototype.showModelSaveError = function(message) {
+    return this.showError(message);
+  };
+
   return Application;
 
 })();
@@ -767,6 +784,19 @@ DreamPilot.Collection = (function() {
     return 'items';
   };
 
+  Collection.prototype.checkIfLoadIsOk = function(result) {
+    return result.ok;
+  };
+
+  Collection.prototype.showLoadError = function(result) {
+    if (this.getApp()) {
+      this.getApp().showCollectionLoadError(result.message);
+    } else {
+      alert(result.message);
+    }
+    return this;
+  };
+
   Collection.prototype.filterLoadedData = function(result) {
     if (result[this.getKeyForLoadedData()] != null) {
       return result[this.getKeyForLoadedData()];
@@ -776,6 +806,10 @@ DreamPilot.Collection = (function() {
   };
 
   Collection.prototype.onLoaded = function(result) {
+    if (!this.checkIfLoadIsOk(result)) {
+      this.showLoadError(result);
+      return this;
+    }
     this.addItems(this.filterLoadedData(result)).trigger('load');
     return this;
   };
@@ -1337,6 +1371,48 @@ DreamPilot.Scope = (function(superClass) {
   return Scope;
 
 })(DreamPilot.Model);
+
+DreamPilot.Router = (function() {
+  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
+
+  WORK_MODE_HASH = 1;
+
+  WORK_MODE_URL = 2;
+
+  ELSE_PATH = null;
+
+  Router.prototype.steps = {};
+
+  function Router(App, options) {
+    this.App = App;
+    if (options == null) {
+      options = {};
+    }
+    this.options = $.extend({
+      workMode: WORK_MODE_HASH,
+      attrName: 'data-step'
+    }, options);
+  }
+
+  Router.prototype.when = function(path, opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[path] = opts;
+    return this;
+  };
+
+  Router.prototype["else"] = function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[ELSE_PATH] = opts;
+    return this;
+  };
+
+  return Router;
+
+})();
 
 var slice = [].slice;
 
@@ -2485,45 +2561,3 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
-
-DreamPilot.Router = (function() {
-  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
-
-  WORK_MODE_HASH = 1;
-
-  WORK_MODE_URL = 2;
-
-  ELSE_PATH = null;
-
-  Router.prototype.steps = {};
-
-  function Router(App, options) {
-    this.App = App;
-    if (options == null) {
-      options = {};
-    }
-    this.options = $.extend({
-      workMode: WORK_MODE_HASH,
-      attrName: 'data-step'
-    }, options);
-  }
-
-  Router.prototype.when = function(path, opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[path] = opts;
-    return this;
-  };
-
-  Router.prototype["else"] = function(opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[ELSE_PATH] = opts;
-    return this;
-  };
-
-  return Router;
-
-})();
