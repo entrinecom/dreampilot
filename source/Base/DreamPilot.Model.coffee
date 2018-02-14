@@ -40,6 +40,7 @@ class DreamPilot.Model
 
     setApp: (@App) -> @
     getApp: -> @App
+    e: (selector) -> @getApp().e selector
 
     setParent: (@parent, @parentField) ->
         if @parent and not @parent instanceof DreamPilot.Model

@@ -5,6 +5,7 @@ class DreamPilot.Functions
     @int: (s) -> ~~s
     @str: (s) -> s + ''
     @float: (s) -> parseFloat(s) or .0
+    @bool: (s) -> !!s
     @trim: (s) -> self.str(s).replace /^\s+|\s+$/g, ''
     @ltrim: (s) -> self.str(s).replace /^\s+/, ''
     @rtrim: (s) -> self.str(s).replace /\s+$/, ''
