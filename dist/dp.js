@@ -1123,6 +1123,10 @@ DreamPilot.Model = (function() {
     return this.set(this.idField, id);
   };
 
+  Model.prototype.resetId = function() {
+    return this.setId(null);
+  };
+
   Model.prototype.getRelated = function(field) {
     if (field == null) {
       field = null;
@@ -1181,10 +1185,17 @@ DreamPilot.Model = (function() {
     return this.get();
   };
 
+  Model.prototype.updateId = function(newId) {
+    if (!this.hasId() && newId) {
+      this.setId(newId);
+    }
+    return this;
+  };
+
   Model.prototype.save = function() {
     $dp.transport.request(this.getSaveMethod(), this.getSaveUrl(), this.getSaveData(), (function(_this) {
       return function(result) {
-        return _this.onSaved(result);
+        return _this.tryToUpdateId(result).onSaved(result);
       };
     })(this));
     return this;
@@ -1199,6 +1210,17 @@ DreamPilot.Model = (function() {
         return _this.save();
       };
     })(this), this.saveDelay);
+    return this;
+  };
+
+  Model.prototype.extractIdFromResult = function(result) {
+    return $dp.fn.int(result['id']);
+  };
+
+  Model.prototype.tryToUpdateId = function(result) {
+    var newId;
+    newId = this.extractIdFromResult(result);
+    this.updateId(newId);
     return this;
   };
 

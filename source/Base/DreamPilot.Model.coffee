@@ -104,6 +104,8 @@ class DreamPilot.Model
         id = $dp.fn.int id if @idIsInt
         @set @idField, id
 
+    resetId: -> @setId null
+
     getRelated: (field = null) ->
         return @relatedData if field is null
         if @existsRelated field then @relatedData[field] else null
@@ -127,9 +129,14 @@ class DreamPilot.Model
     getSaveUrl: -> throw 'Redefine Model.getSaveUrl() method first'
     getSaveData: -> @get()
 
+    updateId: (newId) ->
+        @setId newId if not @hasId() and newId
+        @
+
     save: ->
         $dp.transport.request @getSaveMethod(), @getSaveUrl(), @getSaveData(), (result) =>
-            @onSaved result
+            @tryToUpdateId result
+            .onSaved result
         @
 
     delayedSave: ->
@@ -137,6 +144,13 @@ class DreamPilot.Model
         @saveTimeout = setTimeout =>
             @save()
         , @saveDelay
+        @
+
+    extractIdFromResult: (result) -> $dp.fn.int result['id']
+
+    tryToUpdateId: (result) ->
+        newId = @extractIdFromResult result
+        @updateId newId
         @
 
     onSaved: (result) ->
