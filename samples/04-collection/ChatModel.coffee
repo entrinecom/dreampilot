@@ -9,5 +9,5 @@ class ChatModel extends DreamPilot.Model
         chatBox = $dp.e 'ul.chat-box'
         cue = $dp.e '<li dp-click="chatClick(this, $event)" dp-class="{tiny: isTiny}">{0} ({1}): {2}</li>'.format @get('name'), @get('created_at'), @get('content')
         chatBox.append cue
-        @getApp().setupOnFly cue
+        @getApp().embraceDomElement cue
         @

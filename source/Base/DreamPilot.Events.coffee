@@ -36,21 +36,18 @@ class DreamPilot.Events
     setupSingleEvent: (name, $element = null) ->
         that = @
 
-        if $element
-            $element = $dp.e $element
-            $element = $element.filter $dp.selectorForAttribute(name)
-        else
-            $element = $dp.e $dp.selectorForAttribute(name), @getWrapper()
+        $elements = $dp.e $dp.selectorForAttribute(name), $element or @getWrapper()
+        $elements = $elements.add $element.filter $dp.selectorForAttribute(name) if $element
 
-        $element.each ->
+        $elements.each ->
             $el = $dp.e @
             expression = $el.attr $dp.attribute name
 
             $el.on name, (event) ->
                 event = event or window.event
-                that.App.setActiveElement @
+                that.getApp().setActiveElement @
                 $dp.Parser.executeExpressions expression, that.getApp(), @, event
-                that.App.resetActiveElement()
+                that.getApp().resetActiveElement()
 
             true
 

@@ -27,7 +27,6 @@ class DreamPilot.Collection
     addItem: (data) ->
         data = @extendDataBeforeAdd data
         model = @getNewItem data
-        @tuneModelAfterCreation model
         @putModelToList model
 
     # can be overridden to set default values for the data
@@ -62,7 +61,9 @@ class DreamPilot.Collection
 
     getNewItem: (data = null) ->
         className = $dp.fn.stringToFunction @modelClassName
-        new className data
+        m = new className data
+        @tuneModelAfterCreation m
+        m
 
     getFirstItem: ->
         return @getNewItem() unless @getCount()

@@ -18,7 +18,7 @@ class DreamPilot.Application
     # override this method in child classes
     init: -> @
 
-    e: (selector) -> $dp.e selector, @$wrapper
+    e: (selector) -> $dp.e selector, @getWrapper()
 
     getWrapper: -> @$wrapper
     getWrapperData: (key) -> @getWrapper().data key
@@ -44,7 +44,8 @@ class DreamPilot.Application
         @Attributes = new $dp.Attributes @
         @
 
-    setupOnFly: (el) ->
+    embraceDomElement: (el) ->
+        throw 'Unable to embrace empty element' unless el
         $el = $dp.e el
         @getEvents().setupEvents $el
         @getAttributes().setupAttributes $el

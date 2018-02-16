@@ -41,12 +41,9 @@ class DreamPilot.Attributes
     getWrapper: -> @getApp().getWrapper()
 
     eachByAttr: (attr, $element = null, callback = null) ->
-        if $element
-            $element = $dp.e $element
-            $element = $element.filter $dp.selectorForAttribute(attr)
-        else
-            $element = $dp.e $dp.selectorForAttribute(attr), @getWrapper()
-        $element.each callback
+        $elements = $dp.e $dp.selectorForAttribute(attr), $element or @getWrapper()
+        $elements = $elements.add $element.filter $dp.selectorForAttribute(attr) if $element
+        $elements.each callback
         @
 
     setupClassAttribute: ($element = null) ->
