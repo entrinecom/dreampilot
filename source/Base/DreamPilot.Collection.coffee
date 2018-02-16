@@ -29,7 +29,6 @@ class DreamPilot.Collection
         model = @getNewItem data
         @tuneModelAfterCreation model
         @putModelToList model
-        model
 
     # can be overridden to set default values for the data
     extendDataBeforeAdd: (data) -> data
@@ -38,12 +37,15 @@ class DreamPilot.Collection
         model.setApp @getApp()
         @
 
-    getKeyForPut: (model) ->
+    getIdForPut: (model) ->
         if @isIdUnique then model.getId() else $dp.fn.arrayCount @items
 
     putModelToList: (model) ->
-        @items[@getKeyForPut(model)] = model
-        @
+        id = @getIdForPut(model)
+        if @exists id
+            @items[id].set model.get()
+        else
+            @items[id] = model
 
     map: (callbackOrField) ->
         ar = []
@@ -54,7 +56,9 @@ class DreamPilot.Collection
                 ar.push model.get callbackOrField
         ar
 
-    getKeys: -> $dp.fn.keys @items
+    getIds: -> $dp.fn.keys @items
+    getById: (id) -> if @exists(id) then @items[id] else @getNewItem()
+    exists: (id) -> @items[id]?
 
     getNewItem: (data = null) ->
         className = $dp.fn.stringToFunction @modelClassName
@@ -62,8 +66,8 @@ class DreamPilot.Collection
 
     getFirstItem: ->
         return @getNewItem() unless @getCount()
-        key = @getKeys()[0]
-        @items[key]
+        id = @getIds()[0]
+        @items[id]
 
     getLoadMethod: -> $dp.transport.GET
     getLoadUrl: -> throw 'Redefine Collection.getLoadUrl() method first'

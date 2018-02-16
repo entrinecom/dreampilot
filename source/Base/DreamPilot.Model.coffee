@@ -74,8 +74,9 @@ class DreamPilot.Model
         else
             if value instanceof DreamPilot.Model and @assignChildModels and value.assignModelToParent
                 value.setParent @, field
+            oldValue = @data[field]
             @data[field] = value
-            @trigger 'change', field
+            @trigger 'change', field if oldValue isnt value
         @
 
     exists: (field) ->

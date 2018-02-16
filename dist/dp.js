@@ -696,8 +696,7 @@ DreamPilot.Collection = (function() {
     data = this.extendDataBeforeAdd(data);
     model = this.getNewItem(data);
     this.tuneModelAfterCreation(model);
-    this.putModelToList(model);
-    return model;
+    return this.putModelToList(model);
   };
 
   Collection.prototype.extendDataBeforeAdd = function(data) {
@@ -709,7 +708,7 @@ DreamPilot.Collection = (function() {
     return this;
   };
 
-  Collection.prototype.getKeyForPut = function(model) {
+  Collection.prototype.getIdForPut = function(model) {
     if (this.isIdUnique) {
       return model.getId();
     } else {
@@ -718,8 +717,13 @@ DreamPilot.Collection = (function() {
   };
 
   Collection.prototype.putModelToList = function(model) {
-    this.items[this.getKeyForPut(model)] = model;
-    return this;
+    var id;
+    id = this.getIdForPut(model);
+    if (this.exists(id)) {
+      return this.items[id].set(model.get());
+    } else {
+      return this.items[id] = model;
+    }
   };
 
   Collection.prototype.map = function(callbackOrField) {
@@ -737,8 +741,20 @@ DreamPilot.Collection = (function() {
     return ar;
   };
 
-  Collection.prototype.getKeys = function() {
+  Collection.prototype.getIds = function() {
     return $dp.fn.keys(this.items);
+  };
+
+  Collection.prototype.getById = function(id) {
+    if (this.exists(id)) {
+      return this.items[id];
+    } else {
+      return this.getNewItem();
+    }
+  };
+
+  Collection.prototype.exists = function(id) {
+    return this.items[id] != null;
   };
 
   Collection.prototype.getNewItem = function(data) {
@@ -751,12 +767,12 @@ DreamPilot.Collection = (function() {
   };
 
   Collection.prototype.getFirstItem = function() {
-    var key;
+    var id;
     if (!this.getCount()) {
       return this.getNewItem();
     }
-    key = this.getKeys()[0];
-    return this.items[key];
+    id = this.getIds()[0];
+    return this.items[id];
   };
 
   Collection.prototype.getLoadMethod = function() {
@@ -1054,7 +1070,7 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.set = function(field, value) {
-    var k, v;
+    var k, oldValue, v;
     if (value == null) {
       value = null;
     }
@@ -1067,8 +1083,11 @@ DreamPilot.Model = (function() {
       if (value instanceof DreamPilot.Model && this.assignChildModels && value.assignModelToParent) {
         value.setParent(this, field);
       }
+      oldValue = this.data[field];
       this.data[field] = value;
-      this.trigger('change', field);
+      if (oldValue !== value) {
+        this.trigger('change', field);
+      }
     }
     return this;
   };
@@ -1397,6 +1416,48 @@ DreamPilot.Scope = (function(superClass) {
   return Scope;
 
 })(DreamPilot.Model);
+
+DreamPilot.Router = (function() {
+  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
+
+  WORK_MODE_HASH = 1;
+
+  WORK_MODE_URL = 2;
+
+  ELSE_PATH = null;
+
+  Router.prototype.steps = {};
+
+  function Router(App, options) {
+    this.App = App;
+    if (options == null) {
+      options = {};
+    }
+    this.options = $.extend({
+      workMode: WORK_MODE_HASH,
+      attrName: 'data-step'
+    }, options);
+  }
+
+  Router.prototype.when = function(path, opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[path] = opts;
+    return this;
+  };
+
+  Router.prototype["else"] = function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[ELSE_PATH] = opts;
+    return this;
+  };
+
+  return Router;
+
+})();
 
 var slice = [].slice;
 
@@ -2549,45 +2610,3 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
-
-DreamPilot.Router = (function() {
-  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
-
-  WORK_MODE_HASH = 1;
-
-  WORK_MODE_URL = 2;
-
-  ELSE_PATH = null;
-
-  Router.prototype.steps = {};
-
-  function Router(App, options) {
-    this.App = App;
-    if (options == null) {
-      options = {};
-    }
-    this.options = $.extend({
-      workMode: WORK_MODE_HASH,
-      attrName: 'data-step'
-    }, options);
-  }
-
-  Router.prototype.when = function(path, opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[path] = opts;
-    return this;
-  };
-
-  Router.prototype["else"] = function(opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[ELSE_PATH] = opts;
-    return this;
-  };
-
-  return Router;
-
-})();
