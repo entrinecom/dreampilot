@@ -26,24 +26,30 @@ class DreamPilot.Events
         @setupEvents()
 
     getApp: -> @App
-
     getScope: -> @getApp().getScope()
+    getWrapper: -> @getApp().getWrapper()
 
-    setupEvents: ->
-        @setupSingleEvent event for event in @events
+    setupEvents: ($element = null) ->
+        @setupSingleEvent event, $element for event in @events
         @
 
-    setupSingleEvent: (name) ->
+    setupSingleEvent: (name, $element = null) ->
         that = @
 
-        $dp.e($dp.selectorForAttribute(name), @App.$element).each ->
+        if $element
+            $element = $dp.e $element
+            $element = $element.filter $dp.selectorForAttribute(name)
+        else
+            $element = $dp.e $dp.selectorForAttribute(name), @getWrapper()
+
+        $element.each ->
             $el = $dp.e @
             expression = $el.attr $dp.attribute name
 
             $el.on name, (event) ->
                 event = event or window.event
                 that.App.setActiveElement @
-                $dp.Parser.executeExpressions expression, that.App, @, event
+                $dp.Parser.executeExpressions expression, that.getApp(), @, event
                 that.App.resetActiveElement()
 
             true

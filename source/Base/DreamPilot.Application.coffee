@@ -29,9 +29,7 @@ class DreamPilot.Application
     setActiveElement: (element) ->
         @activeElement = element
         @
-
     resetActiveElement: -> @setActiveElement null
-
     getActiveElement: -> @activeElement
 
     setupScope: ->
@@ -44,6 +42,12 @@ class DreamPilot.Application
 
     setupAttributes: ->
         @Attributes = new $dp.Attributes @
+        @
+
+    setupOnFly: (el) ->
+        $el = $dp.e el
+        @getEvents().setupEvents $el
+        @getAttributes().setupAttributes $el
         @
 
     linkToScope: (keys...) ->

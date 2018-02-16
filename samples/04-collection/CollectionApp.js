@@ -11,15 +11,24 @@ CollectionApp = (function(superClass) {
   }
 
   CollectionApp.prototype.init = function() {
-    return this.loadChat();
+    this.loadChat().linkToScope(['chatClick']);
+    this.getScope().set({
+      isTiny: true
+    });
+    return this;
   };
 
   CollectionApp.prototype.loadChat = function() {
-    this.col = new ChatCollection().onLoad(function(col) {
+    this.col = new ChatCollection().setApp(this).onLoad(function(col) {
       return col.map(function(model) {
         return model.display();
       });
     }).load();
+    return this;
+  };
+
+  CollectionApp.prototype.chatClick = function(el, event) {
+    console.log('chatClick', el, event);
     return this;
   };
 

@@ -26,28 +26,33 @@ class DreamPilot.Attributes
         @ScopePromises = new DreamPilot.ScopePromises()
         @
 
-    setupAttributes: ->
-        @setupInitAttribute()
-        .setupClassAttribute()
-        .setupShowAttribute()
-        .setupIfAttribute()
-        .setupValueBindAttribute()
-        .setupValueWriteToAttribute()
-        .setupValueReadFromAttribute()
-        .setupSimpleAttributes()
+    setupAttributes: ($element = null) ->
+        @setupInitAttribute $element
+        .setupClassAttribute $element
+        .setupShowAttribute $element
+        .setupIfAttribute $element
+        .setupValueBindAttribute $element
+        .setupValueWriteToAttribute $element
+        .setupValueReadFromAttribute $element
+        .setupSimpleAttributes $element
 
     getApp: -> @App
     getScope: -> @getApp().getScope()
     getWrapper: -> @getApp().getWrapper()
 
-    eachByAttr: (attr, callback) ->
-        $dp.e($dp.selectorForAttribute(attr), @getWrapper()).each callback
+    eachByAttr: (attr, $element = null, callback = null) ->
+        if $element
+            $element = $dp.e $element
+            $element = $element.filter $dp.selectorForAttribute(attr)
+        else
+            $element = $dp.e $dp.selectorForAttribute(attr), @getWrapper()
+        $element.each callback
         @
 
-    setupClassAttribute: ->
+    setupClassAttribute: ($element = null) ->
         that = @
 
-        @eachByAttr self.classAttr, ->
+        @eachByAttr self.classAttr, $element, ->
             el = @
             $el = $dp.e el
             obj = $dp.Parser.object $el.attr $dp.attribute self.classAttr
@@ -84,10 +89,10 @@ class DreamPilot.Attributes
                 # console.log 'we got', cssClass, expression
         @
 
-    setupShowAttribute: ->
+    setupShowAttribute: ($element = null) ->
         that = @
 
-        @eachByAttr self.showAttr, ->
+        @eachByAttr self.showAttr, $element, ->
             el = @
             $el = $dp.e el
             expression = $el.attr $dp.attribute self.showAttr
@@ -141,10 +146,10 @@ class DreamPilot.Attributes
             .detach()
         @
 
-    setupIfAttribute: ->
+    setupIfAttribute: ($element = null) ->
         that = @
 
-        @eachByAttr self.ifAttr, ->
+        @eachByAttr self.ifAttr, $element, ->
             el = @
             $el = $dp.e el
             expression = $el.attr $dp.attribute self.ifAttr
@@ -180,9 +185,9 @@ class DreamPilot.Attributes
                             #break
         @
 
-    setupInitAttribute: ->
+    setupInitAttribute: ($element = null) ->
         that = @
-        @eachByAttr self.initAttr, ->
+        @eachByAttr self.initAttr, $element, ->
             el = @
             $el = $dp.e el
             expression = $el.attr $dp.attribute self.initAttr
@@ -190,9 +195,9 @@ class DreamPilot.Attributes
             true
         @
 
-    setupValueWriteToAttribute: ->
+    setupValueWriteToAttribute: ($element = null) ->
         that = @
-        @eachByAttr self.valueWriteToAttr, ->
+        @eachByAttr self.valueWriteToAttr, $element, ->
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueWriteToAttr
             Scope = $dp.Parser.getScopeOf field, that.getScope()
@@ -200,9 +205,9 @@ class DreamPilot.Attributes
             self.bindValueWriteToAttribute field, $el, Scope
         @
 
-    setupValueReadFromAttribute: ->
+    setupValueReadFromAttribute: ($element = null) ->
         that = @
-        @eachByAttr self.valueReadFromAttr, ->
+        @eachByAttr self.valueReadFromAttr, $element, ->
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueReadFromAttr
             Scope = $dp.Parser.getScopeOf field, that.getScope()
@@ -210,9 +215,9 @@ class DreamPilot.Attributes
             self.bindValueReadFromAttribute field, $el, Scope
         @
 
-    setupValueBindAttribute: ->
+    setupValueBindAttribute: ($element = null) ->
         that = @
-        @eachByAttr self.valueBindAttr, ->
+        @eachByAttr self.valueBindAttr, $element, ->
             $el = $dp.e @
             field = $el.attr $dp.attribute self.valueBindAttr
             Scope = $dp.Parser.getScopeOf field, that.getScope()
@@ -251,10 +256,10 @@ class DreamPilot.Attributes
         Scope.trigger 'change', field if Scope.get field
         true
 
-    setupSimpleAttributes: () ->
+    setupSimpleAttributes: ($element = null) ->
         that = @
         jQuery.each [self.srcAttr, self.hrefAttr], (idx, attrName) =>
-            @eachByAttr attrName, ->
+            @eachByAttr attrName, $element, ->
                 $el = $dp.e @
                 field = $el.attr $dp.attribute attrName
                 Scope = $dp.Parser.getScopeOf field, that.getScope()

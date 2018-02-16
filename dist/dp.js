@@ -158,6 +158,14 @@ DreamPilot.Application = (function() {
     return this;
   };
 
+  Application.prototype.setupOnFly = function(el) {
+    var $el;
+    $el = $dp.e(el);
+    this.getEvents().setupEvents($el);
+    this.getAttributes().setupAttributes($el);
+    return this;
+  };
+
   Application.prototype.linkToScope = function() {
     var i, key, keys, len, obj, type;
     keys = 1 <= arguments.length ? slice.call(arguments, 0) : [];
@@ -246,8 +254,11 @@ DreamPilot.Attributes = (function() {
     return this;
   };
 
-  Attributes.prototype.setupAttributes = function() {
-    return this.setupInitAttribute().setupClassAttribute().setupShowAttribute().setupIfAttribute().setupValueBindAttribute().setupValueWriteToAttribute().setupValueReadFromAttribute().setupSimpleAttributes();
+  Attributes.prototype.setupAttributes = function($element) {
+    if ($element == null) {
+      $element = null;
+    }
+    return this.setupInitAttribute($element).setupClassAttribute($element).setupShowAttribute($element).setupIfAttribute($element).setupValueBindAttribute($element).setupValueWriteToAttribute($element).setupValueReadFromAttribute($element).setupSimpleAttributes($element);
   };
 
   Attributes.prototype.getApp = function() {
@@ -262,15 +273,30 @@ DreamPilot.Attributes = (function() {
     return this.getApp().getWrapper();
   };
 
-  Attributes.prototype.eachByAttr = function(attr, callback) {
-    $dp.e($dp.selectorForAttribute(attr), this.getWrapper()).each(callback);
+  Attributes.prototype.eachByAttr = function(attr, $element, callback) {
+    if ($element == null) {
+      $element = null;
+    }
+    if (callback == null) {
+      callback = null;
+    }
+    if ($element) {
+      $element = $dp.e($element);
+      $element = $element.filter($dp.selectorForAttribute(attr));
+    } else {
+      $element = $dp.e($dp.selectorForAttribute(attr), this.getWrapper());
+    }
+    $element.each(callback);
     return this;
   };
 
-  Attributes.prototype.setupClassAttribute = function() {
+  Attributes.prototype.setupClassAttribute = function($element) {
     var that;
+    if ($element == null) {
+      $element = null;
+    }
     that = this;
-    this.eachByAttr(self.classAttr, function() {
+    this.eachByAttr(self.classAttr, $element, function() {
       var $el, cssClass, el, expression, field, k, len, obj, ref;
       el = this;
       $el = $dp.e(el);
@@ -330,10 +356,13 @@ DreamPilot.Attributes = (function() {
     return this;
   };
 
-  Attributes.prototype.setupShowAttribute = function() {
+  Attributes.prototype.setupShowAttribute = function($element) {
     var that;
+    if ($element == null) {
+      $element = null;
+    }
     that = this;
-    this.eachByAttr(self.showAttr, function() {
+    this.eachByAttr(self.showAttr, $element, function() {
       var $el, el, expression, field, k, len, ref;
       el = this;
       $el = $dp.e(el);
@@ -413,10 +442,13 @@ DreamPilot.Attributes = (function() {
     return this;
   };
 
-  Attributes.prototype.setupIfAttribute = function() {
+  Attributes.prototype.setupIfAttribute = function($element) {
     var that;
+    if ($element == null) {
+      $element = null;
+    }
     that = this;
-    this.eachByAttr(self.ifAttr, function() {
+    this.eachByAttr(self.ifAttr, $element, function() {
       var $el, el, expression, field, k, len, ref;
       el = this;
       $el = $dp.e(el);
@@ -475,10 +507,13 @@ DreamPilot.Attributes = (function() {
     return this;
   };
 
-  Attributes.prototype.setupInitAttribute = function() {
+  Attributes.prototype.setupInitAttribute = function($element) {
     var that;
+    if ($element == null) {
+      $element = null;
+    }
     that = this;
-    this.eachByAttr(self.initAttr, function() {
+    this.eachByAttr(self.initAttr, $element, function() {
       var $el, el, expression;
       el = this;
       $el = $dp.e(el);
@@ -489,10 +524,13 @@ DreamPilot.Attributes = (function() {
     return this;
   };
 
-  Attributes.prototype.setupValueWriteToAttribute = function() {
+  Attributes.prototype.setupValueWriteToAttribute = function($element) {
     var that;
+    if ($element == null) {
+      $element = null;
+    }
     that = this;
-    this.eachByAttr(self.valueWriteToAttr, function() {
+    this.eachByAttr(self.valueWriteToAttr, $element, function() {
       var $el, Scope, field;
       $el = $dp.e(this);
       field = $el.attr($dp.attribute(self.valueWriteToAttr));
@@ -505,10 +543,13 @@ DreamPilot.Attributes = (function() {
     return this;
   };
 
-  Attributes.prototype.setupValueReadFromAttribute = function() {
+  Attributes.prototype.setupValueReadFromAttribute = function($element) {
     var that;
+    if ($element == null) {
+      $element = null;
+    }
     that = this;
-    this.eachByAttr(self.valueReadFromAttr, function() {
+    this.eachByAttr(self.valueReadFromAttr, $element, function() {
       var $el, Scope, field;
       $el = $dp.e(this);
       field = $el.attr($dp.attribute(self.valueReadFromAttr));
@@ -521,10 +562,13 @@ DreamPilot.Attributes = (function() {
     return this;
   };
 
-  Attributes.prototype.setupValueBindAttribute = function() {
+  Attributes.prototype.setupValueBindAttribute = function($element) {
     var that;
+    if ($element == null) {
+      $element = null;
+    }
     that = this;
-    this.eachByAttr(self.valueBindAttr, function() {
+    this.eachByAttr(self.valueBindAttr, $element, function() {
       var $el, Scope, field;
       $el = $dp.e(this);
       field = $el.attr($dp.attribute(self.valueBindAttr));
@@ -594,12 +638,15 @@ DreamPilot.Attributes = (function() {
     return true;
   };
 
-  Attributes.prototype.setupSimpleAttributes = function() {
+  Attributes.prototype.setupSimpleAttributes = function($element) {
     var that;
+    if ($element == null) {
+      $element = null;
+    }
     that = this;
     jQuery.each([self.srcAttr, self.hrefAttr], (function(_this) {
       return function(idx, attrName) {
-        return _this.eachByAttr(attrName, function() {
+        return _this.eachByAttr(attrName, $element, function() {
           var $el, Scope, field;
           $el = $dp.e(this);
           field = $el.attr($dp.attribute(attrName));
@@ -916,27 +963,43 @@ DreamPilot.Events = (function() {
     return this.getApp().getScope();
   };
 
-  Events.prototype.setupEvents = function() {
+  Events.prototype.getWrapper = function() {
+    return this.getApp().getWrapper();
+  };
+
+  Events.prototype.setupEvents = function($element) {
     var event, i, len, ref;
+    if ($element == null) {
+      $element = null;
+    }
     ref = this.events;
     for (i = 0, len = ref.length; i < len; i++) {
       event = ref[i];
-      this.setupSingleEvent(event);
+      this.setupSingleEvent(event, $element);
     }
     return this;
   };
 
-  Events.prototype.setupSingleEvent = function(name) {
+  Events.prototype.setupSingleEvent = function(name, $element) {
     var that;
+    if ($element == null) {
+      $element = null;
+    }
     that = this;
-    $dp.e($dp.selectorForAttribute(name), this.App.$element).each(function() {
+    if ($element) {
+      $element = $dp.e($element);
+      $element = $element.filter($dp.selectorForAttribute(name));
+    } else {
+      $element = $dp.e($dp.selectorForAttribute(name), this.getWrapper());
+    }
+    $element.each(function() {
       var $el, expression;
       $el = $dp.e(this);
       expression = $el.attr($dp.attribute(name));
       $el.on(name, function(event) {
         event = event || window.event;
         that.App.setActiveElement(this);
-        $dp.Parser.executeExpressions(expression, that.App, this, event);
+        $dp.Parser.executeExpressions(expression, that.getApp(), this, event);
         return that.App.resetActiveElement();
       });
       return true;
@@ -1416,48 +1479,6 @@ DreamPilot.Scope = (function(superClass) {
   return Scope;
 
 })(DreamPilot.Model);
-
-DreamPilot.Router = (function() {
-  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
-
-  WORK_MODE_HASH = 1;
-
-  WORK_MODE_URL = 2;
-
-  ELSE_PATH = null;
-
-  Router.prototype.steps = {};
-
-  function Router(App, options) {
-    this.App = App;
-    if (options == null) {
-      options = {};
-    }
-    this.options = $.extend({
-      workMode: WORK_MODE_HASH,
-      attrName: 'data-step'
-    }, options);
-  }
-
-  Router.prototype.when = function(path, opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[path] = opts;
-    return this;
-  };
-
-  Router.prototype["else"] = function(opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[ELSE_PATH] = opts;
-    return this;
-  };
-
-  return Router;
-
-})();
 
 var slice = [].slice;
 
@@ -2610,3 +2631,45 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
+
+DreamPilot.Router = (function() {
+  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
+
+  WORK_MODE_HASH = 1;
+
+  WORK_MODE_URL = 2;
+
+  ELSE_PATH = null;
+
+  Router.prototype.steps = {};
+
+  function Router(App, options) {
+    this.App = App;
+    if (options == null) {
+      options = {};
+    }
+    this.options = $.extend({
+      workMode: WORK_MODE_HASH,
+      attrName: 'data-step'
+    }, options);
+  }
+
+  Router.prototype.when = function(path, opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[path] = opts;
+    return this;
+  };
+
+  Router.prototype["else"] = function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[ELSE_PATH] = opts;
+    return this;
+  };
+
+  return Router;
+
+})();
