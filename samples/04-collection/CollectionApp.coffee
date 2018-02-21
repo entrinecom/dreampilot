@@ -9,8 +9,10 @@ class CollectionApp extends DreamPilot.Application
         @col = new ChatCollection()
         .setApp @
         .onLoad (col) ->
-            col.map (model) ->
-                model.display()
+            col.map (model) -> model.display()
+
+            filteredCol = col.filter (model) -> model.get('name') is 'James'
+            filteredCol.map (model) -> model.displayFiltered()
         .load()
         @
 

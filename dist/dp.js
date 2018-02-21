@@ -703,7 +703,7 @@ DreamPilot.Collection = (function() {
   Collection.prototype.defineBasics = function() {
     this.modelClassName = null;
     this.isIdUnique = true;
-    this.items = {};
+    this.items = [];
     this.callbacks = {
       load: {}
     };
@@ -742,9 +742,14 @@ DreamPilot.Collection = (function() {
 
   Collection.prototype.addItem = function(data) {
     var model;
-    data = this.extendDataBeforeAdd(data);
+    data = this.extendDataBeforeAdd(DreamPilot.Model.prepareData(data));
     model = this.getNewItem(data);
     return this.putModelToList(model);
+  };
+
+  Collection.prototype.kill = function() {
+    this.items = [];
+    return this;
   };
 
   Collection.prototype.extendDataBeforeAdd = function(data) {
@@ -768,41 +773,84 @@ DreamPilot.Collection = (function() {
     var id;
     id = this.getIdForPut(model);
     if (this.exists(id)) {
-      return this.items[id].set(model.get());
+      this.getById(id).set(model.get());
     } else {
-      return this.items[id] = model;
+      this.items.push({
+        id: id,
+        model: model
+      });
     }
+    return this;
   };
 
   Collection.prototype.map = function(callbackOrField) {
-    var ar, k, model, ref;
+    var ar, idx, ref, row;
     ar = [];
     ref = this.items;
-    for (k in ref) {
-      model = ref[k];
+    for (idx in ref) {
+      row = ref[idx];
       if ($dp.fn.getType(callbackOrField) === 'function') {
-        ar.push(callbackOrField(model, k));
+        ar.push(callbackOrField(row.model, idx));
       } else {
-        ar.push(model.get(callbackOrField));
+        ar.push(row.model.get(callbackOrField));
       }
     }
     return ar;
   };
 
+  Collection.prototype.createInstance = function() {
+    var col;
+    col = Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this));
+    return col.kill();
+  };
+
+  Collection.prototype.filter = function(callback) {
+    var col, idx, ref, row;
+    col = this.createInstance();
+    ref = this.items;
+    for (idx in ref) {
+      row = ref[idx];
+      if (callback(row.model)) {
+        col.addItem(row.model);
+      }
+    }
+    return col;
+  };
+
   Collection.prototype.getIds = function() {
-    return $dp.fn.keys(this.items);
+    var idx, keys, ref, results, row;
+    keys = [];
+    ref = this.items;
+    results = [];
+    for (idx in ref) {
+      row = ref[idx];
+      results.push(keys.push(row.model.getId()));
+    }
+    return results;
   };
 
   Collection.prototype.getById = function(id) {
-    if (this.exists(id)) {
-      return this.items[id];
-    } else {
-      return this.getNewItem();
+    var idx, ref, row;
+    ref = this.items;
+    for (idx in ref) {
+      row = ref[idx];
+      if (row.model.getId() === id) {
+        return row.model;
+      }
     }
+    return this.getNewItem();
   };
 
   Collection.prototype.exists = function(id) {
-    return this.items[id] != null;
+    var idx, ref, row;
+    ref = this.items;
+    for (idx in ref) {
+      row = ref[idx];
+      if (row.model.getId() === id) {
+        return true;
+      }
+    }
+    return false;
   };
 
   Collection.prototype.getNewItem = function(data) {
@@ -817,12 +865,10 @@ DreamPilot.Collection = (function() {
   };
 
   Collection.prototype.getFirstItem = function() {
-    var id;
     if (!this.getCount()) {
       return this.getNewItem();
     }
-    id = this.getIds()[0];
-    return this.items[id];
+    return this.items.slice(0, 1)[0].model;
   };
 
   Collection.prototype.getLoadMethod = function() {
@@ -1013,6 +1059,10 @@ DreamPilot.Events = (function() {
 })();
 
 DreamPilot.Model = (function() {
+  var self;
+
+  self = Model;
+
   function Model(_data) {
     if (_data == null) {
       _data = {};
@@ -1043,25 +1093,31 @@ DreamPilot.Model = (function() {
     return this;
   };
 
-  Model.prototype.initFrom = function(_data) {
-    var field, value;
-    if (_data == null) {
-      _data = {};
+  Model.prepareData = function(data) {
+    if (data == null) {
+      data = {};
     }
-    if (typeof _data === 'string') {
-      _data = JSON.parse(_data);
+    if ($dp.fn.getType(data) === 'string') {
+      data = JSON.parse(data);
     }
-    if (typeof _data === 'object') {
-      if (_data instanceof DreamPilot.Model) {
-        this.data = $dp.fn.extend(true, {}, _data.get());
-      } else {
-        this.data = $dp.fn.extend(true, {}, _data);
-      }
-    } else {
+    if ($dp.fn.getType(data) !== 'object') {
       throw 'Data should be an object';
     }
-    for (field in _data) {
-      value = _data[field];
+    if (data instanceof DreamPilot.Model) {
+      data = data.get();
+    }
+    return $dp.fn.extend(true, {}, data);
+  };
+
+  Model.prototype.initFrom = function(data) {
+    var field, ref, value;
+    if (data == null) {
+      data = {};
+    }
+    this.data = self.prepareData(data);
+    ref = this.data;
+    for (field in ref) {
+      value = ref[field];
       this.trigger('change', field);
     }
     return this;
@@ -1625,7 +1681,7 @@ DreamPilot.Functions = (function() {
       v = ar[k];
       fn = fn[v];
     }
-    if (typeof fn !== 'function') {
+    if (self.getType(fn) !== 'function') {
       throw "Function/Class " + s + " not found";
     }
     return fn;
@@ -1721,10 +1777,10 @@ DreamPilot.Functions = (function() {
   Functions.arraySum = function(ar) {
     var key, sum;
     sum = 0;
-    if (ar && typeof ar === 'object' && ar.change_key_case) {
+    if (ar && self.getType(ar) === 'object' && ar.change_key_case) {
       return ar.sum.apply(ar, Array.prototype.slice.call(arguments, 0));
     }
-    if (typeof ar !== 'object') {
+    if (self.getType(ar) !== 'object') {
       return null;
     }
     for (key in ar) {
@@ -1740,17 +1796,22 @@ DreamPilot.Functions = (function() {
 
   Functions.arrayCount = function(ar) {
     var cc, i;
-    cc = 0;
-    if (ar && typeof ar === 'object' && ar.change_key_case) {
+    if (ar && self.getType(ar) === 'object' && ar.change_key_case) {
       return ar.length;
     }
-    if (typeof ar !== 'object') {
+    if (self.getType(ar) !== 'object') {
       return null;
     }
-    for (i in ar) {
-      if (ar.hasOwnProperty(i)) {
-        cc++;
+    cc = 0;
+    if ((function() {
+      var results;
+      results = [];
+      for (i in ar) {
+        results.push(ar.hasOwnProperty(i));
       }
+      return results;
+    })()) {
+      cc++;
     }
     return cc;
   };
@@ -1758,10 +1819,15 @@ DreamPilot.Functions = (function() {
   Functions.arrayFlip = function(ar) {
     var key, tmp;
     tmp = {};
-    for (key in ar) {
-      if (ar.hasOwnProperty(key)) {
-        tmp[ar[key]] = key;
+    if ((function() {
+      var results;
+      results = [];
+      for (key in ar) {
+        results.push(ar.hasOwnProperty(key));
       }
+      return results;
+    })()) {
+      tmp[ar[key]] = key;
     }
     return tmp;
   };
@@ -1802,7 +1868,7 @@ DreamPilot.Functions = (function() {
     if (len == null) {
       len = 2;
     }
-    x = this.str(x);
+    x = self.str(x);
     results = [];
     while (x.length < len) {
       results.push(x = '0' + x);
@@ -1880,7 +1946,7 @@ DreamPilot.Functions = (function() {
       x = str.lastIndexOf('\\');
     }
     base = self.str(str).substr(x + 1);
-    if (typeof suffix === 'string' && base.substr(base.length - suffix.length) === suffix) {
+    if (self.getType(suffix) === 'string' && base.substr(base.length - suffix.length) === suffix) {
       base = base.substr(0, base.length - suffix.length);
     }
     return base;
@@ -1980,7 +2046,7 @@ DreamPilot.Functions = (function() {
     if ((ref = self.getType(variable)) === 'object' || ref === 'array') {
       for (item in variable) {
         value = variable[item];
-        if (typeof value === 'object') {
+        if (self.getType(value) === 'object') {
           res += (padding + "'" + item + "':\n") + self.print_r(value, level + 1);
         } else {
           res += padding + "'" + item + "' => \"" + value + "\"\n";

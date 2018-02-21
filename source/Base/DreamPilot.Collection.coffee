@@ -6,7 +6,7 @@ class DreamPilot.Collection
     defineBasics: ->
         @modelClassName = null
         @isIdUnique = true
-        @items = {}
+        @items = []
         @callbacks =
             load: {}
         @
@@ -25,9 +25,13 @@ class DreamPilot.Collection
         @
 
     addItem: (data) ->
-        data = @extendDataBeforeAdd data
+        data = @extendDataBeforeAdd DreamPilot.Model.prepareData data
         model = @getNewItem data
         @putModelToList model
+
+    kill: ->
+        @items = []
+        @
 
     # can be overridden to set default values for the data
     extendDataBeforeAdd: (data) -> data
@@ -40,24 +44,47 @@ class DreamPilot.Collection
         if @isIdUnique then model.getId() else $dp.fn.arrayCount @items
 
     putModelToList: (model) ->
-        id = @getIdForPut(model)
+        id = @getIdForPut model
         if @exists id
-            @items[id].set model.get()
+            @getById(id).set model.get()
         else
-            @items[id] = model
+            @items.push
+                id: id
+                model: model
+        @
 
     map: (callbackOrField) ->
         ar = []
-        for k, model of @items
+        for idx, row of @items
             if $dp.fn.getType(callbackOrField) is 'function'
-                ar.push callbackOrField model, k
+                ar.push callbackOrField row.model, idx
             else
-                ar.push model.get callbackOrField
+                ar.push row.model.get callbackOrField
         ar
 
-    getIds: -> $dp.fn.keys @items
-    getById: (id) -> if @exists(id) then @items[id] else @getNewItem()
-    exists: (id) -> @items[id]?
+    createInstance: ->
+        col = Object.create Object.getPrototypeOf(@), Object.getOwnPropertyDescriptors(@)
+        col.kill()
+
+    filter: (callback) ->
+        col = @createInstance()
+        for idx, row of @items
+            col.addItem row.model if callback row.model
+        col
+
+    getIds: ->
+        keys = []
+        keys.push row.model.getId() for idx, row of @items
+
+    getById: (id) ->
+        for idx, row of @items
+            return row.model if row.model.getId() is id
+        @getNewItem()
+
+    exists: (id) ->
+        for idx, row of @items
+            return true if row.model.getId() is id
+        false
 
     getNewItem: (data = null) ->
         className = $dp.fn.stringToFunction @modelClassName
@@ -67,8 +94,7 @@ class DreamPilot.Collection
 
     getFirstItem: ->
         return @getNewItem() unless @getCount()
-        id = @getIds()[0]
-        @items[id]
+        @items.slice(0, 1)[0].model
 
     getLoadMethod: -> $dp.transport.GET
     getLoadUrl: -> throw 'Redefine Collection.getLoadUrl() method first'

@@ -20,8 +20,15 @@ CollectionApp = (function(superClass) {
 
   CollectionApp.prototype.loadChat = function() {
     this.col = new ChatCollection().setApp(this).onLoad(function(col) {
-      return col.map(function(model) {
+      var filteredCol;
+      col.map(function(model) {
         return model.display();
+      });
+      filteredCol = col.filter(function(model) {
+        return model.get('name') === 'James';
+      });
+      return filteredCol.map(function(model) {
+        return model.displayFiltered();
       });
     }).load();
     return this;

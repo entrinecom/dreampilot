@@ -1,4 +1,6 @@
 class DreamPilot.Model
+    self = @
+
     constructor: (_data = {}) ->
         @defineBasics()
         @initFrom _data
@@ -23,19 +25,15 @@ class DreamPilot.Model
     # override this method in child classes
     init: -> @
 
-    initFrom: (_data = {}) ->
-        _data = JSON.parse _data if typeof _data is 'string'
+    @prepareData: (data = {}) ->
+        data = JSON.parse data if $dp.fn.getType(data) is 'string'
+        throw 'Data should be an object' unless $dp.fn.getType(data) is 'object'
+        data = data.get() if data instanceof DreamPilot.Model
+        $dp.fn.extend true, {}, data
 
-        if typeof _data is 'object'
-            if _data instanceof DreamPilot.Model
-                @data = $dp.fn.extend true, {}, _data.get()
-            else
-                @data = $dp.fn.extend true, {}, _data
-        else
-            throw 'Data should be an object'
-
-        @trigger 'change', field for field, value of _data
-
+    initFrom: (data = {}) ->
+        @data = self.prepareData data
+        @trigger 'change', field for field, value of @data
         @
 
     setApp: (@App) -> @

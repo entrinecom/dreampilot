@@ -26,6 +26,15 @@ ChatModel = (function(superClass) {
     return this;
   };
 
+  ChatModel.prototype.displayFiltered = function() {
+    var chatBox, cue;
+    chatBox = $dp.e('ul.chat-box-filtered');
+    cue = $dp.e('<li dp-click="chatClick(this, $event)" dp-class="{tiny: isTiny}">{0} ({1}): {2}</li>'.format(this.get('name'), this.get('created_at'), this.get('content')));
+    chatBox.append(cue);
+    this.getApp().embraceDomElement(cue);
+    return this;
+  };
+
   return ChatModel;
 
 })(DreamPilot.Model);

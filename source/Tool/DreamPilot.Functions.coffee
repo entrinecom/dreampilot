@@ -32,7 +32,7 @@ class DreamPilot.Functions
         ar = s.split '.'
         fn = window or @
         fn = fn[v] for k, v of ar
-        throw "Function/Class #{s} not found" if typeof fn isnt 'function'
+        throw "Function/Class #{s} not found" if self.getType(fn) isnt 'function'
         fn
 
     @uniqueId: (len) ->
@@ -77,34 +77,29 @@ class DreamPilot.Functions
         roundedTempNumber / factor
 
     @isArray: (ar) -> Object.prototype.toString.call(ar) is '[object Array]'
-
     @keys: (array) -> jQuery.map array, (val, key) -> key
-
     @values: (array) -> jQuery.map array, (val, key) -> val
 
     @arraySum: (ar) ->
         sum = 0
-        if ar and typeof ar is 'object' and ar.change_key_case
+        if ar and self.getType(ar) is 'object' and ar.change_key_case
             return ar.sum.apply ar, Array::slice.call(arguments, 0)
-        return null if typeof ar isnt 'object'
+        return null if self.getType(ar) isnt 'object'
         for key of ar
             continue unless ar.hasOwnProperty key
             sum += parseFloat ar[key] unless isNaN parseFloat ar[key]
         sum
 
     @arrayCount: (ar) ->
+        return ar.length if ar and self.getType(ar) is 'object' and ar.change_key_case
+        return null if self.getType(ar) isnt 'object'
         cc = 0
-        if ar and typeof ar is 'object' and ar.change_key_case
-            return ar.length
-        return null if typeof ar isnt 'object'
-        for i of ar
-            cc++ if ar.hasOwnProperty i
+        cc++ if ar.hasOwnProperty i for i of ar
         cc
 
     @arrayFlip: (ar) ->
         tmp = {}
-        for key of ar
-            tmp[ar[key]] = key if ar.hasOwnProperty key
+        tmp[ar[key]] = key if ar.hasOwnProperty key for key of ar
         tmp
 
     @arrayShuffle: (ar) ->
@@ -129,7 +124,7 @@ class DreamPilot.Functions
     @arrayUnique: (ar) -> jQuery.grep ar, (el, index) -> index is jQuery.inArray el, ar
 
     @lead0: (x, len = 2) ->
-        x = @str x
+        x = self.str x
         x = '0' + x while x.length < len
 
     @digitCase: (x, s1, s2, s3 = null, endingOnly = false) ->
@@ -166,7 +161,7 @@ class DreamPilot.Functions
         x = str.lastIndexOf '/'
         x = str.lastIndexOf '\\' if x is -1
         base = self.str(str).substr x + 1
-        if typeof suffix is 'string' and base.substr(base.length - suffix.length) is suffix
+        if self.getType(suffix) is 'string' and base.substr(base.length - suffix.length) is suffix
             base = base.substr 0, base.length - suffix.length
         base
 
@@ -175,8 +170,7 @@ class DreamPilot.Functions
         x = str.lastIndexOf '\\' if x is -1
         if x isnt -1 then self.str(str).substr(0, x) else str
 
-    @fileExt: (fn) ->
-        fn.split('.').pop()
+    @fileExt: (fn) -> fn.split('.').pop()
 
     @getValueOfElement: ($element) ->
         if $element.is 'input'
@@ -226,7 +220,7 @@ class DreamPilot.Functions
             padding += '    '
         if self.getType(variable) in ['object', 'array']
             for item, value of variable
-                if typeof value is 'object'
+                if self.getType(value) is 'object'
                     res += "#{padding}'#{item}':\n" + self.print_r value, level + 1
                 else
                     res += "#{padding}'#{item}' => \"#{value}\"\n"
