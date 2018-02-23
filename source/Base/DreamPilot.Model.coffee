@@ -8,6 +8,7 @@ class DreamPilot.Model
 
     defineBasics: ->
         @data = {}
+        @origData = {}
         @relatedData = {}
         @parent = null
         @parentField = null
@@ -63,8 +64,7 @@ class DreamPilot.Model
         return @data if field is null
         if @exists field then @data[field] else null
 
-    has: (field) ->
-        if @exists field then !!@data[field] else false
+    has: (field) -> if @exists field then !!@data[field] else false
 
     set: (field, value = null) ->
         if typeof field is 'object' and value is null
@@ -77,8 +77,11 @@ class DreamPilot.Model
             @trigger 'change', field if oldValue isnt value
         @
 
-    exists: (field) ->
-        typeof @data[field] isnt 'undefined'
+    exists: (field = null) ->
+        if field?
+            typeof @data[field] isnt 'undefined'
+        else
+            $dp.fn.bool $dp.fn.arrayCount @data
 
     kill: (field = null) ->
         if field is null
@@ -90,6 +93,37 @@ class DreamPilot.Model
         else
             delete @data[field] if @data[field]?
             @trigger 'change', field
+        @
+
+    hasOrig: (field) -> if @existsOrig field then !!@origData[field] else false
+
+    getOrigData: (field = null) ->
+        return @origData if field is null
+        if @existsOrig field then @origData[field] else null
+
+    setOrigData: (field = null, value = null) ->
+        if field is null
+            @origData = @data
+        else
+            if typeof field is 'object' and value is null
+                @setOrigData k, v for k, v of field
+            else
+                @origData[field] = value
+        @
+
+    existsOrig: (field = null) ->
+        if field?
+            typeof @origData[field] isnt 'undefined'
+        else
+            $dp.fn.bool $dp.fn.arrayCount @origData
+
+    killOrig: (field = null) ->
+        if field is null
+            @origData = {}
+        else if $dp.fn.getType(field) is 'array'
+            @killOrig f for f in field
+        else
+            delete @origData[field] if @origData[field]?
         @
 
     getId: ->
@@ -105,12 +139,24 @@ class DreamPilot.Model
 
     resetId: -> @setId null
 
+    getOrigId: ->
+        id = @getOrigData @idField
+        id = $dp.fn.int id if @idIsInt
+        id
+
+    hasOrigId: -> @hasOrig @idField
+
+    setOrigId: (id) ->
+        id = $dp.fn.int id if @idIsInt
+        @setOrigData @idField, id
+
+    resetOrigId: -> @setOrigId null
+
     getRelated: (field = null) ->
         return @relatedData if field is null
         if @existsRelated field then @relatedData[field] else null
 
-    hasRelated: (field) ->
-        if @existsRelated field then !!@relatedData[field] else false
+    hasRelated: (field) -> if @existsRelated field then !!@relatedData[field] else false
 
     setRelated: (field, value = null) ->
         if typeof field is 'object' and value is null
@@ -119,8 +165,25 @@ class DreamPilot.Model
             @relatedData[field] = value
         @
 
-    existsRelated: (field) ->
-        typeof @relatedData[field] isnt 'undefined'
+    existsRelated: (field) -> typeof @relatedData[field] isnt 'undefined'
+
+    changed: (field = null) ->
+        if $dp.fn.getType(field) is 'array'
+            keys = field
+        else if field is null
+            keys = $dp.fn.keys(@data) or $dp.fn.keys(@origData)
+        else
+            keys = [field]
+        for key in keys
+            return true if @get(key) isnt @getOrigData(key)
+        false
+
+    changedFields: (excludeFields = []) ->
+        keys = $dp.fn.keys(@data) or $dp.fn.keys(@origData)
+        changedKeys = []
+        for key in keys
+            changedKeys.push key if @get(key) isnt @getOrigData(key) and key not in excludeFields
+        changedKeys
 
     isMainScope: -> @mainScope
 

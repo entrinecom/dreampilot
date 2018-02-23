@@ -1058,6 +1058,8 @@ DreamPilot.Events = (function() {
 
 })();
 
+var indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
 DreamPilot.Model = (function() {
   var self;
 
@@ -1073,6 +1075,7 @@ DreamPilot.Model = (function() {
 
   Model.prototype.defineBasics = function() {
     this.data = {};
+    this.origData = {};
     this.relatedData = {};
     this.parent = null;
     this.parentField = null;
@@ -1213,7 +1216,14 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.exists = function(field) {
-    return typeof this.data[field] !== 'undefined';
+    if (field == null) {
+      field = null;
+    }
+    if (field != null) {
+      return typeof this.data[field] !== 'undefined';
+    } else {
+      return $dp.fn.bool($dp.fn.arrayCount(this.data));
+    }
   };
 
   Model.prototype.kill = function(field) {
@@ -1242,6 +1252,82 @@ DreamPilot.Model = (function() {
     return this;
   };
 
+  Model.prototype.hasOrig = function(field) {
+    if (this.existsOrig(field)) {
+      return !!this.origData[field];
+    } else {
+      return false;
+    }
+  };
+
+  Model.prototype.getOrigData = function(field) {
+    if (field == null) {
+      field = null;
+    }
+    if (field === null) {
+      return this.origData;
+    }
+    if (this.existsOrig(field)) {
+      return this.origData[field];
+    } else {
+      return null;
+    }
+  };
+
+  Model.prototype.setOrigData = function(field, value) {
+    var k, v;
+    if (field == null) {
+      field = null;
+    }
+    if (value == null) {
+      value = null;
+    }
+    if (field === null) {
+      this.origData = this.data;
+    } else {
+      if (typeof field === 'object' && value === null) {
+        for (k in field) {
+          v = field[k];
+          this.setOrigData(k, v);
+        }
+      } else {
+        this.origData[field] = value;
+      }
+    }
+    return this;
+  };
+
+  Model.prototype.existsOrig = function(field) {
+    if (field == null) {
+      field = null;
+    }
+    if (field != null) {
+      return typeof this.origData[field] !== 'undefined';
+    } else {
+      return $dp.fn.bool($dp.fn.arrayCount(this.origData));
+    }
+  };
+
+  Model.prototype.killOrig = function(field) {
+    var f, i, len;
+    if (field == null) {
+      field = null;
+    }
+    if (field === null) {
+      this.origData = {};
+    } else if ($dp.fn.getType(field) === 'array') {
+      for (i = 0, len = field.length; i < len; i++) {
+        f = field[i];
+        this.killOrig(f);
+      }
+    } else {
+      if (this.origData[field] != null) {
+        delete this.origData[field];
+      }
+    }
+    return this;
+  };
+
   Model.prototype.getId = function() {
     var id;
     id = this.get(this.idField);
@@ -1264,6 +1350,30 @@ DreamPilot.Model = (function() {
 
   Model.prototype.resetId = function() {
     return this.setId(null);
+  };
+
+  Model.prototype.getOrigId = function() {
+    var id;
+    id = this.getOrigData(this.idField);
+    if (this.idIsInt) {
+      id = $dp.fn.int(id);
+    }
+    return id;
+  };
+
+  Model.prototype.hasOrigId = function() {
+    return this.hasOrig(this.idField);
+  };
+
+  Model.prototype.setOrigId = function(id) {
+    if (this.idIsInt) {
+      id = $dp.fn.int(id);
+    }
+    return this.setOrigData(this.idField, id);
+  };
+
+  Model.prototype.resetOrigId = function() {
+    return this.setOrigId(null);
   };
 
   Model.prototype.getRelated = function(field) {
@@ -1306,6 +1416,43 @@ DreamPilot.Model = (function() {
 
   Model.prototype.existsRelated = function(field) {
     return typeof this.relatedData[field] !== 'undefined';
+  };
+
+  Model.prototype.changed = function(field) {
+    var i, key, keys, len;
+    if (field == null) {
+      field = null;
+    }
+    if ($dp.fn.getType(field) === 'array') {
+      keys = field;
+    } else if (field === null) {
+      keys = $dp.fn.keys(this.data) || $dp.fn.keys(this.origData);
+    } else {
+      keys = [field];
+    }
+    for (i = 0, len = keys.length; i < len; i++) {
+      key = keys[i];
+      if (this.get(key) !== this.getOrigData(key)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  Model.prototype.changedFields = function(excludeFields) {
+    var changedKeys, i, key, keys, len;
+    if (excludeFields == null) {
+      excludeFields = [];
+    }
+    keys = $dp.fn.keys(this.data) || $dp.fn.keys(this.origData);
+    changedKeys = [];
+    for (i = 0, len = keys.length; i < len; i++) {
+      key = keys[i];
+      if (this.get(key) !== this.getOrigData(key) && indexOf.call(excludeFields, key) < 0) {
+        changedKeys.push(key);
+      }
+    }
+    return changedKeys;
   };
 
   Model.prototype.isMainScope = function() {
