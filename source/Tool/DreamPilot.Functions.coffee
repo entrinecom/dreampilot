@@ -94,12 +94,14 @@ class DreamPilot.Functions
         return ar.length if ar and self.getType(ar) is 'object' and ar.change_key_case
         return null if self.getType(ar) isnt 'object'
         cc = 0
-        cc++ if ar.hasOwnProperty i for i of ar
+        for i of ar
+            cc++ if ar.hasOwnProperty i
         cc
 
     @arrayFlip: (ar) ->
         tmp = {}
-        tmp[ar[key]] = key if ar.hasOwnProperty key for key of ar
+        for key of ar
+            tmp[ar[key]] = key if ar.hasOwnProperty key
         tmp
 
     @arrayShuffle: (ar) ->

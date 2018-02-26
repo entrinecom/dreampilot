@@ -1950,15 +1950,10 @@ DreamPilot.Functions = (function() {
       return null;
     }
     cc = 0;
-    if ((function() {
-      var results;
-      results = [];
-      for (i in ar) {
-        results.push(ar.hasOwnProperty(i));
+    for (i in ar) {
+      if (ar.hasOwnProperty(i)) {
+        cc++;
       }
-      return results;
-    })()) {
-      cc++;
     }
     return cc;
   };
@@ -1966,15 +1961,10 @@ DreamPilot.Functions = (function() {
   Functions.arrayFlip = function(ar) {
     var key, tmp;
     tmp = {};
-    if ((function() {
-      var results;
-      results = [];
-      for (key in ar) {
-        results.push(ar.hasOwnProperty(key));
+    for (key in ar) {
+      if (ar.hasOwnProperty(key)) {
+        tmp[ar[key]] = key;
       }
-      return results;
-    })()) {
-      tmp[ar[key]] = key;
     }
     return tmp;
   };
