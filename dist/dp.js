@@ -875,14 +875,14 @@ DreamPilot.Collection = (function() {
     if (!this.getCount()) {
       return this.getNewItem();
     }
-    return this.items.slice(0, 1)[0].model;
+    return this.items[0].model;
   };
 
   Collection.prototype.getLastItem = function() {
     if (!this.getCount()) {
       return this.getNewItem();
     }
-    return this.items.slice(this.getCount() - 1, 1)[0].model;
+    return this.items[this.getCount() - 1].model;
   };
 
   Collection.prototype.getLoadMethod = function() {
