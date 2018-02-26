@@ -10,6 +10,26 @@ ChatModel = (function(superClass) {
     return ChatModel.__super__.constructor.apply(this, arguments);
   }
 
+  ChatModel.prototype.getName = function() {
+    return this.get('name');
+  };
+
+  ChatModel.prototype.getCreatedAt = function() {
+    return this.get('created_at');
+  };
+
+  ChatModel.prototype.getContent = function() {
+    return this.get('content');
+  };
+
+  ChatModel.prototype.setName = function(name) {
+    return this.set('name', name);
+  };
+
+  ChatModel.prototype.setContent = function(content) {
+    return this.set('content', content);
+  };
+
   ChatModel.prototype.defineBasics = function() {
     ChatModel.__super__.defineBasics.call(this);
     this.idField = '_id';
@@ -30,6 +50,15 @@ ChatModel = (function(superClass) {
     var chatBox, cue;
     chatBox = $dp.e('ul.chat-box-filtered');
     cue = $dp.e('<li dp-click="chatClick(this, $event)" dp-class="{tiny: isTiny}">{0} ({1}): {2}</li>'.format(this.get('name'), this.get('created_at'), this.get('content')));
+    chatBox.append(cue);
+    this.getApp().embraceDomElement(cue);
+    return this;
+  };
+
+  ChatModel.prototype.displayEmbraced = function() {
+    var chatBox, cue;
+    chatBox = $dp.e('ul.chat-box-embraced');
+    cue = $dp.e("<li dp-click=\"chatClick(this, $event)\">\n<span dp-value-read-from=\"col['" + (this.getId()) + "'].name\"></span> (<span dp-value-read-from=\"col['" + (this.getId()) + "'].created_at\"></span>):\n<span dp-value-read-from=\"col['" + (this.getId()) + "'].content\"></span>\n</li>");
     chatBox.append(cue);
     this.getApp().embraceDomElement(cue);
     return this;

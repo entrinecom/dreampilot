@@ -196,8 +196,9 @@ class DreamPilot.Attributes
         that = @
         @eachByAttr self.valueWriteToAttr, $element, ->
             $el = $dp.e @
-            field = $el.attr $dp.attribute self.valueWriteToAttr
-            Scope = $dp.Parser.getScopeOf field, that.getScope()
+            expr = $el.attr $dp.attribute self.valueWriteToAttr
+            Scope = $dp.Parser.getScopeOf expr, that.getScope()
+            field = $dp.Parser.getPropertyOfExpression expr
             return true if self.bindValueCheckScope field, $el, Scope, that, false, true
             self.bindValueWriteToAttribute field, $el, Scope
         @
@@ -206,8 +207,9 @@ class DreamPilot.Attributes
         that = @
         @eachByAttr self.valueReadFromAttr, $element, ->
             $el = $dp.e @
-            field = $el.attr $dp.attribute self.valueReadFromAttr
-            Scope = $dp.Parser.getScopeOf field, that.getScope()
+            expr = $el.attr $dp.attribute self.valueReadFromAttr
+            Scope = $dp.Parser.getScopeOf expr, that.getScope()
+            field = $dp.Parser.getPropertyOfExpression expr
             return true if self.bindValueCheckScope field, $el, Scope, that, true, false
             self.bindValueReadFromAttribute field, $el, Scope
         @
@@ -216,8 +218,9 @@ class DreamPilot.Attributes
         that = @
         @eachByAttr self.valueBindAttr, $element, ->
             $el = $dp.e @
-            field = $el.attr $dp.attribute self.valueBindAttr
-            Scope = $dp.Parser.getScopeOf field, that.getScope()
+            expr = $el.attr $dp.attribute self.valueBindAttr
+            Scope = $dp.Parser.getScopeOf expr, that.getScope()
+            field = $dp.Parser.getPropertyOfExpression expr
             return true if self.bindValueCheckScope field, $el, Scope, that, true, true
             self.bindValueWriteToAttribute field, $el, Scope
             self.bindValueReadFromAttribute field, $el, Scope

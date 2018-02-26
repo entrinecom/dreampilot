@@ -533,10 +533,11 @@ DreamPilot.Attributes = (function() {
     }
     that = this;
     this.eachByAttr(self.valueWriteToAttr, $element, function() {
-      var $el, Scope, field;
+      var $el, Scope, expr, field;
       $el = $dp.e(this);
-      field = $el.attr($dp.attribute(self.valueWriteToAttr));
-      Scope = $dp.Parser.getScopeOf(field, that.getScope());
+      expr = $el.attr($dp.attribute(self.valueWriteToAttr));
+      Scope = $dp.Parser.getScopeOf(expr, that.getScope());
+      field = $dp.Parser.getPropertyOfExpression(expr);
       if (self.bindValueCheckScope(field, $el, Scope, that, false, true)) {
         return true;
       }
@@ -552,10 +553,11 @@ DreamPilot.Attributes = (function() {
     }
     that = this;
     this.eachByAttr(self.valueReadFromAttr, $element, function() {
-      var $el, Scope, field;
+      var $el, Scope, expr, field;
       $el = $dp.e(this);
-      field = $el.attr($dp.attribute(self.valueReadFromAttr));
-      Scope = $dp.Parser.getScopeOf(field, that.getScope());
+      expr = $el.attr($dp.attribute(self.valueReadFromAttr));
+      Scope = $dp.Parser.getScopeOf(expr, that.getScope());
+      field = $dp.Parser.getPropertyOfExpression(expr);
       if (self.bindValueCheckScope(field, $el, Scope, that, true, false)) {
         return true;
       }
@@ -571,10 +573,11 @@ DreamPilot.Attributes = (function() {
     }
     that = this;
     this.eachByAttr(self.valueBindAttr, $element, function() {
-      var $el, Scope, field;
+      var $el, Scope, expr, field;
       $el = $dp.e(this);
-      field = $el.attr($dp.attribute(self.valueBindAttr));
-      Scope = $dp.Parser.getScopeOf(field, that.getScope());
+      expr = $el.attr($dp.attribute(self.valueBindAttr));
+      Scope = $dp.Parser.getScopeOf(expr, that.getScope());
+      field = $dp.Parser.getPropertyOfExpression(expr);
       if (self.bindValueCheckScope(field, $el, Scope, that, true, true)) {
         return true;
       }
@@ -827,6 +830,10 @@ DreamPilot.Collection = (function() {
       results.push(keys.push(row.model.getId()));
     }
     return results;
+  };
+
+  Collection.prototype.get = function(id) {
+    return this.getById(id);
   };
 
   Collection.prototype.getById = function(id) {

@@ -76,6 +76,8 @@ class DreamPilot.Collection
         keys = []
         keys.push row.model.getId() for idx, row of @items
 
+    get: (id) -> @getById id
+
     getById: (id) ->
         for idx, row of @items
             return row.model if row.model.getId() is id

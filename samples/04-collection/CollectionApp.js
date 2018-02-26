@@ -11,7 +11,10 @@ CollectionApp = (function(superClass) {
   }
 
   CollectionApp.prototype.init = function() {
-    this.loadChat().linkToScope(['chatClick']);
+    this.m = new DreamPilot.Model().set({
+      id: 100500
+    });
+    this.loadChat().linkToScope(['chatClick', 'col', 'm', 'btnClick']);
     this.getScope().set({
       isTiny: true
     });
@@ -22,7 +25,7 @@ CollectionApp = (function(superClass) {
     this.col = new ChatCollection().setApp(this).onLoad(function(col) {
       var filteredCol;
       col.map(function(model) {
-        return model.display();
+        return model.display().displayEmbraced();
       });
       filteredCol = col.filter(function(model) {
         return model.get('name') === 'James';
@@ -34,8 +37,18 @@ CollectionApp = (function(superClass) {
     return this;
   };
 
+  CollectionApp.prototype.btnClick = function() {
+    var $z;
+    $z = $dp.e("<div dp-value-read-from=\"m.id\" style=\"background: yellow; padding: 10px;\"></div>").appendTo(document.body);
+    this.embraceDomElement($z);
+    return this;
+  };
+
   CollectionApp.prototype.chatClick = function(el, event) {
-    console.log('chatClick', el, event);
+    console.log('chatClick', el, event, this.col.getItems());
+    this.col.map(function(cue) {
+      return cue.setContent(cue.getContent() + '!!!');
+    });
     return this;
   };
 

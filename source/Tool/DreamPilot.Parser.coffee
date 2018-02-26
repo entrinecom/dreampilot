@@ -238,38 +238,15 @@ class DreamPilot.Parser
                 false
         true
 
-    @resetLastUsedVariables: ->
-        self.lastUsedVariables = []
-
-    @inLastUsedVariables: (key) ->
-        self.lastUsedVariables.indexOf(key) isnt -1
-
-    @getLastUsedVariables: ->
-        self.lastUsedVariables
-
-    @addToLastUsedVariables: (key) ->
-        self.lastUsedVariables.push key if key and not self.inLastUsedVariables key
-
-    @resetLastErrors: ->
-        self.lastErrors = []
-
-    @getLastErrors: ->
-        self.lastErrors
-
-    @hasLastErrors: ->
-        self.lastErrors.length > 0
-
-    @addToLastErrors: (error) ->
-        self.lastErrors.push error
-
-    @resetLastScopes: ->
-        self.lastScopes = []
-
-    @getLastScopes: ->
-        self.lastScopes
-
-    @hasLastScopes: ->
-        self.lastScopes.length > 0
-
-    @addToLastScopes: (scope) ->
-        self.lastScopes.push scope
+    @resetLastUsedVariables: -> self.lastUsedVariables = []
+    @inLastUsedVariables: (key) -> self.lastUsedVariables.indexOf(key) isnt -1
+    @getLastUsedVariables: -> self.lastUsedVariables
+    @addToLastUsedVariables: (key) -> self.lastUsedVariables.push key if key and not self.inLastUsedVariables key
+    @resetLastErrors: -> self.lastErrors = []
+    @getLastErrors: -> self.lastErrors
+    @hasLastErrors: -> self.lastErrors.length > 0
+    @addToLastErrors: (error) -> self.lastErrors.push error
+    @resetLastScopes: -> self.lastScopes = []
+    @getLastScopes: -> self.lastScopes
+    @hasLastScopes: -> self.lastScopes.length > 0
+    @addToLastScopes: (scope) -> self.lastScopes.push scope
