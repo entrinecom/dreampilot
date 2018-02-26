@@ -871,6 +871,13 @@ DreamPilot.Collection = (function() {
     return this.items.slice(0, 1)[0].model;
   };
 
+  Collection.prototype.getLastItem = function() {
+    if (!this.getCount()) {
+      return this.getNewItem();
+    }
+    return this.items.slice(this.getCount() - 1, 1)[0].model;
+  };
+
   Collection.prototype.getLoadMethod = function() {
     return $dp.transport.GET;
   };

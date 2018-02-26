@@ -96,6 +96,10 @@ class DreamPilot.Collection
         return @getNewItem() unless @getCount()
         @items.slice(0, 1)[0].model
 
+    getLastItem: ->
+        return @getNewItem() unless @getCount()
+        @items.slice(@getCount() - 1, 1)[0].model
+
     getLoadMethod: -> $dp.transport.GET
     getLoadUrl: -> throw 'Redefine Collection.getLoadUrl() method first'
     getLoadData: -> null
