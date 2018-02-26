@@ -1931,7 +1931,7 @@ DreamPilot.Functions = (function() {
   Functions.arraySum = function(ar) {
     var key, sum;
     sum = 0;
-    if (ar && self.getType(ar) === 'object' && ar.change_key_case) {
+    if (ar && self.getType(ar) === 'array' && ar.change_key_case) {
       return ar.sum.apply(ar, Array.prototype.slice.call(arguments, 0));
     }
     if (self.getType(ar) !== 'object') {
@@ -1950,7 +1950,7 @@ DreamPilot.Functions = (function() {
 
   Functions.arrayCount = function(ar) {
     var cc, i;
-    if (ar && self.getType(ar) === 'object' && ar.change_key_case) {
+    if (ar && self.getType(ar) === 'array' && ar.change_key_case) {
       return ar.length;
     }
     if (self.getType(ar) !== 'object') {

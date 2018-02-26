@@ -82,7 +82,7 @@ class DreamPilot.Functions
 
     @arraySum: (ar) ->
         sum = 0
-        if ar and self.getType(ar) is 'object' and ar.change_key_case
+        if ar and self.getType(ar) is 'array' and ar.change_key_case
             return ar.sum.apply ar, Array::slice.call(arguments, 0)
         return null if self.getType(ar) isnt 'object'
         for key of ar
@@ -91,7 +91,7 @@ class DreamPilot.Functions
         sum
 
     @arrayCount: (ar) ->
-        return ar.length if ar and self.getType(ar) is 'object' and ar.change_key_case
+        return ar.length if ar and self.getType(ar) is 'array' and ar.change_key_case
         return null if self.getType(ar) isnt 'object'
         cc = 0
         for i of ar
