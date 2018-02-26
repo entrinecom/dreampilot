@@ -199,7 +199,7 @@ class DreamPilot.Attributes
             expr = $el.attr $dp.attribute self.valueWriteToAttr
             Scope = $dp.Parser.getScopeOf expr, that.getScope()
             field = $dp.Parser.getPropertyOfExpression expr
-            return true if self.bindValueCheckScope field, $el, Scope, that, false, true
+            return true if self.bindValueCheckScope expr, $el, Scope, that, false, true
             self.bindValueWriteToAttribute field, $el, Scope
         @
 
@@ -210,7 +210,7 @@ class DreamPilot.Attributes
             expr = $el.attr $dp.attribute self.valueReadFromAttr
             Scope = $dp.Parser.getScopeOf expr, that.getScope()
             field = $dp.Parser.getPropertyOfExpression expr
-            return true if self.bindValueCheckScope field, $el, Scope, that, true, false
+            return true if self.bindValueCheckScope expr, $el, Scope, that, true, false
             self.bindValueReadFromAttribute field, $el, Scope
         @
 
@@ -221,7 +221,7 @@ class DreamPilot.Attributes
             expr = $el.attr $dp.attribute self.valueBindAttr
             Scope = $dp.Parser.getScopeOf expr, that.getScope()
             field = $dp.Parser.getPropertyOfExpression expr
-            return true if self.bindValueCheckScope field, $el, Scope, that, true, true
+            return true if self.bindValueCheckScope expr, $el, Scope, that, true, true
             self.bindValueWriteToAttribute field, $el, Scope
             self.bindValueReadFromAttribute field, $el, Scope
         @
@@ -261,9 +261,10 @@ class DreamPilot.Attributes
         jQuery.each [self.srcAttr, self.hrefAttr], (idx, attrName) =>
             @eachByAttr attrName, $element, ->
                 $el = $dp.e @
-                field = $el.attr $dp.attribute attrName
-                Scope = $dp.Parser.getScopeOf field, that.getScope()
-                return true if self.bindAttributeCheckScope attrName, field, $el, Scope, that
+                expr = $el.attr $dp.attribute attrName
+                Scope = $dp.Parser.getScopeOf expr, that.getScope()
+                field = $dp.Parser.getPropertyOfExpression expr
+                return true if self.bindAttributeCheckScope attrName, expr, $el, Scope, that
                 self.bindAttribute attrName, field, $el, Scope
         @
 

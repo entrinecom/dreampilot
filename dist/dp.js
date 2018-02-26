@@ -538,7 +538,7 @@ DreamPilot.Attributes = (function() {
       expr = $el.attr($dp.attribute(self.valueWriteToAttr));
       Scope = $dp.Parser.getScopeOf(expr, that.getScope());
       field = $dp.Parser.getPropertyOfExpression(expr);
-      if (self.bindValueCheckScope(field, $el, Scope, that, false, true)) {
+      if (self.bindValueCheckScope(expr, $el, Scope, that, false, true)) {
         return true;
       }
       return self.bindValueWriteToAttribute(field, $el, Scope);
@@ -558,7 +558,7 @@ DreamPilot.Attributes = (function() {
       expr = $el.attr($dp.attribute(self.valueReadFromAttr));
       Scope = $dp.Parser.getScopeOf(expr, that.getScope());
       field = $dp.Parser.getPropertyOfExpression(expr);
-      if (self.bindValueCheckScope(field, $el, Scope, that, true, false)) {
+      if (self.bindValueCheckScope(expr, $el, Scope, that, true, false)) {
         return true;
       }
       return self.bindValueReadFromAttribute(field, $el, Scope);
@@ -578,7 +578,7 @@ DreamPilot.Attributes = (function() {
       expr = $el.attr($dp.attribute(self.valueBindAttr));
       Scope = $dp.Parser.getScopeOf(expr, that.getScope());
       field = $dp.Parser.getPropertyOfExpression(expr);
-      if (self.bindValueCheckScope(field, $el, Scope, that, true, true)) {
+      if (self.bindValueCheckScope(expr, $el, Scope, that, true, true)) {
         return true;
       }
       self.bindValueWriteToAttribute(field, $el, Scope);
@@ -652,11 +652,12 @@ DreamPilot.Attributes = (function() {
     jQuery.each([self.srcAttr, self.hrefAttr], (function(_this) {
       return function(idx, attrName) {
         return _this.eachByAttr(attrName, $element, function() {
-          var $el, Scope, field;
+          var $el, Scope, expr, field;
           $el = $dp.e(this);
-          field = $el.attr($dp.attribute(attrName));
-          Scope = $dp.Parser.getScopeOf(field, that.getScope());
-          if (self.bindAttributeCheckScope(attrName, field, $el, Scope, that)) {
+          expr = $el.attr($dp.attribute(attrName));
+          Scope = $dp.Parser.getScopeOf(expr, that.getScope());
+          field = $dp.Parser.getPropertyOfExpression(expr);
+          if (self.bindAttributeCheckScope(attrName, expr, $el, Scope, that)) {
             return true;
           }
           return self.bindAttribute(attrName, field, $el, Scope);
