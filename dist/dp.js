@@ -1344,12 +1344,7 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.getId = function() {
-    var id;
-    id = this.get(this.idField);
-    if (this.idIsInt) {
-      id = $dp.fn.int(id);
-    }
-    return id;
+    return this.extractIdFromResult(this.data);
   };
 
   Model.prototype.hasId = function() {
@@ -1486,8 +1481,12 @@ DreamPilot.Model = (function() {
     return this.get();
   };
 
+  Model.prototype.needToUpdateId = function(newId) {
+    return !this.hasId() && newId;
+  };
+
   Model.prototype.updateId = function(newId) {
-    if (!this.hasId() && newId) {
+    if (this.needToUpdateId(newId)) {
       this.setId(newId);
     }
     return this;
@@ -1515,7 +1514,12 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.extractIdFromResult = function(result) {
-    return $dp.fn.int(result['id']);
+    var id;
+    id = result[this.idField];
+    if (this.idIsInt) {
+      id = $dp.fn.int(id);
+    }
+    return id;
   };
 
   Model.prototype.tryToUpdateId = function(result) {

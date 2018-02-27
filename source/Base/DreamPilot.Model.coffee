@@ -126,10 +126,7 @@ class DreamPilot.Model
             delete @origData[field] if @origData[field]?
         @
 
-    getId: ->
-        id = @get @idField
-        id = $dp.fn.int id if @idIsInt
-        id
+    getId: -> @extractIdFromResult @data
 
     hasId: -> @has @idField
 
@@ -191,8 +188,10 @@ class DreamPilot.Model
     getSaveUrl: -> throw 'Redefine Model.getSaveUrl() method first'
     getSaveData: -> @get()
 
+    needToUpdateId: (newId) -> not @hasId() and newId
+
     updateId: (newId) ->
-        @setId newId if not @hasId() and newId
+        @setId newId if @needToUpdateId newId
         @
 
     save: ->
@@ -208,7 +207,10 @@ class DreamPilot.Model
         , @saveDelay
         @
 
-    extractIdFromResult: (result) -> $dp.fn.int result['id']
+    extractIdFromResult: (result) ->
+        id = result[@idField]
+        id = $dp.fn.int id if @idIsInt
+        id
 
     tryToUpdateId: (result) ->
         newId = @extractIdFromResult result
