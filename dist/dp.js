@@ -752,6 +752,27 @@ DreamPilot.Collection = (function() {
     return this.putModelToList(model);
   };
 
+  Collection.prototype.removeItem = function(ids, syncWithServer) {
+    var idx, ref, row;
+    if (syncWithServer == null) {
+      syncWithServer = false;
+    }
+    if (!$dp.fn.isArray(ids)) {
+      ids = [ids];
+    }
+    ref = this.items;
+    for (idx in ref) {
+      row = ref[idx];
+      if (row.model.isMyId(ids)) {
+        if (syncWithServer) {
+          row.model["delete"]();
+        }
+        this.items.splice(idx, 1);
+      }
+    }
+    return this;
+  };
+
   Collection.prototype.kill = function() {
     this.items = [];
     return this;
@@ -1344,10 +1365,22 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.isMyId = function(id) {
-    if (this.idIsInt) {
-      id = $dp.fn.int(id);
+    var ref;
+    if ($dp.fn.isArray(id)) {
+      if (this.idIsInt) {
+        id = id.map((function(_this) {
+          return function(x) {
+            return $dp.fn.int(x);
+          };
+        })(this));
+      }
+      return ref = this.getId(), indexOf.call(id, ref) >= 0;
+    } else {
+      if (this.idIsInt) {
+        id = $dp.fn.int(id);
+      }
+      return this.getId() === id;
     }
-    return this.getId() === id;
   };
 
   Model.prototype.getId = function() {

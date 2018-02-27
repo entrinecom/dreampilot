@@ -127,8 +127,13 @@ class DreamPilot.Model
         @
 
     isMyId: (id) ->
-        id = $dp.fn.int id if @idIsInt
-        @getId() is id
+        if $dp.fn.isArray id
+            if @idIsInt
+                id = id.map (x) => $dp.fn.int x
+            @getId() in id
+        else
+            id = $dp.fn.int id if @idIsInt
+            @getId() is id
 
     getId: -> @extractIdFromResult @data
 

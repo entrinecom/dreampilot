@@ -41,6 +41,9 @@ CollectionApp = (function(superClass) {
     var $z;
     $z = $dp.e("<div dp-value-read-from=\"m.id\" style=\"background: yellow; padding: 10px;\"></div>").appendTo(document.body);
     this.embraceDomElement($z);
+    console.log(this.col);
+    this.col.removeItem('5a6207e9a069b208bc0063b7');
+    console.log(this.col);
     return this;
   };
 

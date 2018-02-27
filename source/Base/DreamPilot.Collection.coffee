@@ -30,6 +30,14 @@ class DreamPilot.Collection
         model = @getNewItem data
         @putModelToList model
 
+    removeItem: (ids, syncWithServer = false) ->
+        ids = [ids] unless $dp.fn.isArray ids
+        for idx, row of @items
+            if row.model.isMyId ids
+                row.model.delete() if syncWithServer
+                @items.splice idx, 1
+        @
+
     kill: ->
         @items = []
         @

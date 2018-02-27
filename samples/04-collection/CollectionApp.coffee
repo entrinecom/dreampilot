@@ -23,6 +23,9 @@ class CollectionApp extends DreamPilot.Application
         $z = $dp.e """<div dp-value-read-from="m.id" style="background: yellow; padding: 10px;"></div>"""
         .appendTo document.body
         @embraceDomElement $z
+        console.log @col
+        @col.removeItem '5a6207e9a069b208bc0063b7'
+        console.log @col
         @
 
     chatClick: (el, event) ->
