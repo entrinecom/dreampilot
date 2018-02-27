@@ -2,6 +2,7 @@ class DreamPilot.Collection
     constructor: ->
         @defineBasics()
         @init()
+        @modelClass = $dp.fn.stringToFunction @modelClassName
 
     defineBasics: ->
         @modelClassName = null
@@ -80,17 +81,16 @@ class DreamPilot.Collection
 
     getById: (id) ->
         for idx, row of @items
-            return row.model if row.model.getId() is id
+            return row.model if row.model.isMyId id
         @getNewItem()
 
     exists: (id) ->
         for idx, row of @items
-            return true if row.model.getId() is id
+            return true if row.model.isMyId id
         false
 
     getNewItem: (data = null) ->
-        className = $dp.fn.stringToFunction @modelClassName
-        m = new className data
+        m = new @modelClass data
         @tuneModelAfterCreation m
         m
 

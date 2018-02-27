@@ -126,6 +126,10 @@ class DreamPilot.Model
             delete @origData[field] if @origData[field]?
         @
 
+    isMyId: (id) ->
+        id = $dp.fn.int id if @idIsInt
+        @getId() is id
+
     getId: -> @extractIdFromResult @data
 
     hasId: -> @has @idField
@@ -136,10 +140,7 @@ class DreamPilot.Model
 
     resetId: -> @setId null
 
-    getOrigId: ->
-        id = @getOrigData @idField
-        id = $dp.fn.int id if @idIsInt
-        id
+    getOrigId: -> @extractIdFromResult @origData
 
     hasOrigId: -> @hasOrig @idField
 

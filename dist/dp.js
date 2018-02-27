@@ -702,6 +702,7 @@ DreamPilot.Collection = (function() {
   function Collection() {
     this.defineBasics();
     this.init();
+    this.modelClass = $dp.fn.stringToFunction(this.modelClassName);
   }
 
   Collection.prototype.defineBasics = function() {
@@ -842,7 +843,7 @@ DreamPilot.Collection = (function() {
     ref = this.items;
     for (idx in ref) {
       row = ref[idx];
-      if (row.model.getId() === id) {
+      if (row.model.isMyId(id)) {
         return row.model;
       }
     }
@@ -854,7 +855,7 @@ DreamPilot.Collection = (function() {
     ref = this.items;
     for (idx in ref) {
       row = ref[idx];
-      if (row.model.getId() === id) {
+      if (row.model.isMyId(id)) {
         return true;
       }
     }
@@ -862,12 +863,11 @@ DreamPilot.Collection = (function() {
   };
 
   Collection.prototype.getNewItem = function(data) {
-    var className, m;
+    var m;
     if (data == null) {
       data = null;
     }
-    className = $dp.fn.stringToFunction(this.modelClassName);
-    m = new className(data);
+    m = new this.modelClass(data);
     this.tuneModelAfterCreation(m);
     return m;
   };
@@ -1343,6 +1343,13 @@ DreamPilot.Model = (function() {
     return this;
   };
 
+  Model.prototype.isMyId = function(id) {
+    if (this.idIsInt) {
+      id = $dp.fn.int(id);
+    }
+    return this.getId() === id;
+  };
+
   Model.prototype.getId = function() {
     return this.extractIdFromResult(this.data);
   };
@@ -1363,12 +1370,7 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.getOrigId = function() {
-    var id;
-    id = this.getOrigData(this.idField);
-    if (this.idIsInt) {
-      id = $dp.fn.int(id);
-    }
-    return id;
+    return this.extractIdFromResult(this.origData);
   };
 
   Model.prototype.hasOrigId = function() {
