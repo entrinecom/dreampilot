@@ -18,6 +18,10 @@ class DreamPilot.Model
         @saveDelay = 1000
         @callbacks =
             change: {}
+        @actionCallbacks =
+            save: {}
+            fetch: {}
+            delete: {}
         @mainScope = false
         @idField = 'id'
         @idIsInt = true
@@ -204,6 +208,7 @@ class DreamPilot.Model
         $dp.transport.request @getSaveMethod(), @getSaveUrl(), @getSaveData(), (result) =>
             @tryToUpdateId result
             .onSaved result
+            @triggerAction 'save', result
         @
 
     delayedSave: ->
@@ -239,6 +244,7 @@ class DreamPilot.Model
     fetch: ->
         $dp.transport.request @getFetchMethod(), @getFetchUrl(), @getFetchData(), (result) =>
             @onFetched result
+            @triggerAction 'fetch', result
         @
 
     onFetched: (result) ->
@@ -255,6 +261,7 @@ class DreamPilot.Model
     delete: ->
         $dp.transport.request @getDeleteMethod(), @getDeleteUrl(), @getDeleteData(), (result) =>
             @onDeleted result
+            @triggerAction 'delete', result
         @
 
     onDeleted: (result) ->
@@ -299,5 +306,35 @@ class DreamPilot.Model
             # @parent.trigger action, @parentField if @parent
         @
 
-    onChange: (fields, callback, callbackId = null) ->
-        @on 'change', fields, callback, callbackId
+    onAction: (actions, callback, callbackId = null) ->
+        actions = [actions] unless $dp.fn.isArray actions
+        for action in actions
+            while not callbackId or @actionCallbacks[action]?[callbackId]?
+                callbackId = $dp.fn.uniqueId()
+            @actionCallbacks[action] = {} unless @actionCallbacks[action]?
+            @actionCallbacks[action][callbackId] = callback
+            callbackId = null
+        @
+
+    offAction: (actions, callbackId = null) ->
+        actions = [actions] unless $dp.fn.isArray actions
+        for action in actions
+            if callbackId
+                delete @actionCallbacks[action][callbackId]
+            else
+                @actionCallbacks[action] = {}
+        @
+
+    triggerAction: (action, result, callbackId) ->
+        if @actionCallbacks[action]?
+            for cbId, cb of @actionCallbacks[action]
+                cb result if not callbackId or cbId is callbackId
+        # console.log 'parent trigger', action if @parent
+        @parent.triggerAction action, result if @parent
+        @
+
+    onChange: (fields, callback, callbackId = null) -> @on 'change', fields, callback, callbackId
+
+    onSave: (callback, callbackId = null) -> @onAction 'save', callback, callbackId
+    onFetch: (callback, callbackId = null) -> @onAction 'fetch', callback, callbackId
+    onDelete: (callback, callbackId = null) -> @onAction 'delete', callback, callbackId

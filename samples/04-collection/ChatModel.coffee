@@ -34,3 +34,5 @@ class ChatModel extends DreamPilot.Model
         chatBox.append cue
         @getApp().embraceDomElement cue
         @
+
+    getFetchUrl: -> 'data.json' #'/api/chat/get/'

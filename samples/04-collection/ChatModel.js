@@ -64,6 +64,10 @@ ChatModel = (function(superClass) {
     return this;
   };
 
+  ChatModel.prototype.getFetchUrl = function() {
+    return 'data.json';
+  };
+
   return ChatModel;
 
 })(DreamPilot.Model);

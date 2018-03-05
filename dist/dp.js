@@ -1122,6 +1122,11 @@ DreamPilot.Model = (function() {
     this.callbacks = {
       change: {}
     };
+    this.actionCallbacks = {
+      save: {},
+      fetch: {},
+      "delete": {}
+    };
     this.mainScope = false;
     this.idField = 'id';
     this.idIsInt = true;
@@ -1530,7 +1535,8 @@ DreamPilot.Model = (function() {
   Model.prototype.save = function() {
     $dp.transport.request(this.getSaveMethod(), this.getSaveUrl(), this.getSaveData(), (function(_this) {
       return function(result) {
-        return _this.tryToUpdateId(result).onSaved(result);
+        _this.tryToUpdateId(result).onSaved(result);
+        return _this.triggerAction('save', result);
       };
     })(this));
     return this;
@@ -1584,7 +1590,8 @@ DreamPilot.Model = (function() {
   Model.prototype.fetch = function() {
     $dp.transport.request(this.getFetchMethod(), this.getFetchUrl(), this.getFetchData(), (function(_this) {
       return function(result) {
-        return _this.onFetched(result);
+        _this.onFetched(result);
+        return _this.triggerAction('fetch', result);
       };
     })(this));
     return this;
@@ -1613,7 +1620,8 @@ DreamPilot.Model = (function() {
   Model.prototype["delete"] = function() {
     $dp.transport.request(this.getDeleteMethod(), this.getDeleteUrl(), this.getDeleteData(), (function(_this) {
       return function(result) {
-        return _this.onDeleted(result);
+        _this.onDeleted(result);
+        return _this.triggerAction('delete', result);
       };
     })(this));
     return this;
@@ -1707,11 +1715,90 @@ DreamPilot.Model = (function() {
     return this;
   };
 
+  Model.prototype.onAction = function(actions, callback, callbackId) {
+    var action, i, len, ref;
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    if (!$dp.fn.isArray(actions)) {
+      actions = [actions];
+    }
+    for (i = 0, len = actions.length; i < len; i++) {
+      action = actions[i];
+      while (!callbackId || (((ref = this.actionCallbacks[action]) != null ? ref[callbackId] : void 0) != null)) {
+        callbackId = $dp.fn.uniqueId();
+      }
+      if (this.actionCallbacks[action] == null) {
+        this.actionCallbacks[action] = {};
+      }
+      this.actionCallbacks[action][callbackId] = callback;
+      callbackId = null;
+    }
+    return this;
+  };
+
+  Model.prototype.offAction = function(actions, callbackId) {
+    var action, i, len;
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    if (!$dp.fn.isArray(actions)) {
+      actions = [actions];
+    }
+    for (i = 0, len = actions.length; i < len; i++) {
+      action = actions[i];
+      if (callbackId) {
+        delete this.actionCallbacks[action][callbackId];
+      } else {
+        this.actionCallbacks[action] = {};
+      }
+    }
+    return this;
+  };
+
+  Model.prototype.triggerAction = function(action, result, callbackId) {
+    var cb, cbId, ref;
+    if (this.actionCallbacks[action] != null) {
+      ref = this.actionCallbacks[action];
+      for (cbId in ref) {
+        cb = ref[cbId];
+        if (!callbackId || cbId === callbackId) {
+          cb(result);
+        }
+      }
+    }
+    if (this.parent) {
+      this.parent.triggerAction(action, result);
+    }
+    return this;
+  };
+
   Model.prototype.onChange = function(fields, callback, callbackId) {
     if (callbackId == null) {
       callbackId = null;
     }
     return this.on('change', fields, callback, callbackId);
+  };
+
+  Model.prototype.onSave = function(callback, callbackId) {
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    return this.onAction('save', callback, callbackId);
+  };
+
+  Model.prototype.onFetch = function(callback, callbackId) {
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    return this.onAction('fetch', callback, callbackId);
+  };
+
+  Model.prototype.onDelete = function(callback, callbackId) {
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    return this.onAction('delete', callback, callbackId);
   };
 
   return Model;

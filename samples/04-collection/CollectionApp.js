@@ -18,6 +18,9 @@ CollectionApp = (function(superClass) {
     this.getScope().set({
       isTiny: true
     });
+    this.testModel = new ChatModel().onFetch(function(result) {
+      return console.log('fetched', result);
+    }).fetch();
     return this;
   };
 

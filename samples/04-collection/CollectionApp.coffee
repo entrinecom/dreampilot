@@ -6,6 +6,12 @@ class CollectionApp extends DreamPilot.Application
         @loadChat()
         .linkToScope ['chatClick', 'col', 'm', 'btnClick']
         @getScope().set isTiny: true
+
+        @testModel = new ChatModel()
+        .onFetch (result) ->
+            console.log 'fetched', result
+        .fetch()
+
         @
 
     loadChat: ->
