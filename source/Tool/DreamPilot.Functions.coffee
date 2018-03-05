@@ -3,7 +3,7 @@ class DreamPilot.Functions
 
     @extend: (args...) -> jQuery.extend args...
     @int: (s) -> ~~s
-    @str: (s) -> s + ''
+    @str: (s) -> if s is null then '' else s + ''
     @float: (s) -> parseFloat(s) or .0
     @bool: (s) -> !!s
     @trim: (s) -> self.str(s).replace /^\s+|\s+$/g, ''
@@ -35,10 +35,10 @@ class DreamPilot.Functions
         throw "Function/Class #{s} not found" if self.getType(fn) isnt 'function'
         fn
 
-    @uniqueId: (len) ->
+    @uniqueId: (len = 32) ->
         text = ''
         possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-        for i in [0..len || 32]
+        for i in [0..len]
             text += possible.charAt Math.floor Math.random() * possible.length
         text
 

@@ -1800,7 +1800,11 @@ DreamPilot.Functions = (function() {
   };
 
   Functions.str = function(s) {
-    return s + '';
+    if (s === null) {
+      return '';
+    } else {
+      return s + '';
+    }
   };
 
   Functions.float = function(s) {
@@ -1890,9 +1894,12 @@ DreamPilot.Functions = (function() {
 
   Functions.uniqueId = function(len) {
     var i, l, possible, ref, text;
+    if (len == null) {
+      len = 32;
+    }
     text = '';
     possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (i = l = 0, ref = len || 32; 0 <= ref ? l <= ref : l >= ref; i = 0 <= ref ? ++l : --l) {
+    for (i = l = 0, ref = len; 0 <= ref ? l <= ref : l >= ref; i = 0 <= ref ? ++l : --l) {
       text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
     return text;
