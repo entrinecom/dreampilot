@@ -42,8 +42,7 @@ class DreamPilot.Functions
             text += possible.charAt Math.floor Math.random() * possible.length
         text
 
-    @randomInt: (min, max) ->
-        Math.floor(Math.random() * (max - min + 1)) + min
+    @randomInt: (min, max) -> Math.floor(Math.random() * (max - min + 1)) + min
 
     @formatFloat: (num, afterDot) ->
         d = Math.pow 10, afterDot
@@ -76,7 +75,10 @@ class DreamPilot.Functions
         roundedTempNumber = Math.round tempNumber
         roundedTempNumber / factor
 
+    # Array functions
+
     @isArray: (ar) -> Object.prototype.toString.call(ar) is '[object Array]'
+    @inArray: (x, ar) -> x in ar
     @keys: (array) -> jQuery.map array, (val, key) -> key
     @values: (array) -> jQuery.map array, (val, key) -> val
 
@@ -124,6 +126,8 @@ class DreamPilot.Functions
         res
 
     @arrayUnique: (ar) -> jQuery.grep ar, (el, index) -> index is jQuery.inArray el, ar
+
+    @removeFromArrayByValue: (ar, x) -> ar.filter (el) -> el isnt x
 
     @lead0: (x, len = 2) ->
         x = self.str x

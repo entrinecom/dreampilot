@@ -1825,49 +1825,8 @@ DreamPilot.Scope = (function(superClass) {
 
 })(DreamPilot.Model);
 
-DreamPilot.Router = (function() {
-  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
-
-  WORK_MODE_HASH = 1;
-
-  WORK_MODE_URL = 2;
-
-  ELSE_PATH = null;
-
-  Router.prototype.steps = {};
-
-  function Router(App, options) {
-    this.App = App;
-    if (options == null) {
-      options = {};
-    }
-    this.options = $.extend({
-      workMode: WORK_MODE_HASH,
-      attrName: 'data-step'
-    }, options);
-  }
-
-  Router.prototype.when = function(path, opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[path] = opts;
-    return this;
-  };
-
-  Router.prototype["else"] = function(opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[ELSE_PATH] = opts;
-    return this;
-  };
-
-  return Router;
-
-})();
-
-var slice = [].slice;
+var slice = [].slice,
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 DreamPilot.Functions = (function() {
   var self;
@@ -2057,6 +2016,10 @@ DreamPilot.Functions = (function() {
     return Object.prototype.toString.call(ar) === '[object Array]';
   };
 
+  Functions.inArray = function(x, ar) {
+    return indexOf.call(ar, x) >= 0;
+  };
+
   Functions.keys = function(array) {
     return jQuery.map(array, function(val, key) {
       return key;
@@ -2145,6 +2108,12 @@ DreamPilot.Functions = (function() {
   Functions.arrayUnique = function(ar) {
     return jQuery.grep(ar, function(el, index) {
       return index === jQuery.inArray(el, ar);
+    });
+  };
+
+  Functions.removeFromArrayByValue = function(ar, x) {
+    return ar.filter(function(el) {
+      return el !== x;
     });
   };
 
@@ -3025,3 +2994,45 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
+
+DreamPilot.Router = (function() {
+  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
+
+  WORK_MODE_HASH = 1;
+
+  WORK_MODE_URL = 2;
+
+  ELSE_PATH = null;
+
+  Router.prototype.steps = {};
+
+  function Router(App, options) {
+    this.App = App;
+    if (options == null) {
+      options = {};
+    }
+    this.options = $.extend({
+      workMode: WORK_MODE_HASH,
+      attrName: 'data-step'
+    }, options);
+  }
+
+  Router.prototype.when = function(path, opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[path] = opts;
+    return this;
+  };
+
+  Router.prototype["else"] = function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[ELSE_PATH] = opts;
+    return this;
+  };
+
+  return Router;
+
+})();
