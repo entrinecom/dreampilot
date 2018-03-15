@@ -10,6 +10,9 @@ class DreamPilot.Collection
         @items = []
         @callbacks =
             load: {}
+            update: {}
+            insert: {}
+            put: {}
         @
 
     init: -> @
@@ -49,17 +52,32 @@ class DreamPilot.Collection
         model.setApp @getApp()
         @
 
-    getIdForPut: (model) ->
-        if @isIdUnique then model.getId() else $dp.fn.arrayCount @items
+    beforePutModelToList: (model) -> @
+    beforeInsertModelInList: (model) -> @
+    beforeUpdateModelInList: (model) -> @
+    afterPutModelToList: (model) -> @
+    afterInsertModelInList: (model) -> @
+    afterUpdateModelInList: (model) -> @
+
+    getIdForPut: (model) -> if @isIdUnique then model.getId() else $dp.fn.arrayCount @items
 
     putModelToList: (model) ->
+        @beforePutModelToList model
         id = @getIdForPut model
         if @exists id
+            @beforeUpdateModelInList model
             @getById(id).set model.get()
+            @afterUpdateModelInList model
+            .trigger 'update'
         else
+            @beforeInsertModelInList model
             @items.push
                 id: id
                 model: model
+            @afterInsertModelInList model
+            .trigger 'insert'
+        @afterPutModelToList model
+        .trigger 'put'
         @
 
     map: (callbackOrField) ->
@@ -163,3 +181,12 @@ class DreamPilot.Collection
 
     onLoad: (callback, callbackId = null) ->
         @on 'load', callback, callbackId
+
+    onInsert: (callback, callbackId = null) ->
+        @on 'insert', callback, callbackId
+
+    onUpdate: (callback, callbackId = null) ->
+        @on 'update', callback, callbackId
+
+    onPut: (callback, callbackId = null) ->
+        @on 'put', callback, callbackId

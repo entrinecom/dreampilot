@@ -710,7 +710,10 @@ DreamPilot.Collection = (function() {
     this.isIdUnique = true;
     this.items = [];
     this.callbacks = {
-      load: {}
+      load: {},
+      update: {},
+      insert: {},
+      put: {}
     };
     return this;
   };
@@ -787,6 +790,30 @@ DreamPilot.Collection = (function() {
     return this;
   };
 
+  Collection.prototype.beforePutModelToList = function(model) {
+    return this;
+  };
+
+  Collection.prototype.beforeInsertModelInList = function(model) {
+    return this;
+  };
+
+  Collection.prototype.beforeUpdateModelInList = function(model) {
+    return this;
+  };
+
+  Collection.prototype.afterPutModelToList = function(model) {
+    return this;
+  };
+
+  Collection.prototype.afterInsertModelInList = function(model) {
+    return this;
+  };
+
+  Collection.prototype.afterUpdateModelInList = function(model) {
+    return this;
+  };
+
   Collection.prototype.getIdForPut = function(model) {
     if (this.isIdUnique) {
       return model.getId();
@@ -797,15 +824,21 @@ DreamPilot.Collection = (function() {
 
   Collection.prototype.putModelToList = function(model) {
     var id;
+    this.beforePutModelToList(model);
     id = this.getIdForPut(model);
     if (this.exists(id)) {
+      this.beforeUpdateModelInList(model);
       this.getById(id).set(model.get());
+      this.afterUpdateModelInList(model).trigger('update');
     } else {
+      this.beforeInsertModelInList(model);
       this.items.push({
         id: id,
         model: model
       });
+      this.afterInsertModelInList(model).trigger('insert');
     }
+    this.afterPutModelToList(model).trigger('put');
     return this;
   };
 
@@ -1022,6 +1055,27 @@ DreamPilot.Collection = (function() {
       callbackId = null;
     }
     return this.on('load', callback, callbackId);
+  };
+
+  Collection.prototype.onInsert = function(callback, callbackId) {
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    return this.on('insert', callback, callbackId);
+  };
+
+  Collection.prototype.onUpdate = function(callback, callbackId) {
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    return this.on('update', callback, callbackId);
+  };
+
+  Collection.prototype.onPut = function(callback, callbackId) {
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    return this.on('put', callback, callbackId);
   };
 
   return Collection;
@@ -1824,6 +1878,48 @@ DreamPilot.Scope = (function(superClass) {
   return Scope;
 
 })(DreamPilot.Model);
+
+DreamPilot.Router = (function() {
+  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
+
+  WORK_MODE_HASH = 1;
+
+  WORK_MODE_URL = 2;
+
+  ELSE_PATH = null;
+
+  Router.prototype.steps = {};
+
+  function Router(App, options) {
+    this.App = App;
+    if (options == null) {
+      options = {};
+    }
+    this.options = $.extend({
+      workMode: WORK_MODE_HASH,
+      attrName: 'data-step'
+    }, options);
+  }
+
+  Router.prototype.when = function(path, opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[path] = opts;
+    return this;
+  };
+
+  Router.prototype["else"] = function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[ELSE_PATH] = opts;
+    return this;
+  };
+
+  return Router;
+
+})();
 
 var slice = [].slice,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -2994,45 +3090,3 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
-
-DreamPilot.Router = (function() {
-  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
-
-  WORK_MODE_HASH = 1;
-
-  WORK_MODE_URL = 2;
-
-  ELSE_PATH = null;
-
-  Router.prototype.steps = {};
-
-  function Router(App, options) {
-    this.App = App;
-    if (options == null) {
-      options = {};
-    }
-    this.options = $.extend({
-      workMode: WORK_MODE_HASH,
-      attrName: 'data-step'
-    }, options);
-  }
-
-  Router.prototype.when = function(path, opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[path] = opts;
-    return this;
-  };
-
-  Router.prototype["else"] = function(opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[ELSE_PATH] = opts;
-    return this;
-  };
-
-  return Router;
-
-})();
