@@ -7,6 +7,8 @@ class DreamPilot.Attributes
     @initAttr = 'init'
     @hrefAttr = 'href'
     @srcAttr = 'src'
+    @altAttr = 'alt'
+    @titleAttr = 'title'
     @valueWriteToAttr = 'value-write-to'
     @valueReadFromAttr = 'value-read-from'
     @valueBindAttr = 'value-bind'
@@ -14,6 +16,8 @@ class DreamPilot.Attributes
     @simpleAttributes = [
         self.hrefAttr
         self.srcAttr
+        self.altAttr
+        self.titleAttr
     ]
 
     ScopePromises: null
@@ -258,7 +262,7 @@ class DreamPilot.Attributes
 
     setupSimpleAttributes: ($element = null) ->
         that = @
-        jQuery.each [self.srcAttr, self.hrefAttr], (idx, attrName) =>
+        jQuery.each self.simpleAttributes, (idx, attrName) =>
             @eachByAttr attrName, $element, ->
                 $el = $dp.e @
                 expr = $el.attr $dp.attribute attrName

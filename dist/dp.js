@@ -237,13 +237,17 @@ DreamPilot.Attributes = (function() {
 
   Attributes.srcAttr = 'src';
 
+  Attributes.altAttr = 'alt';
+
+  Attributes.titleAttr = 'title';
+
   Attributes.valueWriteToAttr = 'value-write-to';
 
   Attributes.valueReadFromAttr = 'value-read-from';
 
   Attributes.valueBindAttr = 'value-bind';
 
-  Attributes.simpleAttributes = [self.hrefAttr, self.srcAttr];
+  Attributes.simpleAttributes = [self.hrefAttr, self.srcAttr, self.altAttr, self.titleAttr];
 
   Attributes.prototype.ScopePromises = null;
 
@@ -649,7 +653,7 @@ DreamPilot.Attributes = (function() {
       $element = null;
     }
     that = this;
-    jQuery.each([self.srcAttr, self.hrefAttr], (function(_this) {
+    jQuery.each(self.simpleAttributes, (function(_this) {
       return function(idx, attrName) {
         return _this.eachByAttr(attrName, $element, function() {
           var $el, Scope, expr, field;
@@ -710,10 +714,14 @@ DreamPilot.Collection = (function() {
     this.isIdUnique = true;
     this.items = [];
     this.callbacks = {
+      change: {},
       load: {},
       update: {},
       insert: {},
       put: {}
+    };
+    this.callbackModelIds = {
+      change: {}
     };
     return this;
   };
@@ -838,6 +846,7 @@ DreamPilot.Collection = (function() {
       });
       this.afterInsertModelInList(model).trigger('insert');
     }
+    this.get(id).setParent(this, id);
     this.afterPutModelToList(model).trigger('put');
     return this;
   };
@@ -995,10 +1004,13 @@ DreamPilot.Collection = (function() {
     return this;
   };
 
-  Collection.prototype.on = function(actions, callback, callbackId) {
+  Collection.prototype.on = function(actions, callback, callbackId, modelId) {
     var action, i, len, ref;
     if (callbackId == null) {
       callbackId = null;
+    }
+    if (modelId == null) {
+      modelId = null;
     }
     if (!$dp.fn.isArray(actions)) {
       actions = [actions];
@@ -1012,6 +1024,9 @@ DreamPilot.Collection = (function() {
         this.callbacks[action] = {};
       }
       this.callbacks[action][callbackId] = callback;
+      if (action === 'change') {
+        this.callbackModelIds[action][callbackId] = modelId;
+      }
       callbackId = null;
     }
     return this;
@@ -1029,25 +1044,35 @@ DreamPilot.Collection = (function() {
       action = actions[i];
       if (callbackId) {
         delete this.callbacks[action][callbackId];
+        delete this.callbackModelIds[action][callbackId];
       } else {
         this.callbacks[action] = {};
+        this.callbackModelIds[action] = {};
       }
     }
     return this;
   };
 
   Collection.prototype.trigger = function(action, callbackId) {
-    var cb, cbId, ref;
+    var cb, cbId, id, ref;
     if (this.callbacks[action] != null) {
       ref = this.callbacks[action];
       for (cbId in ref) {
         cb = ref[cbId];
         if (!callbackId || cbId === callbackId) {
-          cb(this);
+          if (action === 'change') {
+            id = this.callbackModelIds[action][cbId];
+          } else {
+            cb(this);
+          }
         }
       }
     }
     return this;
+  };
+
+  Collection.prototype.onChange = function(modelId, callback, callbackId) {
+    return this.on('change', callback, callbackId, modelId);
   };
 
   Collection.prototype.onLoad = function(callback, callbackId) {
@@ -1235,10 +1260,12 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.setParent = function(parent, parentField) {
+    var suitableParent;
     this.parent = parent;
     this.parentField = parentField;
-    if (this.parent && !this.parent instanceof DreamPilot.Model) {
-      throw 'Parent can be only DreamPilot.Model';
+    suitableParent = this.parent instanceof DreamPilot.Model || this.parent instanceof DreamPilot.Collection;
+    if (this.parent && !suitableParent) {
+      throw 'Parent can be only DreamPilot.Model/Collection';
     }
     return this;
   };
@@ -1299,12 +1326,19 @@ DreamPilot.Model = (function() {
       }
     } else {
       if (value instanceof DreamPilot.Model && this.assignChildModels && value.assignModelToParent) {
-        value.setParent(this, field);
-      }
-      oldValue = this.data[field];
-      this.data[field] = value;
-      if (oldValue !== value) {
+        if (this.exists(field) && this.get(field) instanceof DreamPilot.Model) {
+          this.data[field].set(value.get());
+        } else {
+          this.data[field] = value;
+        }
+        this.data[field].setParent(this, field);
         this.trigger('change', field);
+      } else {
+        oldValue = this.data[field];
+        this.data[field] = value;
+        if (oldValue !== value) {
+          this.trigger('change', field);
+        }
       }
     }
     return this;

@@ -1,12 +1,11 @@
 class ChatModel extends DreamPilot.Model
     getUserId: -> $dp.fn.int @get 'user_id'
-    getUser: -> @getApp().getUsersCol().get @getUserId()
-    getName: -> @getUser().getName()
+    getUser: -> if @getApp().getUsersCol() then @getApp().getUsersCol().get @getUserId() else new UserModel
+    getName: -> @getUser().getName() or ''
     getCreatedAt: -> @get 'created_at'
     getContent: -> @get 'content'
     setContent: (content) -> @set 'content', content
     linkUser: ->
-        #console.log @getUser()
         @set user: @getUser()
         @
 
@@ -39,10 +38,10 @@ class ChatModel extends DreamPilot.Model
         cue = $dp.e """<li dp-click="chatClick(this, $event)">
     <span dp-value-read-from="col['#{@getId()}'].user.name"></span> (<span dp-value-read-from="col['#{@getId()}'].created_at"></span>):
     <span dp-value-read-from="col['#{@getId()}'].content"></span>
-    <span dp-show="col['#{@getId()}'].user.id">user id test</span>
+    <span dp-show="col['#{@getId()}'].user.id" dp-title="col['#{@getId()}'].user.id">[user id test]</span>
 </li>"""
         chatBox.append cue
         @getApp().embraceDomElement cue
         @
 
-    getFetchUrl: -> 'data.json' #'/api/chat/get/'
+    getFetchUrl: -> 'data.json' #'/api/chat/get'

@@ -5,8 +5,14 @@ class CollectionApp extends DreamPilot.Application
 
         @users = new UserCollection()
         .setApp @
-        .addItem id: 1, name: 'James', nick: 'Papa'
-        .addItem id: 2, name: 'Lars', nick: 'Danish'
+
+        setTimeout =>
+            @users
+            .addItem id: 1, name: 'James', nick: 'Papa'
+            .addItem id: 2, name: 'Lars', nick: 'Danish'
+
+            @col.map (cue) -> cue.linkUser()
+        , 500
 
         @loadChat()
         .linkToScope ['chatClick', 'col', 'm', 'btnClick']
@@ -27,7 +33,7 @@ class CollectionApp extends DreamPilot.Application
         .onLoad (col) ->
             col.map (model) ->
                 model
-                .linkUser()
+                #.linkUser()
                 .display()
                 .displayEmbraced()
 

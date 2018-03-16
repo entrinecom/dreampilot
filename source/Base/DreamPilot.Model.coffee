@@ -46,8 +46,9 @@ class DreamPilot.Model
     e: (selector) -> @getApp().e selector
 
     setParent: (@parent, @parentField) ->
-        if @parent and not @parent instanceof DreamPilot.Model
-            throw 'Parent can be only DreamPilot.Model'
+        suitableParent = @parent instanceof DreamPilot.Model or @parent instanceof DreamPilot.Collection
+        if @parent and not suitableParent
+            throw 'Parent can be only DreamPilot.Model/Collection'
         @
 
     get: (field = null) ->
@@ -75,10 +76,16 @@ class DreamPilot.Model
             @set k, v for k, v of field
         else
             if value instanceof DreamPilot.Model and @assignChildModels and value.assignModelToParent
-                value.setParent @, field
-            oldValue = @data[field]
-            @data[field] = value
-            @trigger 'change', field if oldValue isnt value
+                if @exists(field) and @get(field) instanceof DreamPilot.Model
+                    @data[field].set value.get()
+                else
+                    @data[field] = value
+                @data[field].setParent @, field
+                @trigger 'change', field
+            else
+                oldValue = @data[field]
+                @data[field] = value
+                @trigger 'change', field if oldValue isnt value
         @
 
     exists: (field = null) ->

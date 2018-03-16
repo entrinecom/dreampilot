@@ -14,15 +14,23 @@ CollectionApp = (function(superClass) {
     this.m = new DreamPilot.Model().set({
       id: 100500
     });
-    this.users = new UserCollection().setApp(this).addItem({
-      id: 1,
-      name: 'James',
-      nick: 'Papa'
-    }).addItem({
-      id: 2,
-      name: 'Lars',
-      nick: 'Danish'
-    });
+    this.users = new UserCollection().setApp(this);
+    setTimeout((function(_this) {
+      return function() {
+        _this.users.addItem({
+          id: 1,
+          name: 'James',
+          nick: 'Papa'
+        }).addItem({
+          id: 2,
+          name: 'Lars',
+          nick: 'Danish'
+        });
+        return _this.col.map(function(cue) {
+          return cue.linkUser();
+        });
+      };
+    })(this), 500);
     this.loadChat().linkToScope(['chatClick', 'col', 'm', 'btnClick']);
     this.getScope().set({
       isTiny: true
@@ -41,7 +49,7 @@ CollectionApp = (function(superClass) {
     this.col = new ChatCollection().setApp(this).onLoad(function(col) {
       var filteredCol;
       col.map(function(model) {
-        return model.linkUser().display().displayEmbraced();
+        return model.display().displayEmbraced();
       });
       filteredCol = col.filter(function(model) {
         return model.getName() === 'James';

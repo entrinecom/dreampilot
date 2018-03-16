@@ -9,10 +9,13 @@ class DreamPilot.Collection
         @isIdUnique = true
         @items = []
         @callbacks =
+            change: {}
             load: {}
             update: {}
             insert: {}
             put: {}
+        @callbackModelIds =
+            change: {}
         @
 
     init: -> @
@@ -76,6 +79,7 @@ class DreamPilot.Collection
                 model: model
             @afterInsertModelInList model
             .trigger 'insert'
+        @get(id).setParent @, id
         @afterPutModelToList model
         .trigger 'put'
         @
@@ -154,13 +158,14 @@ class DreamPilot.Collection
         .trigger 'load'
         @
 
-    on: (actions, callback, callbackId = null) ->
+    on: (actions, callback, callbackId = null, modelId = null) ->
         actions = [actions] unless $dp.fn.isArray actions
         for action in actions
             while not callbackId or @callbacks[action]?[callbackId]?
                 callbackId = $dp.fn.uniqueId()
             @callbacks[action] = {} unless @callbacks[action]?
             @callbacks[action][callbackId] = callback
+            @callbackModelIds[action][callbackId] = modelId if action is 'change'
             callbackId = null
         @
 
@@ -169,15 +174,25 @@ class DreamPilot.Collection
         for action in actions
             if callbackId
                 delete @callbacks[action][callbackId]
+                delete @callbackModelIds[action][callbackId]
             else
                 @callbacks[action] = {}
+                @callbackModelIds[action] = {}
         @
 
     trigger: (action, callbackId) ->
         if @callbacks[action]?
             for cbId, cb of @callbacks[action]
-                cb @ if not callbackId or cbId is callbackId
+                if not callbackId or cbId is callbackId
+                    if action is 'change'
+                        id = @callbackModelIds[action][cbId]
+                        #@get(id).trigger action, '*'
+                    else
+                        cb @
         @
+
+    onChange: (modelId, callback, callbackId) ->
+        @on 'change', callback, callbackId, modelId
 
     onLoad: (callback, callbackId = null) ->
         @on 'load', callback, callbackId
