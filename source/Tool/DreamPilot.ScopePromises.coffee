@@ -28,6 +28,7 @@ class DreamPilot.ScopePromises
             for idx, rec of @list
                 if rec['expression']?
                     $dp.Parser.isExpressionTrue rec['expression'], rec['app'], rec['element']
+                    #console.log 'last errors', $dp.Parser.getLastErrors()
                     unless $dp.Parser.hasLastErrors()
                         Scopes = $dp.Parser.getLastScopes()
                         vars = $dp.Parser.getLastUsedVariables()

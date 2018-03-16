@@ -93,12 +93,13 @@ class DreamPilot.Parser
 
     @evalNode: (node, Scope, element = null, promiseCallback = null) ->
         # console.log 'evalNode', node, Scope, element
-        unless Scope instanceof DreamPilot.Model or node.type in ['Literal', 'ThisExpression']
+        scopeSuitableType = Scope instanceof DreamPilot.Model or Scope instanceof DreamPilot.Collection
+        unless scopeSuitableType or node.type in ['Literal', 'ThisExpression']
             unless Scope
                 self.addToLastErrors self.SCOPE_IS_UNDEFINED
                 promiseCallback() if promiseCallback
                 return false
-            throw "Scope should be a DreamPilot.Model instance, but #{$dp.fn.getType(Scope)} given: '#{Scope}'"
+            throw "Scope should be a DreamPilot.Model/Collection instance, but #{$dp.fn.getType(Scope)} given: '#{Scope}'"
         #if $dp.fn.getType(Scope) isnt 'object'
         #    throw 'Scope should be an object, but ' + $dp.fn.getType(Scope) + " given: #{$dp.fn.print_r(Scope)}"
         @addToLastScopes Scope if Scope instanceof DreamPilot.Model and not Scope.isMainScope()
@@ -135,10 +136,10 @@ class DreamPilot.Parser
                     node.property.type = 'Identifier'
                     node.property.name = node.property.value
                 obj = self.evalNode node.object, Scope, element, promiseCallback
-                #if obj is 'of_user1'
                 #console.log '[2]', obj, node, Scope
                 #console.log 'MemberExpression obj', obj, 'property', node.property, 'object', node.object, 'scope', Scope
-                unless obj instanceof DreamPilot.Model
+                #console.log '[2.2] Collection got', obj if obj instanceof DreamPilot.Collection
+                unless obj instanceof DreamPilot.Model or obj instanceof DreamPilot.Collection
                     #console.log '[2.5]', obj, node, Scope
                     self.addToLastErrors if obj then self.MEMBER_OBJECT_NOT_A_MODEL else self.MEMBER_OBJECT_IS_UNDEFINED
                     promiseCallback() if promiseCallback
@@ -152,7 +153,7 @@ class DreamPilot.Parser
                         element.dpEvent
                     else
                         self.addToLastUsedVariables node.name
-                        if Scope instanceof DreamPilot.Model
+                        if scopeSuitableType
                             Scope.get node.name
                         else
                             if Scope[node.name]? then Scope[node.name] else null

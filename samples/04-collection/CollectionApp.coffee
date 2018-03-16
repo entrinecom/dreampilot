@@ -3,6 +3,11 @@ class CollectionApp extends DreamPilot.Application
         @m = new DreamPilot.Model()
         .set id: 100500
 
+        @users = new UserCollection()
+        .setApp @
+        .addItem id: 1, name: 'James', nick: 'Papa'
+        .addItem id: 2, name: 'Lars', nick: 'Danish'
+
         @loadChat()
         .linkToScope ['chatClick', 'col', 'm', 'btnClick']
         @getScope().set isTiny: true
@@ -14,13 +19,19 @@ class CollectionApp extends DreamPilot.Application
 
         @
 
+    getUsersCol: -> @users
+
     loadChat: ->
         @col = new ChatCollection()
         .setApp @
         .onLoad (col) ->
-            col.map (model) -> model.display().displayEmbraced()
+            col.map (model) ->
+                model
+                .linkUser()
+                .display()
+                .displayEmbraced()
 
-            filteredCol = col.filter (model) -> model.get('name') is 'James'
+            filteredCol = col.filter (model) -> model.getName() is 'James'
             filteredCol.map (model) -> model.displayFiltered()
         .load()
         @

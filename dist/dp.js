@@ -2610,14 +2610,15 @@ DreamPilot.Parser = (function() {
   };
 
   Parser.evalNode = function(node, Scope, element, promiseCallback) {
-    var arg, args, fn, obj, ref;
+    var arg, args, fn, obj, ref, scopeSuitableType;
     if (element == null) {
       element = null;
     }
     if (promiseCallback == null) {
       promiseCallback = null;
     }
-    if (!(Scope instanceof DreamPilot.Model || ((ref = node.type) === 'Literal' || ref === 'ThisExpression'))) {
+    scopeSuitableType = Scope instanceof DreamPilot.Model || Scope instanceof DreamPilot.Collection;
+    if (!(scopeSuitableType || ((ref = node.type) === 'Literal' || ref === 'ThisExpression'))) {
       if (!Scope) {
         self.addToLastErrors(self.SCOPE_IS_UNDEFINED);
         if (promiseCallback) {
@@ -2625,7 +2626,7 @@ DreamPilot.Parser = (function() {
         }
         return false;
       }
-      throw "Scope should be a DreamPilot.Model instance, but " + ($dp.fn.getType(Scope)) + " given: '" + Scope + "'";
+      throw "Scope should be a DreamPilot.Model/Collection instance, but " + ($dp.fn.getType(Scope)) + " given: '" + Scope + "'";
     }
     if (Scope instanceof DreamPilot.Model && !Scope.isMainScope()) {
       this.addToLastScopes(Scope);
@@ -2679,7 +2680,7 @@ DreamPilot.Parser = (function() {
           node.property.name = node.property.value;
         }
         obj = self.evalNode(node.object, Scope, element, promiseCallback);
-        if (!(obj instanceof DreamPilot.Model)) {
+        if (!(obj instanceof DreamPilot.Model || obj instanceof DreamPilot.Collection)) {
           self.addToLastErrors(obj ? self.MEMBER_OBJECT_NOT_A_MODEL : self.MEMBER_OBJECT_IS_UNDEFINED);
           if (promiseCallback) {
             promiseCallback();
@@ -2694,7 +2695,7 @@ DreamPilot.Parser = (function() {
             return element.dpEvent;
           default:
             self.addToLastUsedVariables(node.name);
-            if (Scope instanceof DreamPilot.Model) {
+            if (scopeSuitableType) {
               return Scope.get(node.name);
             } else {
               if (Scope[node.name] != null) {

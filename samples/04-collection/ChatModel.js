@@ -10,8 +10,16 @@ ChatModel = (function(superClass) {
     return ChatModel.__super__.constructor.apply(this, arguments);
   }
 
+  ChatModel.prototype.getUserId = function() {
+    return $dp.fn.int(this.get('user_id'));
+  };
+
+  ChatModel.prototype.getUser = function() {
+    return this.getApp().getUsersCol().get(this.getUserId());
+  };
+
   ChatModel.prototype.getName = function() {
-    return this.get('name');
+    return this.getUser().getName();
   };
 
   ChatModel.prototype.getCreatedAt = function() {
@@ -22,12 +30,20 @@ ChatModel = (function(superClass) {
     return this.get('content');
   };
 
-  ChatModel.prototype.setName = function(name) {
-    return this.set('name', name);
-  };
-
   ChatModel.prototype.setContent = function(content) {
     return this.set('content', content);
+  };
+
+  ChatModel.prototype.linkUser = function() {
+    this.set({
+      user: this.getUser()
+    });
+    return this;
+  };
+
+  ChatModel.prototype.init = function() {
+    this.set('user', new UserModel);
+    return this;
   };
 
   ChatModel.prototype.defineBasics = function() {
@@ -40,7 +56,7 @@ ChatModel = (function(superClass) {
   ChatModel.prototype.display = function() {
     var chatBox, cue;
     chatBox = $dp.e('ul.chat-box');
-    cue = $dp.e('<li dp-click="chatClick(this, $event)" dp-class="{tiny: isTiny}">{0} ({1}): {2}</li>'.format(this.get('name'), this.get('created_at'), this.get('content')));
+    cue = $dp.e('<li dp-click="chatClick(this, $event)" dp-class="{tiny: isTiny}">{0} ({1}): {2}</li>'.format(this.getName(), this.getCreatedAt(), this.getContent()));
     chatBox.append(cue);
     this.getApp().embraceDomElement(cue);
     return this;
@@ -49,7 +65,7 @@ ChatModel = (function(superClass) {
   ChatModel.prototype.displayFiltered = function() {
     var chatBox, cue;
     chatBox = $dp.e('ul.chat-box-filtered');
-    cue = $dp.e('<li dp-click="chatClick(this, $event)" dp-class="{tiny: isTiny}">{0} ({1}): {2}</li>'.format(this.get('name'), this.get('created_at'), this.get('content')));
+    cue = $dp.e('<li dp-click="chatClick(this, $event)" dp-class="{tiny: isTiny}">{0} ({1}): {2}</li>'.format(this.getName(), this.getCreatedAt(), this.getContent()));
     chatBox.append(cue);
     this.getApp().embraceDomElement(cue);
     return this;
@@ -58,7 +74,7 @@ ChatModel = (function(superClass) {
   ChatModel.prototype.displayEmbraced = function() {
     var chatBox, cue;
     chatBox = $dp.e('ul.chat-box-embraced');
-    cue = $dp.e("<li dp-click=\"chatClick(this, $event)\">\n<span dp-value-read-from=\"col['" + (this.getId()) + "'].name\"></span> (<span dp-value-read-from=\"col['" + (this.getId()) + "'].created_at\"></span>):\n<span dp-value-read-from=\"col['" + (this.getId()) + "'].content\"></span>\n</li>");
+    cue = $dp.e("<li dp-click=\"chatClick(this, $event)\">\n<span dp-value-read-from=\"col['" + (this.getId()) + "'].user.name\"></span> (<span dp-value-read-from=\"col['" + (this.getId()) + "'].created_at\"></span>):\n<span dp-value-read-from=\"col['" + (this.getId()) + "'].content\"></span>\n<span dp-show=\"col['" + (this.getId()) + "'].user.id\">user id test</span>\n</li>");
     chatBox.append(cue);
     this.getApp().embraceDomElement(cue);
     return this;
