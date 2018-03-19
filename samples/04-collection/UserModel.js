@@ -14,6 +14,14 @@ UserModel = (function(superClass) {
     return this.get('name');
   };
 
+  UserModel.prototype.setName = function(name) {
+    return this.set('name', name);
+  };
+
+  UserModel.prototype.setRandomName = function() {
+    return this.setName($dp.fn.uniqueId(10));
+  };
+
   return UserModel;
 
 })(DreamPilot.Model);

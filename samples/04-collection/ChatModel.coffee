@@ -39,7 +39,9 @@ class ChatModel extends DreamPilot.Model
     <span dp-value-read-from="col['#{@getId()}'].user.name"></span> (<span dp-value-read-from="col['#{@getId()}'].created_at"></span>):
     <span dp-value-read-from="col['#{@getId()}'].content"></span>
     <span dp-show="col['#{@getId()}'].user.id" dp-title="col['#{@getId()}'].user.id">[user id test]</span>
+    <span><button dp-click="col['#{@getId()}'].user.setRandomName()">Set random name to user</button></span>
 </li>"""
+        # todo: make this work (setRandomName)
         chatBox.append cue
         @getApp().embraceDomElement cue
         @
