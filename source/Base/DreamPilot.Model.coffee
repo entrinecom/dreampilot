@@ -77,6 +77,9 @@ class DreamPilot.Model
         else
             if value instanceof DreamPilot.Model and @assignChildModels and value.assignModelToParent
                 if @exists(field) and @get(field) instanceof DreamPilot.Model
+                    # todo: solve this. the code below doesn't keep all embraced events and other links
+                    #@kill field
+                    #.set field, value
                     @data[field].set value.get()
                 else
                     @data[field] = value
