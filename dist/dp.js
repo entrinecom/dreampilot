@@ -1855,7 +1855,7 @@ DreamPilot.Model = (function() {
         }
       }
     }
-    if (this.parent) {
+    if (this.parent && this.parent.triggerAction) {
       this.parent.triggerAction(action, result);
     }
     return this;

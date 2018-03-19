@@ -340,7 +340,7 @@ class DreamPilot.Model
             for cbId, cb of @actionCallbacks[action]
                 cb result if not callbackId or cbId is callbackId
         # console.log 'parent trigger', action if @parent
-        @parent.triggerAction action, result if @parent
+        @parent.triggerAction action, result if @parent and @parent.triggerAction
         @
 
     onChange: (fields, callback, callbackId = null) -> @on 'change', fields, callback, callbackId
