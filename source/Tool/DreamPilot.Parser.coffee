@@ -156,7 +156,8 @@ class DreamPilot.Parser
                     when '$event'
                         element.dpEvent
                     else
-                        self.addToLastUsedVariables node.name
+                        # adding to last used variables only when working with the main scope
+                        self.addToLastUsedVariables node.name if Scope.isMainScope and Scope.isMainScope()
                         if scopeSuitableType
                             Scope.get node.name
                         else
