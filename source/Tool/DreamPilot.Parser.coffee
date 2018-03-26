@@ -28,6 +28,7 @@ class DreamPilot.Parser
             '||': (a, b) -> a or b
 
     @lastUsedVariables: []
+    @lastUsedObjects: []
     @lastErrors: []
     @lastScopes: []
 
@@ -139,10 +140,13 @@ class DreamPilot.Parser
                 #console.log '[2]', obj, node, Scope
                 #console.log 'MemberExpression obj', obj, 'property', node.property, 'object', node.object, 'scope', Scope
                 #console.log '[2.2] Collection got', obj if obj instanceof DreamPilot.Collection
-                unless obj instanceof DreamPilot.Model or obj instanceof DreamPilot.Collection
+                if obj instanceof DreamPilot.Model or obj instanceof DreamPilot.Collection
+                    self.addToLastUsedObjects obj, node.property.name if obj instanceof DreamPilot.Model and not obj.isMainScope()
+                else
                     #console.log '[2.5]', obj, node, Scope
                     self.addToLastErrors if obj then self.MEMBER_OBJECT_NOT_A_MODEL else self.MEMBER_OBJECT_IS_UNDEFINED
                     promiseCallback() if promiseCallback
+                    # todo: fields of objects get listed here
                     self.addToLastUsedVariables node.object.name
                     #self.addToLastUsedVariables node.object.name + '.' + node.property.name
                     return null
@@ -200,6 +204,7 @@ class DreamPilot.Parser
     @isExpressionTrue: (expr, App, element = App.getActiveElement(), promiseCallback = null) ->
         try
             self.resetLastUsedVariables()
+            self.resetLastUsedObjects()
             self.resetLastErrors()
             self.resetLastScopes()
             !! self.evalNode jsep(expr), App.getScope(), element, promiseCallback
@@ -213,6 +218,7 @@ class DreamPilot.Parser
             assign: '='
             curlyBracketsNeeded: false
         self.resetLastUsedVariables()
+        self.resetLastUsedObjects()
         self.resetLastErrors()
         self.resetLastScopes()
         element.dpEvent = event
@@ -243,10 +249,22 @@ class DreamPilot.Parser
     @inLastUsedVariables: (key) -> self.lastUsedVariables.indexOf(key) isnt -1
     @getLastUsedVariables: -> self.lastUsedVariables
     @addToLastUsedVariables: (key) -> self.lastUsedVariables.push key if key and not self.inLastUsedVariables key
+    @eachLastUsedVariables: (callback) -> callback field for field in self.lastUsedVariables
+
+    @resetLastUsedObjects: -> self.lastUsedObjects = []
+    @inLastUsedObjects: (object, field) ->
+        for row in self.lastUsedObjects
+            return true if row.object is object and row.field is field
+        false
+    @getLastUsedObjects: -> self.lastUsedObjects
+    @addToLastUsedObjects: (object, field) -> self.lastUsedObjects.push object: object, field: field if object and field and not self.inLastUsedObjects object, field
+    @eachLastUsedObjects: (callback) -> callback row.object, row.field for row in self.lastUsedObjects
+
     @resetLastErrors: -> self.lastErrors = []
     @getLastErrors: -> self.lastErrors
     @hasLastErrors: -> self.lastErrors.length > 0
     @addToLastErrors: (error) -> self.lastErrors.push error
+
     @resetLastScopes: -> self.lastScopes = []
     @getLastScopes: -> self.lastScopes
     @hasLastScopes: -> self.lastScopes.length > 0

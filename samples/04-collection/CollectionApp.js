@@ -73,9 +73,6 @@ CollectionApp = (function(superClass) {
 
   CollectionApp.prototype.chatClick = function(el, event) {
     console.log('chatClick', el, event, this.col.getItems());
-    this.col.map(function(cue) {
-      return cue.setContent(cue.getContent() + '!!!');
-    });
     return this;
   };
 

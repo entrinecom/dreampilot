@@ -44,6 +44,7 @@ class ChatModel extends DreamPilot.Model
     </span>
     <span dp-show="col['#{@getId()}'].user.id" dp-title="col['#{@getId()}'].user.id">[user id test]</span>
     <span><button dp-click="col['#{@getId()}'].user.setRandomName()">Set random name to user</button></span>
+    <span dp-show="col['#{@getId()}'].visible">show on visible</span>
 </li>"""
         chatBox.append cue
         @getApp().embraceDomElement cue

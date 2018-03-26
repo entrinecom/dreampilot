@@ -186,6 +186,7 @@ class DreamPilot.Collection
                 if not callbackId or cbId is callbackId
                     if action is 'change'
                         id = @callbackModelIds[action][cbId]
+                        console.log 'collection on change', id
                         #@get(id).trigger action, '*'
                     else
                         cb @

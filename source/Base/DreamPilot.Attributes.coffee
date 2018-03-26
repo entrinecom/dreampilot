@@ -69,6 +69,10 @@ class DreamPilot.Attributes
                     # console.log expression, 'changed CLASS: ', field, '=', value, ':', cssClass
                     $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el
 
+            $dp.Parser.eachLastUsedObjects (object, field) ->
+                object.onChange field, (field, value) ->
+                    $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el
+
             true
 
         @
@@ -102,9 +106,13 @@ class DreamPilot.Attributes
                 that.showAddPromise expression, el
 
             # setting up watchers
-            for field in $dp.Parser.getLastUsedVariables()
+            $dp.Parser.eachLastUsedVariables (field) ->
                 that.getScope().onChange field, (field, value) ->
                     # console.log 'changed SHOW: ', field, '=', value
+                    $el.toggle $dp.Parser.isExpressionTrue expression, that.getApp(), el
+
+            $dp.Parser.eachLastUsedObjects (object, field) ->
+                object.onChange field, (field, value) ->
                     $el.toggle $dp.Parser.isExpressionTrue expression, that.getApp(), el
 
             true
@@ -162,6 +170,10 @@ class DreamPilot.Attributes
             for field in $dp.Parser.getLastUsedVariables()
                 that.getScope().onChange field, (field, value) ->
                     # console.log 'changed IF: ', field, '=', value, expression
+                    that.toggleElementExistence $el, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression
+
+            $dp.Parser.eachLastUsedObjects (object, field) ->
+                object.onChange field, (field, value) ->
                     that.toggleElementExistence $el, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression
 
             true

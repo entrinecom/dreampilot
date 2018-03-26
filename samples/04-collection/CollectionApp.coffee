@@ -53,7 +53,5 @@ class CollectionApp extends DreamPilot.Application
 
     chatClick: (el, event) ->
         console.log 'chatClick', el, event, @col.getItems()
-        @col.map (cue) ->
-            cue.setContent cue.getContent() + '!!!'
-
+        #@col.map (cue) -> cue.setContent cue.getContent() + '!!!'
         @

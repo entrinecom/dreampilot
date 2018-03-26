@@ -322,6 +322,11 @@ DreamPilot.Attributes = (function() {
           return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp(), el));
         });
       }
+      $dp.Parser.eachLastUsedObjects(function(object, field) {
+        return object.onChange(field, function(field, value) {
+          return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp(), el));
+        });
+      });
       return true;
     });
     return this;
@@ -369,7 +374,7 @@ DreamPilot.Attributes = (function() {
     }
     that = this;
     this.eachByAttr(self.showAttr, $element, function() {
-      var $el, el, expression, field, k, len, ref;
+      var $el, el, expression;
       el = this;
       $el = $dp.e(el);
       expression = $el.attr($dp.attribute(self.showAttr));
@@ -378,13 +383,16 @@ DreamPilot.Attributes = (function() {
           return that.showAddPromise(expression, el);
         };
       })(this)));
-      ref = $dp.Parser.getLastUsedVariables();
-      for (k = 0, len = ref.length; k < len; k++) {
-        field = ref[k];
-        that.getScope().onChange(field, function(field, value) {
+      $dp.Parser.eachLastUsedVariables(function(field) {
+        return that.getScope().onChange(field, function(field, value) {
           return $el.toggle($dp.Parser.isExpressionTrue(expression, that.getApp(), el));
         });
-      }
+      });
+      $dp.Parser.eachLastUsedObjects(function(object, field) {
+        return object.onChange(field, function(field, value) {
+          return $el.toggle($dp.Parser.isExpressionTrue(expression, that.getApp(), el));
+        });
+      });
       return true;
     });
     return this;
@@ -471,6 +479,11 @@ DreamPilot.Attributes = (function() {
           return that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression);
         });
       }
+      $dp.Parser.eachLastUsedObjects(function(object, field) {
+        return object.onChange(field, function(field, value) {
+          return that.toggleElementExistence($el, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression);
+        });
+      });
       return true;
     });
     return this;
@@ -1062,6 +1075,7 @@ DreamPilot.Collection = (function() {
         if (!callbackId || cbId === callbackId) {
           if (action === 'change') {
             id = this.callbackModelIds[action][cbId];
+            console.log('collection on change', id);
           } else {
             cb(this);
           }
@@ -1913,48 +1927,6 @@ DreamPilot.Scope = (function(superClass) {
 
 })(DreamPilot.Model);
 
-DreamPilot.Router = (function() {
-  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
-
-  WORK_MODE_HASH = 1;
-
-  WORK_MODE_URL = 2;
-
-  ELSE_PATH = null;
-
-  Router.prototype.steps = {};
-
-  function Router(App, options) {
-    this.App = App;
-    if (options == null) {
-      options = {};
-    }
-    this.options = $.extend({
-      workMode: WORK_MODE_HASH,
-      attrName: 'data-step'
-    }, options);
-  }
-
-  Router.prototype.when = function(path, opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[path] = opts;
-    return this;
-  };
-
-  Router.prototype["else"] = function(opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[ELSE_PATH] = opts;
-    return this;
-  };
-
-  return Router;
-
-})();
-
 var slice = [].slice,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
@@ -2567,6 +2539,8 @@ DreamPilot.Parser = (function() {
 
   Parser.lastUsedVariables = [];
 
+  Parser.lastUsedObjects = [];
+
   Parser.lastErrors = [];
 
   Parser.lastScopes = [];
@@ -2714,7 +2688,11 @@ DreamPilot.Parser = (function() {
           node.property.name = node.property.value;
         }
         obj = self.evalNode(node.object, Scope, element, promiseCallback);
-        if (!(obj instanceof DreamPilot.Model || obj instanceof DreamPilot.Collection)) {
+        if (obj instanceof DreamPilot.Model || obj instanceof DreamPilot.Collection) {
+          if (obj instanceof DreamPilot.Model && !obj.isMainScope()) {
+            self.addToLastUsedObjects(obj, node.property.name);
+          }
+        } else {
           self.addToLastErrors(obj ? self.MEMBER_OBJECT_NOT_A_MODEL : self.MEMBER_OBJECT_IS_UNDEFINED);
           if (promiseCallback) {
             promiseCallback();
@@ -2816,6 +2794,7 @@ DreamPilot.Parser = (function() {
     }
     try {
       self.resetLastUsedVariables();
+      self.resetLastUsedObjects();
       self.resetLastErrors();
       self.resetLastScopes();
       return !!self.evalNode(jsep(expr), App.getScope(), element, promiseCallback);
@@ -2840,6 +2819,7 @@ DreamPilot.Parser = (function() {
       curlyBracketsNeeded: false
     });
     self.resetLastUsedVariables();
+    self.resetLastUsedObjects();
     self.resetLastErrors();
     self.resetLastScopes();
     element.dpEvent = event;
@@ -2889,6 +2869,57 @@ DreamPilot.Parser = (function() {
     if (key && !self.inLastUsedVariables(key)) {
       return self.lastUsedVariables.push(key);
     }
+  };
+
+  Parser.eachLastUsedVariables = function(callback) {
+    var field, j, len, ref, results;
+    ref = self.lastUsedVariables;
+    results = [];
+    for (j = 0, len = ref.length; j < len; j++) {
+      field = ref[j];
+      results.push(callback(field));
+    }
+    return results;
+  };
+
+  Parser.resetLastUsedObjects = function() {
+    return self.lastUsedObjects = [];
+  };
+
+  Parser.inLastUsedObjects = function(object, field) {
+    var j, len, ref, row;
+    ref = self.lastUsedObjects;
+    for (j = 0, len = ref.length; j < len; j++) {
+      row = ref[j];
+      if (row.object === object && row.field === field) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  Parser.getLastUsedObjects = function() {
+    return self.lastUsedObjects;
+  };
+
+  Parser.addToLastUsedObjects = function(object, field) {
+    if (object && field && !self.inLastUsedObjects(object, field)) {
+      return self.lastUsedObjects.push({
+        object: object,
+        field: field
+      });
+    }
+  };
+
+  Parser.eachLastUsedObjects = function(callback) {
+    var j, len, ref, results, row;
+    ref = self.lastUsedObjects;
+    results = [];
+    for (j = 0, len = ref.length; j < len; j++) {
+      row = ref[j];
+      results.push(callback(row.object, row.field));
+    }
+    return results;
   };
 
   Parser.resetLastErrors = function() {
@@ -3125,3 +3156,45 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
+
+DreamPilot.Router = (function() {
+  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
+
+  WORK_MODE_HASH = 1;
+
+  WORK_MODE_URL = 2;
+
+  ELSE_PATH = null;
+
+  Router.prototype.steps = {};
+
+  function Router(App, options) {
+    this.App = App;
+    if (options == null) {
+      options = {};
+    }
+    this.options = $.extend({
+      workMode: WORK_MODE_HASH,
+      attrName: 'data-step'
+    }, options);
+  }
+
+  Router.prototype.when = function(path, opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[path] = opts;
+    return this;
+  };
+
+  Router.prototype["else"] = function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[ELSE_PATH] = opts;
+    return this;
+  };
+
+  return Router;
+
+})();
