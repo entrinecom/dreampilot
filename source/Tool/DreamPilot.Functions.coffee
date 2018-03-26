@@ -198,7 +198,7 @@ class DreamPilot.Functions
                 if $element.is 'input'
                     switch $element.attr 'type'
                         when 'checkbox'
-                            $element.prop 'checked', !!value
+                            $element.prop 'checked', $dp.fn.bool(value) and value isnt '0'
                         when 'radio'
                             $element.prop 'checked', self.str($element.val()) is self.str(value)
                         else

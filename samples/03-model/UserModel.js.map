@@ -6,5 +6,5 @@
     "UserModel.coffee"
   ],
   "names": [],
-  "mappings": ";AAAA,IAAA,SAAA;EAAA;;;AAAM;;;;;;;;;GAAkB,UAAU,CAAC"
+  "mappings": ";AAAA,IAAA,SAAA;EAAA;;;AAAM;;;;;;;sBACF,UAAA,GAAY,SAAA;WAAG;EAAH;;;;GADQ,UAAU,CAAC"
 }

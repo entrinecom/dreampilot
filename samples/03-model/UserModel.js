@@ -10,6 +10,10 @@ UserModel = (function(superClass) {
     return UserModel.__super__.constructor.apply(this, arguments);
   }
 
+  UserModel.prototype.getSaveUrl = function() {
+    return '/api/user/save';
+  };
+
   return UserModel;
 
 })(DreamPilot.Model);

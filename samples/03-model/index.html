@@ -20,7 +20,7 @@
 
 <form>
 	<input type="hidden" name="id" dp-value-bind="user1.id">
-	<ul data-user1="{&quot;name&quot;:&quot;Voldemarr Hippopotamus&quot;,&quot;email&quot;:&quot;vol@hip.com&quot;,&quot;position&quot;:&quot;CEO&quot;,&quot;phone&quot;:&quot;&quot;,&quot;id&quot;:&quot;1&quot;}">
+	<ul data-user1="{&quot;name&quot;:&quot;Voldemarr Hippopotamus&quot;,&quot;email&quot;:&quot;vol@hip.com&quot;,&quot;position&quot;:&quot;CEO&quot;,&quot;phone&quot;:&quot;&quot;,&quot;id&quot;:&quot;1&quot;,&quot;likes_drifting&quot;:&quot;0&quot;,&quot;drive&quot;:4}">
 		<li dp-class="{voldemarr: user1.name == 'Voldemarr Hippopotamus'}">
 			<div>Name:</div>
 			<input type="text" name="name" dp-value-bind="user1.name">
@@ -54,7 +54,7 @@
 			<input type="radio" name="drive" value="f" id="drive-f" dp-value-bind="user1.drive">
 			<label for="drive-f">Front</label>
 			<input type="radio" name="drive" value="r" id="drive-r" dp-value-bind="user1.drive">
-			<label for="drive-r">Read</label>
+			<label for="drive-r">Rear</label>
 			<input type="radio" name="drive" value="4" id="drive-4" dp-value-bind="user1.drive">
 			<label for="drive-4">4WD</label>
 		</li>
@@ -62,6 +62,9 @@
 			<div>Count in cart:</div>
 			<input type="number" name="count" dp-value-bind="cart['of_user1'].count">
 			<button type="button" dp-click="cart.of_user1.shout('hello', this)">Shout!</button>
+		</li>
+		<li>
+			<button type="button" dp-click="user1.save()">Save</button>
 		</li>
 	</ul>
 

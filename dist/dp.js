@@ -2387,7 +2387,7 @@ DreamPilot.Functions = (function() {
         if ($element.is('input')) {
           switch ($element.attr('type')) {
             case 'checkbox':
-              $element.prop('checked', !!value);
+              $element.prop('checked', $dp.fn.bool(value) && value !== '0');
               break;
             case 'radio':
               $element.prop('checked', self.str($element.val()) === self.str(value));
