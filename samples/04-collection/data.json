@@ -3,24 +3,28 @@
   "chat_cues": [
     {
       "user_id": 1,
+      "visible": 1,
       "content": "wazzup #2",
       "created_at": "2018-01-19 17:59:53",
       "_id": "5a6207e9a069b208bc0063b7"
     },
     {
       "user_id": 2,
+      "visible": 1,
       "content": "come on #2",
       "created_at": "2018-01-19 17:58:29",
       "_id": "5a620795a069b208bc0063b5"
     },
     {
       "user_id": 1,
+      "visible": 0,
       "content": "wazzup #1",
       "created_at": "2018-01-18 17:29:53",
       "_id": "5a6207e9a069b208bc0063b4"
     },
     {
       "user_id": 2,
+      "visible": 1,
       "content": "come on #1",
       "created_at": "2018-01-17 17:23:29",
       "_id": "5a620795a069b208bc0063b3"

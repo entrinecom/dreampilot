@@ -38,6 +38,10 @@ ChatModel = (function(superClass) {
     return this.set('content', content);
   };
 
+  ChatModel.prototype.getVisible = function() {
+    return $dp.fn.bool(this.get('visible'));
+  };
+
   ChatModel.prototype.linkUser = function() {
     this.set({
       user: this.getUser()
@@ -46,7 +50,6 @@ ChatModel = (function(superClass) {
   };
 
   ChatModel.prototype.init = function() {
-    this.set('user', new UserModel);
     return this;
   };
 
@@ -78,7 +81,7 @@ ChatModel = (function(superClass) {
   ChatModel.prototype.displayEmbraced = function() {
     var chatBox, cue;
     chatBox = $dp.e('ul.chat-box-embraced');
-    cue = $dp.e("<li dp-click=\"chatClick(this, $event)\">\n<span dp-value-read-from=\"col['" + (this.getId()) + "'].user.name\"></span> (<span dp-value-read-from=\"col['" + (this.getId()) + "'].created_at\"></span>):\n<span dp-value-read-from=\"col['" + (this.getId()) + "'].content\"></span>\n<span dp-show=\"col['" + (this.getId()) + "'].user.id\" dp-title=\"col['" + (this.getId()) + "'].user.id\">[user id test]</span>\n<span><button dp-click=\"col['" + (this.getId()) + "'].user.setRandomName()\">Set random name to user</button></span>\n</li>");
+    cue = $dp.e("<li dp-click=\"chatClick(this, $event)\">\n<span dp-value-read-from=\"col['" + (this.getId()) + "'].user.name\"></span> (<span dp-value-read-from=\"col['" + (this.getId()) + "'].created_at\"></span>):\n<span dp-value-read-from=\"col['" + (this.getId()) + "'].content\"></span>\n<span>\n    <input type=\"checkbox\" dp-value-bind=\"col['" + (this.getId()) + "'].visible\" id=\"visible-" + (this.getId()) + "\">\n    <label for=\"visible-" + (this.getId()) + "\">Visible</label>\n</span>\n<span dp-show=\"col['" + (this.getId()) + "'].user.id\" dp-title=\"col['" + (this.getId()) + "'].user.id\">[user id test]</span>\n<span><button dp-click=\"col['" + (this.getId()) + "'].user.setRandomName()\">Set random name to user</button></span>\n</li>");
     chatBox.append(cue);
     this.getApp().embraceDomElement(cue);
     return this;

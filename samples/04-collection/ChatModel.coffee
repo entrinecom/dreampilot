@@ -5,12 +5,12 @@ class ChatModel extends DreamPilot.Model
     getCreatedAt: -> @get 'created_at'
     getContent: -> @get 'content'
     setContent: (content) -> @set 'content', content
+    getVisible: -> $dp.fn.bool @get 'visible'
     linkUser: ->
         @set user: @getUser()
         @
 
     init: ->
-        @set 'user', new UserModel
         @
 
     defineBasics: ->
@@ -38,10 +38,13 @@ class ChatModel extends DreamPilot.Model
         cue = $dp.e """<li dp-click="chatClick(this, $event)">
     <span dp-value-read-from="col['#{@getId()}'].user.name"></span> (<span dp-value-read-from="col['#{@getId()}'].created_at"></span>):
     <span dp-value-read-from="col['#{@getId()}'].content"></span>
+    <span>
+        <input type="checkbox" dp-value-bind="col['#{@getId()}'].visible" id="visible-#{@getId()}">
+        <label for="visible-#{@getId()}">Visible</label>
+    </span>
     <span dp-show="col['#{@getId()}'].user.id" dp-title="col['#{@getId()}'].user.id">[user id test]</span>
     <span><button dp-click="col['#{@getId()}'].user.setRandomName()">Set random name to user</button></span>
 </li>"""
-        # todo: make this work (setRandomName)
         chatBox.append cue
         @getApp().embraceDomElement cue
         @
