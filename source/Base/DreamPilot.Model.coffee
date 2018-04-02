@@ -25,6 +25,7 @@ class DreamPilot.Model
         @mainScope = false
         @idField = 'id'
         @idIsInt = true
+        @domElement = null
         @
 
     # override this method in child classes
@@ -44,6 +45,14 @@ class DreamPilot.Model
     setApp: (@App) -> @
     getApp: -> @App
     e: (selector) -> @getApp().e selector
+
+    getDomElement: -> @domElement
+    hasDomElement: -> @getDomElement()?.length?
+    setDomElement: (@domElement) -> @
+    removeDomElement: ->
+        @getDomElement().remove() if @hasDomElement()
+        @domElement = null
+        @
 
     setParent: (@parent, @parentField) ->
         suitableParent = @parent instanceof DreamPilot.Model or @parent instanceof DreamPilot.Collection

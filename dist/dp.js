@@ -1223,6 +1223,7 @@ DreamPilot.Model = (function() {
     this.mainScope = false;
     this.idField = 'id';
     this.idIsInt = true;
+    this.domElement = null;
     return this;
   };
 
@@ -1271,6 +1272,28 @@ DreamPilot.Model = (function() {
 
   Model.prototype.e = function(selector) {
     return this.getApp().e(selector);
+  };
+
+  Model.prototype.getDomElement = function() {
+    return this.domElement;
+  };
+
+  Model.prototype.hasDomElement = function() {
+    var ref;
+    return ((ref = this.getDomElement()) != null ? ref.length : void 0) != null;
+  };
+
+  Model.prototype.setDomElement = function(domElement) {
+    this.domElement = domElement;
+    return this;
+  };
+
+  Model.prototype.removeDomElement = function() {
+    if (this.hasDomElement()) {
+      this.getDomElement().remove();
+    }
+    this.domElement = null;
+    return this;
   };
 
   Model.prototype.setParent = function(parent, parentField) {
