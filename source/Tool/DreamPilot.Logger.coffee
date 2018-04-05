@@ -1,6 +1,5 @@
 class DreamPilot.Logger
-    @print: ->
-        console.log.apply arguments
+    @print: -> console.log.apply console, arguments
 
     @error: (args...) ->
         #console.trace()

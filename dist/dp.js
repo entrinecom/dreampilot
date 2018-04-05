@@ -2511,7 +2511,7 @@ DreamPilot.Logger = (function() {
   function Logger() {}
 
   Logger.print = function() {
-    return console.log.apply(arguments);
+    return console.log.apply(console, arguments);
   };
 
   Logger.error = function() {
