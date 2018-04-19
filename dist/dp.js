@@ -1610,7 +1610,7 @@ DreamPilot.Model = (function() {
       val = this.get(key);
       origVal = this.getOrigData(key);
       if ($dp.fn.isArray(val) && $dp.fn.isArray(origVal)) {
-        if ($dp.fn.arraysEq(val, origVal)) {
+        if (!$dp.fn.arraysEq(val, origVal)) {
           return true;
         }
       } else {

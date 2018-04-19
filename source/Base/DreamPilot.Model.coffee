@@ -204,7 +204,7 @@ class DreamPilot.Model
             val = @get key
             origVal = @getOrigData key
             if $dp.fn.isArray(val) and $dp.fn.isArray(origVal)
-                return true if $dp.fn.arraysEq val, origVal
+                return true unless $dp.fn.arraysEq val, origVal
             else
                 return true if @get(key) isnt @getOrigData(key)
         false
