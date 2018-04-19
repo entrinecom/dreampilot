@@ -201,14 +201,19 @@ class DreamPilot.Model
         else
             keys = [field]
         for key in keys
-            return true if @get(key) isnt @getOrigData(key)
+            val = @get key
+            origVal = @getOrigData key
+            if $dp.fn.isArray(val) and $dp.fn.isArray(origVal)
+                return true if $dp.fn.arraysEq val, origVal
+            else
+                return true if @get(key) isnt @getOrigData(key)
         false
 
     changedFields: (excludeFields = []) ->
         keys = $dp.fn.keys(@data) or $dp.fn.keys(@origData)
         changedKeys = []
         for key in keys
-            changedKeys.push key if @get(key) isnt @getOrigData(key) and key not in excludeFields
+            changedKeys.push key if key not in excludeFields and @changed key
         changedKeys
 
     isMainScope: -> @mainScope

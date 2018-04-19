@@ -129,6 +129,16 @@ class DreamPilot.Functions
 
     @removeFromArrayByValue: (ar, x) -> ar.filter (el) -> el isnt x
 
+    @arraysEq: (ar1, ar2) ->
+        return false if ar1.length isnt ar2.length
+        for idx, v1 of ar1
+            v2 = ar2[idx]
+            if self.isArray(v1) and self.isArray(v2)
+                return false unless self.arraysEq v1, v2
+            else if v1 isnt v2
+                return false
+        true
+
     @lead0: (x, len = 2) ->
         x = self.str x
         x = '0' + x while x.length < len

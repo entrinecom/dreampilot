@@ -1594,7 +1594,7 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.changed = function(field) {
-    var i, key, keys, len;
+    var i, key, keys, len, origVal, val;
     if (field == null) {
       field = null;
     }
@@ -1607,8 +1607,16 @@ DreamPilot.Model = (function() {
     }
     for (i = 0, len = keys.length; i < len; i++) {
       key = keys[i];
-      if (this.get(key) !== this.getOrigData(key)) {
-        return true;
+      val = this.get(key);
+      origVal = this.getOrigData(key);
+      if ($dp.fn.isArray(val) && $dp.fn.isArray(origVal)) {
+        if ($dp.fn.arraysEq(val, origVal)) {
+          return true;
+        }
+      } else {
+        if (this.get(key) !== this.getOrigData(key)) {
+          return true;
+        }
       }
     }
     return false;
@@ -1623,7 +1631,7 @@ DreamPilot.Model = (function() {
     changedKeys = [];
     for (i = 0, len = keys.length; i < len; i++) {
       key = keys[i];
-      if (this.get(key) !== this.getOrigData(key) && indexOf.call(excludeFields, key) < 0) {
+      if (indexOf.call(excludeFields, key) < 0 && this.changed(key)) {
         changedKeys.push(key);
       }
     }
@@ -2282,6 +2290,25 @@ DreamPilot.Functions = (function() {
     return ar.filter(function(el) {
       return el !== x;
     });
+  };
+
+  Functions.arraysEq = function(ar1, ar2) {
+    var idx, v1, v2;
+    if (ar1.length !== ar2.length) {
+      return false;
+    }
+    for (idx in ar1) {
+      v1 = ar1[idx];
+      v2 = ar2[idx];
+      if (self.isArray(v1) && self.isArray(v2)) {
+        if (!self.arraysEq(v1, v2)) {
+          return false;
+        }
+      } else if (v1 !== v2) {
+        return false;
+      }
+    }
+    return true;
   };
 
   Functions.lead0 = function(x, len) {
