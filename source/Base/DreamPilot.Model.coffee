@@ -19,8 +19,11 @@ class DreamPilot.Model
         @callbacks =
             change: {}
         @actionCallbacks =
+            before_save: {}
             save: {}
+            before_fetch: {}
             fetch: {}
+            before_delete: {}
             delete: {}
         @mainScope = false
         @idField = 'id'
@@ -229,6 +232,7 @@ class DreamPilot.Model
         @
 
     save: ->
+        @triggerAction 'before_save'
         $dp.transport.request @getSaveMethod(), @getSaveUrl(), @getSaveData(), (result) =>
             @tryToUpdateId result
             .onSaved result
@@ -266,6 +270,7 @@ class DreamPilot.Model
         null
 
     fetch: ->
+        @triggerAction 'before_fetch'
         $dp.transport.request @getFetchMethod(), @getFetchUrl(), @getFetchData(), (result) =>
             @onFetched result
             @triggerAction 'fetch', result
@@ -283,6 +288,7 @@ class DreamPilot.Model
     getDeleteData: -> null
 
     delete: ->
+        @triggerAction 'before_delete'
         $dp.transport.request @getDeleteMethod(), @getDeleteUrl(), @getDeleteData(), (result) =>
             @onDeleted result
             @triggerAction 'delete', result
@@ -359,6 +365,9 @@ class DreamPilot.Model
 
     onChange: (fields, callback, callbackId = null) -> @on 'change', fields, callback, callbackId
 
+    onBeforeSave: (callback, callbackId = null) -> @onAction 'before_save', callback, callbackId
     onSave: (callback, callbackId = null) -> @onAction 'save', callback, callbackId
+    onBeforeFetch: (callback, callbackId = null) -> @onAction 'before_fetch', callback, callbackId
     onFetch: (callback, callbackId = null) -> @onAction 'fetch', callback, callbackId
+    onBeforeDelete: (callback, callbackId = null) -> @onAction 'before_delete', callback, callbackId
     onDelete: (callback, callbackId = null) -> @onAction 'delete', callback, callbackId

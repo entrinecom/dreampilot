@@ -10,6 +10,7 @@ class DreamPilot.Collection
         @items = []
         @callbacks =
             change: {}
+            before_load: {}
             load: {}
             update: {}
             insert: {}
@@ -136,6 +137,7 @@ class DreamPilot.Collection
     getLoadUrl: -> throw 'Redefine Collection.getLoadUrl() method first'
     getLoadData: -> null
     load: ->
+        @trigger 'before_load'
         $dp.transport.request @getLoadMethod(), @getLoadUrl(), @getLoadData(), (result) =>
             @onLoaded result
         @
@@ -197,6 +199,9 @@ class DreamPilot.Collection
 
     onLoad: (callback, callbackId = null) ->
         @on 'load', callback, callbackId
+
+    onBeforeLoad: (callback, callbackId = null) ->
+        @on 'before_load', callback, callbackId
 
     onInsert: (callback, callbackId = null) ->
         @on 'insert', callback, callbackId

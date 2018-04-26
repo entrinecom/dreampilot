@@ -728,6 +728,7 @@ DreamPilot.Collection = (function() {
     this.items = [];
     this.callbacks = {
       change: {},
+      before_load: {},
       load: {},
       update: {},
       insert: {},
@@ -975,6 +976,7 @@ DreamPilot.Collection = (function() {
   };
 
   Collection.prototype.load = function() {
+    this.trigger('before_load');
     $dp.transport.request(this.getLoadMethod(), this.getLoadUrl(), this.getLoadData(), (function(_this) {
       return function(result) {
         return _this.onLoaded(result);
@@ -1094,6 +1096,13 @@ DreamPilot.Collection = (function() {
       callbackId = null;
     }
     return this.on('load', callback, callbackId);
+  };
+
+  Collection.prototype.onBeforeLoad = function(callback, callbackId) {
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    return this.on('before_load', callback, callbackId);
   };
 
   Collection.prototype.onInsert = function(callback, callbackId) {
@@ -1216,8 +1225,11 @@ DreamPilot.Model = (function() {
       change: {}
     };
     this.actionCallbacks = {
+      before_save: {},
       save: {},
+      before_fetch: {},
       fetch: {},
+      before_delete: {},
       "delete": {}
     };
     this.mainScope = false;
@@ -1666,6 +1678,7 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.save = function() {
+    this.triggerAction('before_save');
     $dp.transport.request(this.getSaveMethod(), this.getSaveUrl(), this.getSaveData(), (function(_this) {
       return function(result) {
         _this.tryToUpdateId(result).onSaved(result);
@@ -1721,6 +1734,7 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype.fetch = function() {
+    this.triggerAction('before_fetch');
     $dp.transport.request(this.getFetchMethod(), this.getFetchUrl(), this.getFetchData(), (function(_this) {
       return function(result) {
         _this.onFetched(result);
@@ -1751,6 +1765,7 @@ DreamPilot.Model = (function() {
   };
 
   Model.prototype["delete"] = function() {
+    this.triggerAction('before_delete');
     $dp.transport.request(this.getDeleteMethod(), this.getDeleteUrl(), this.getDeleteData(), (function(_this) {
       return function(result) {
         _this.onDeleted(result);
@@ -1913,6 +1928,13 @@ DreamPilot.Model = (function() {
     return this.on('change', fields, callback, callbackId);
   };
 
+  Model.prototype.onBeforeSave = function(callback, callbackId) {
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    return this.onAction('before_save', callback, callbackId);
+  };
+
   Model.prototype.onSave = function(callback, callbackId) {
     if (callbackId == null) {
       callbackId = null;
@@ -1920,11 +1942,25 @@ DreamPilot.Model = (function() {
     return this.onAction('save', callback, callbackId);
   };
 
+  Model.prototype.onBeforeFetch = function(callback, callbackId) {
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    return this.onAction('before_fetch', callback, callbackId);
+  };
+
   Model.prototype.onFetch = function(callback, callbackId) {
     if (callbackId == null) {
       callbackId = null;
     }
     return this.onAction('fetch', callback, callbackId);
+  };
+
+  Model.prototype.onBeforeDelete = function(callback, callbackId) {
+    if (callbackId == null) {
+      callbackId = null;
+    }
+    return this.onAction('before_delete', callback, callbackId);
   };
 
   Model.prototype.onDelete = function(callback, callbackId) {
