@@ -19,6 +19,7 @@ BasicApp = (function(superClass) {
   BasicApp.prototype.initVariables = function() {
     this.someModel = new myModel();
     this.someModel.set('message', 'Hello I am a model');
+    this.textModel = new myModel();
     this.mm = new myModel;
     this.mm.set({
       title: 'initial title'
@@ -56,7 +57,7 @@ BasicApp = (function(superClass) {
         return alert('let it out!');
       }
     });
-    this.linkToScope('someMethod', 'mm', 'nn', ['getRequest', 'postRequest', 'putRequest', 'deleteRequest', 'postPayloadRequest', 'putPayloadRequest', 'deletePayloadRequest', 'showVal1', 'showVal2', 'someModel']);
+    this.linkToScope('someMethod', 'mm', 'nn', ['getRequest', 'postRequest', 'putRequest', 'deleteRequest', 'postPayloadRequest', 'putPayloadRequest', 'deletePayloadRequest', 'showVal1', 'showVal2', 'someModel', 'textModel', 'textFill', 'textErase']);
     setTimeout((function(_this) {
       return function() {
         return _this.getScope().set({
@@ -81,6 +82,18 @@ BasicApp = (function(superClass) {
         });
       };
     })(this), 7000);
+    return this;
+  };
+
+  BasicApp.prototype.textFill = function() {
+    this.textModel.set({
+      text: 'test test textarea'
+    });
+    return this;
+  };
+
+  BasicApp.prototype.textErase = function() {
+    this.textModel.kill();
     return this;
   };
 

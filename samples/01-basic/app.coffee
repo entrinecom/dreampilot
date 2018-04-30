@@ -8,6 +8,8 @@ class BasicApp extends DreamPilot.Application
         @someModel = new myModel()
         @someModel.set 'message', 'Hello I am a model'
 
+        @textModel = new myModel()
+
         @mm = new myModel
         @mm.set title: 'initial title'#, show: null
 
@@ -48,6 +50,9 @@ class BasicApp extends DreamPilot.Application
             'showVal1'
             'showVal2'
             'someModel'
+            'textModel'
+            'textFill'
+            'textErase'
         ]
 
         setTimeout =>
@@ -67,6 +72,15 @@ class BasicApp extends DreamPilot.Application
                 lolo: 12
                 pepe: 8
         , 7000
+        @
+
+    textFill: ->
+        @textModel.set
+            text: 'test test textarea'
+        @
+
+    textErase: ->
+        @textModel.kill()
         @
 
     showVal1: ->
