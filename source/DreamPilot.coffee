@@ -28,8 +28,14 @@ class DreamPilot
             $appWrapper = self.e @
             name = $appWrapper.attr self.attribute $dp.Application.appAttr
             throw 'Application can not have an empty name' unless name
-            $dp.log.error "Application '#{name}' has been already created" if apps[name]?
-            apps[name] = $dp.Application.create name, $appWrapper
+            multi = $dp.Application.multipleInstancesAllowed name
+            $dp.log.error "Application '#{name}' has been already created" if apps[name]? and not multi
+            app = $dp.Application.create name, $appWrapper
+            if multi
+                apps[name] = [] unless apps[name]?
+                apps[name].push app
+            else
+                apps[name] = app
         @
 
     getApp: (name) ->

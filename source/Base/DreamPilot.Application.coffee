@@ -3,13 +3,18 @@ class DreamPilot.Application
 
     @appAttr = 'app'
 
+    @allowMultipleInstances: false
+
     @create: (className, $wrapper) ->
         classSource = $dp.fn.stringToFunction className
         return new classSource $wrapper
 
-    activeElement: null
+    @multipleInstancesAllowed: (className) ->
+        classSource = $dp.fn.stringToFunction className
+        $dp.fn.bool classSource.allowMultipleInstances
 
     constructor: (@$wrapper) ->
+        @activeElement = null
         @setupScope()
         .setupAttributes()
         .setupEvents()

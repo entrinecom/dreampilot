@@ -10,6 +10,8 @@ RouterApp = (function(superClass) {
     return RouterApp.__super__.constructor.apply(this, arguments);
   }
 
+  RouterApp.allowMultipleInstances = true;
+
   RouterApp.prototype.Router = null;
 
   RouterApp.prototype.init = function() {

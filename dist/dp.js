@@ -45,16 +45,25 @@ DreamPilot = (function() {
 
   DreamPilot.prototype.setupApps = function() {
     this.e(self.selectorForAttribute($dp.Application.appAttr)).each(function() {
-      var $appWrapper, name;
+      var $appWrapper, app, multi, name;
       $appWrapper = self.e(this);
       name = $appWrapper.attr(self.attribute($dp.Application.appAttr));
       if (!name) {
         throw 'Application can not have an empty name';
       }
-      if (apps[name] != null) {
+      multi = $dp.Application.multipleInstancesAllowed(name);
+      if ((apps[name] != null) && !multi) {
         $dp.log.error("Application '" + name + "' has been already created");
       }
-      return apps[name] = $dp.Application.create(name, $appWrapper);
+      app = $dp.Application.create(name, $appWrapper);
+      if (multi) {
+        if (apps[name] == null) {
+          apps[name] = [];
+        }
+        return apps[name].push(app);
+      } else {
+        return apps[name] = app;
+      }
     });
     return this;
   };
@@ -89,16 +98,23 @@ DreamPilot.Application = (function() {
 
   Application.appAttr = 'app';
 
+  Application.allowMultipleInstances = false;
+
   Application.create = function(className, $wrapper) {
     var classSource;
     classSource = $dp.fn.stringToFunction(className);
     return new classSource($wrapper);
   };
 
-  Application.prototype.activeElement = null;
+  Application.multipleInstancesAllowed = function(className) {
+    var classSource;
+    classSource = $dp.fn.stringToFunction(className);
+    return $dp.fn.bool(classSource.allowMultipleInstances);
+  };
 
   function Application($wrapper1) {
     this.$wrapper = $wrapper1;
+    this.activeElement = null;
     this.setupScope().setupAttributes().setupEvents().init();
   }
 
