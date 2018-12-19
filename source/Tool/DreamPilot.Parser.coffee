@@ -142,6 +142,7 @@ class DreamPilot.Parser
                 #console.log '[2.2] Collection got', obj if obj instanceof DreamPilot.Collection
                 if obj instanceof DreamPilot.Model or obj instanceof DreamPilot.Collection
                     self.addToLastUsedObjects obj, node.property.name if obj instanceof DreamPilot.Model and not obj.isMainScope()
+                    #console.log '[2.3]', self.getLastUsedObjects()
                 else
                     #console.log '[2.5]', obj, node, Scope
                     self.addToLastErrors if obj then self.MEMBER_OBJECT_NOT_A_MODEL else self.MEMBER_OBJECT_IS_UNDEFINED
@@ -204,10 +205,7 @@ class DreamPilot.Parser
 
     @isExpressionTrue: (expr, App, element = App.getActiveElement(), promiseCallback = null) ->
         try
-            self.resetLastUsedVariables()
-            self.resetLastUsedObjects()
-            self.resetLastErrors()
-            self.resetLastScopes()
+            self.resetRecentData()
             !! self.evalNode jsep(expr), App.getScope(), element, promiseCallback
         catch e
             $dp.log.error 'Expression parsing (isExpressionTrue) error ', e, ' Full expression:', expr
@@ -218,10 +216,7 @@ class DreamPilot.Parser
             delimiter: ';'
             assign: '='
             curlyBracketsNeeded: false
-        self.resetLastUsedVariables()
-        self.resetLastUsedObjects()
-        self.resetLastErrors()
-        self.resetLastScopes()
+        self.resetRecentData()
         element.dpEvent = event
         for key, expr of rows
             try
@@ -245,6 +240,12 @@ class DreamPilot.Parser
                 $dp.log.error 'Expression parsing (executeExpressions) error', e, ':', key, expr
                 false
         true
+
+    @resetRecentData: ->
+        self.resetLastUsedVariables()
+        self.resetLastUsedObjects()
+        self.resetLastErrors()
+        self.resetLastScopes()
 
     @resetLastUsedVariables: -> self.lastUsedVariables = []
     @inLastUsedVariables: (key) -> self.lastUsedVariables.indexOf(key) isnt -1

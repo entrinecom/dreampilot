@@ -62,22 +62,23 @@ class DreamPilot.Attributes
 
             # todo: keep parsed expressions as closures connected to elements
             for cssClass, expression of obj
-                $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el, =>
-                    that.classAddPromise cssClass, expression, el
+                do (cssClass, expression) =>
+                    $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el, =>
+                        that.classAddPromise cssClass, expression, el
 
-            #console.log '2) ', $dp.Parser.getLastUsedVariables(), $dp.Parser.getLastUsedObjects()
+                    #console.log '2) ', $dp.Parser.getLastUsedVariables(), $dp.Parser.getLastUsedObjects()
 
-            # setting up watchers
-            for field in $dp.Parser.getLastUsedVariables()
-                that.getScope().onChange field, (field, value) ->
-                    # console.log expression, 'changed CLASS: ', field, '=', value, ':', cssClass
-                    $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el
+                    # setting up watchers
+                    for field in $dp.Parser.getLastUsedVariables()
+                        that.getScope().onChange field, (field, value) ->
+                            #console.log expression, 'changed CLASS: ', field, '=', value, ':', cssClass
+                            $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el
 
-            $dp.Parser.eachLastUsedObjects (object, field) ->
-                #console.log '2) objects: ', object, field
-                object.onChange field, (field, value) ->
-                    # console.log expression, 'changed CLASS #2: ', field, '=', value, ':', cssClass
-                    $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el
+                    $dp.Parser.eachLastUsedObjects (object, field) ->
+                        #console.log '2) objects: ', object, field
+                        object.onChange field, (field, value) ->
+                            #console.log expression, 'changed CLASS #2: ', field, '=', value, ':', cssClass
+                            $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el
 
             true
 

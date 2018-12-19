@@ -80,25 +80,25 @@
 <form>
 	<input type="hidden" name="id" dp-value-bind="user2.id">
 	<ul>
-		<li dp-class="{highlighted: ff.name}">
+		<li dp-class="{highlighted: ff.name, zhopa: 1}">
 			<div>Name:</div>
 			<input type="text" name="name" dp-value-bind="user2.name" dp-focus="onFocus('name')" dp-blur="onBlur('name')">
 		</li>
-		<li>
+		<li dp-class="{highlighted: ff.email, zhopa: 0}">
 			<div>E-mail:</div>
-			<input type="email" name="email" dp-value-bind="user2.email">
+			<input type="email" name="email" dp-value-bind="user2.email" dp-focus="onFocus('email')" dp-blur="onBlur('email')">
 		</li>
-		<li>
+		<li dp-class="{highlighted: ff.position}">
 			<div>Position:</div>
-			<input type="text" name="position" dp-value-bind="user2.position">
+			<input type="text" name="position" dp-value-bind="user2.position" dp-focus="onFocus('position')" dp-blur="onBlur('position')">
 		</li>
-		<li>
+		<li dp-class="{highlighted: ff.phone}">
 			<div>Phone:</div>
-			<input type="text" name="phone" dp-value-bind="user2.phone">
+			<input type="text" name="phone" dp-value-bind="user2.phone" dp-focus="onFocus('phone')" dp-blur="onBlur('phone')">
 		</li>
-		<li>
+		<li dp-class="{highlighted: ff.count}">
 			<div>Count in cart:</div>
-			<input type="number" name="count" dp-value-bind="cart[2].count">
+			<input type="number" name="count" dp-value-bind="cart[2].count" dp-focus="onFocus('count')" dp-blur="onBlur('count')">
 		</li>
 	</ul>
 </form>

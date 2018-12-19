@@ -320,30 +320,34 @@ DreamPilot.Attributes = (function() {
     }
     that = this;
     this.eachByAttr(self.classAttr, $element, function() {
-      var $el, cssClass, el, expression, field, k, len, obj, ref;
+      var $el, cssClass, el, expression, fn, obj;
       el = this;
       $el = $dp.e(el);
       obj = $dp.Parser.object($el.attr($dp.attribute(self.classAttr)));
+      fn = (function(_this) {
+        return function(cssClass, expression) {
+          var field, k, len, ref;
+          $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp(), el, function() {
+            return that.classAddPromise(cssClass, expression, el);
+          }));
+          ref = $dp.Parser.getLastUsedVariables();
+          for (k = 0, len = ref.length; k < len; k++) {
+            field = ref[k];
+            that.getScope().onChange(field, function(field, value) {
+              return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp(), el));
+            });
+          }
+          return $dp.Parser.eachLastUsedObjects(function(object, field) {
+            return object.onChange(field, function(field, value) {
+              return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp(), el));
+            });
+          });
+        };
+      })(this);
       for (cssClass in obj) {
         expression = obj[cssClass];
-        $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp(), el, (function(_this) {
-          return function() {
-            return that.classAddPromise(cssClass, expression, el);
-          };
-        })(this)));
+        fn(cssClass, expression);
       }
-      ref = $dp.Parser.getLastUsedVariables();
-      for (k = 0, len = ref.length; k < len; k++) {
-        field = ref[k];
-        that.getScope().onChange(field, function(field, value) {
-          return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp(), el));
-        });
-      }
-      $dp.Parser.eachLastUsedObjects(function(object, field) {
-        return object.onChange(field, function(field, value) {
-          return $el.toggleClass(cssClass, $dp.Parser.isExpressionTrue(expression, that.getApp(), el));
-        });
-      });
       return true;
     });
     return this;
@@ -2940,10 +2944,7 @@ DreamPilot.Parser = (function() {
       promiseCallback = null;
     }
     try {
-      self.resetLastUsedVariables();
-      self.resetLastUsedObjects();
-      self.resetLastErrors();
-      self.resetLastScopes();
+      self.resetRecentData();
       return !!self.evalNode(jsep(expr), App.getScope(), element, promiseCallback);
     } catch (error1) {
       e = error1;
@@ -2965,10 +2966,7 @@ DreamPilot.Parser = (function() {
       assign: '=',
       curlyBracketsNeeded: false
     });
-    self.resetLastUsedVariables();
-    self.resetLastUsedObjects();
-    self.resetLastErrors();
-    self.resetLastScopes();
+    self.resetRecentData();
     element.dpEvent = event;
     for (key in rows) {
       expr = rows[key];
@@ -2998,6 +2996,13 @@ DreamPilot.Parser = (function() {
       }
     }
     return true;
+  };
+
+  Parser.resetRecentData = function() {
+    self.resetLastUsedVariables();
+    self.resetLastUsedObjects();
+    self.resetLastErrors();
+    return self.resetLastScopes();
   };
 
   Parser.resetLastUsedVariables = function() {
