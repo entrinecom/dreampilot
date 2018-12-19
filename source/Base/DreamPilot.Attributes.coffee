@@ -58,10 +58,14 @@ class DreamPilot.Attributes
             $el = $dp.e el
             obj = $dp.Parser.object $el.attr $dp.attribute self.classAttr
 
+            #console.log '1)', obj
+
             # todo: keep parsed expressions as closures connected to elements
             for cssClass, expression of obj
                 $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el, =>
                     that.classAddPromise cssClass, expression, el
+
+            #console.log '2) ', $dp.Parser.getLastUsedVariables(), $dp.Parser.getLastUsedObjects()
 
             # setting up watchers
             for field in $dp.Parser.getLastUsedVariables()
@@ -70,7 +74,9 @@ class DreamPilot.Attributes
                     $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el
 
             $dp.Parser.eachLastUsedObjects (object, field) ->
+                #console.log '2) objects: ', object, field
                 object.onChange field, (field, value) ->
+                    # console.log expression, 'changed CLASS #2: ', field, '=', value, ':', cssClass
                     $el.toggleClass cssClass, $dp.Parser.isExpressionTrue expression, that.getApp(), el
 
             true
@@ -84,6 +90,7 @@ class DreamPilot.Attributes
             scope: @getScope()
             element: el
             cb: (App, Scopes, vars) =>
+                #console.log 'classAddPromise', Scopes, vars
                 for i in [vars.length - 1..0]
                     for j in [Scopes.length - 1..0]
                         if true #Scopes[j].exists vars[i]

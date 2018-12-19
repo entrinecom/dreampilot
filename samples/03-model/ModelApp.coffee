@@ -3,6 +3,10 @@ class ModelApp extends DreamPilot.Application
         @initModels()
 
     initModels: ->
+        @ff = new DreamPilot.Model
+            name: false
+            email: false
+
         @cart = new CartModel()
         @cart.set
             of_user1: new CartItemModel id: 1, count: 2
@@ -14,7 +18,7 @@ class ModelApp extends DreamPilot.Application
         @user3 = new UserModel @user2
         @user3.set name: 'Lars Ulrich'
 
-        @linkToScope 'user1', 'user2', 'user3', 'cart', 'formSubmit'
+        @linkToScope 'user1', 'user2', 'user3', 'cart', 'formSubmit', 'ff', 'onFocus', 'onBlur'
 
         console.log '(init) user1.name = ', @getScope().get 'user1.name'
 
@@ -25,3 +29,11 @@ class ModelApp extends DreamPilot.Application
     formSubmit: (event) ->
         event.preventDefault()
         alert 'form submitted, login: ' + @getScope().get('formLogin') + ', checkbox: ' + @getScope().get('formCheckBox')
+
+    onFocus: (field) ->
+        @ff.set field, true
+        @
+
+    onBlur: (field) ->
+        @ff.set field, false
+        @

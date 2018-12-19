@@ -32,6 +32,8 @@ class DreamPilot.ScopePromises
                     unless $dp.Parser.hasLastErrors()
                         Scopes = $dp.Parser.getLastScopes()
                         vars = $dp.Parser.getLastUsedVariables()
+                        #objects = $dp.Parser.getLastUsedObjects()
+                        #console.log 'last vars', vars, objects
                         rec.cb rec['app'], Scopes, vars
                         @remove idx
                 else

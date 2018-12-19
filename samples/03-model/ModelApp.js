@@ -15,6 +15,10 @@ ModelApp = (function(superClass) {
   };
 
   ModelApp.prototype.initModels = function() {
+    this.ff = new DreamPilot.Model({
+      name: false,
+      email: false
+    });
     this.cart = new CartModel();
     this.cart.set({
       of_user1: new CartItemModel({
@@ -34,7 +38,7 @@ ModelApp = (function(superClass) {
     this.user3.set({
       name: 'Lars Ulrich'
     });
-    this.linkToScope('user1', 'user2', 'user3', 'cart', 'formSubmit');
+    this.linkToScope('user1', 'user2', 'user3', 'cart', 'formSubmit', 'ff', 'onFocus', 'onBlur');
     console.log('(init) user1.name = ', this.getScope().get('user1.name'));
     this.user1.onChange('*', function(field, value) {
       return console.log('user1.' + field, '=', value);
@@ -45,6 +49,16 @@ ModelApp = (function(superClass) {
   ModelApp.prototype.formSubmit = function(event) {
     event.preventDefault();
     return alert('form submitted, login: ' + this.getScope().get('formLogin') + ', checkbox: ' + this.getScope().get('formCheckBox'));
+  };
+
+  ModelApp.prototype.onFocus = function(field) {
+    this.ff.set(field, true);
+    return this;
+  };
+
+  ModelApp.prototype.onBlur = function(field) {
+    this.ff.set(field, false);
+    return this;
   };
 
   return ModelApp;

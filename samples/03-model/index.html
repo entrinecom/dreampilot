@@ -80,9 +80,9 @@
 <form>
 	<input type="hidden" name="id" dp-value-bind="user2.id">
 	<ul>
-		<li>
+		<li dp-class="{highlighted: ff.name}">
 			<div>Name:</div>
-			<input type="text" name="name" dp-value-bind="user2.name">
+			<input type="text" name="name" dp-value-bind="user2.name" dp-focus="onFocus('name')" dp-blur="onBlur('name')">
 		</li>
 		<li>
 			<div>E-mail:</div>
@@ -138,7 +138,7 @@
 </form>
 
 <script type="text/javascript" src="../../bower_components/jquery/dist/jquery.min.js"></script>
-<script type="text/javascript" src="../../bower_components/jsep/build/jsep.min.js"></script>
+<script type="text/javascript" src="../../bower_components/jsep/src/jsep.js"></script>
 <script type="text/javascript" src="../../dist/dp.js"></script>
 <script type="text/javascript" src="UserModel.js"></script>
 <script type="text/javascript" src="CartModel.js"></script>

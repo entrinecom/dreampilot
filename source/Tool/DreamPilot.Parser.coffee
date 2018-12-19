@@ -148,7 +148,7 @@ class DreamPilot.Parser
                     promiseCallback() if promiseCallback
                     # todo: fields of objects get listed here
                     self.addToLastUsedVariables node.object.name
-                    #self.addToLastUsedVariables node.object.name + '.' + node.property.name
+                    #self.addToLastUsedVariables [node.object.name, node.property.name]
                     return null
                 self.evalNode node.property, obj, element, promiseCallback
             when 'Identifier'

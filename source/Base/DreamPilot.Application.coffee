@@ -16,9 +16,9 @@ class DreamPilot.Application
     constructor: (@$wrapper) ->
         @activeElement = null
         @setupScope()
-        .setupAttributes()
-        .setupEvents()
         .init()
+        @setupAttributes()
+        .setupEvents()
 
     # override this method in child classes
     init: -> @
