@@ -10,7 +10,7 @@ DreamPilot = (function() {
   function DreamPilot() {
     jQuery((function(_this) {
       return function() {
-        return _this.checkDependencies().setupApps();
+        return _this.checkDependencies().setupJsep().setupApps();
       };
     })(this));
   }
@@ -40,6 +40,12 @@ DreamPilot = (function() {
     if (typeof jsep === 'undefined') {
       throw 'jsep needed';
     }
+    return this;
+  };
+
+  DreamPilot.prototype.setupJsep = function() {
+    jsep.addBinaryOp('in', 11);
+    jsep.addBinaryOp('not in', 11);
     return this;
   };
 
@@ -406,6 +412,7 @@ DreamPilot.Attributes = (function() {
       })(this)));
       $dp.Parser.eachLastUsedVariables(function(field) {
         return that.getScope().onChange(field, function(field, value) {
+          console.log('changed SHOW: ', field, '=', value);
           return $el.toggle($dp.Parser.isExpressionTrue(expression, that.getApp(), el));
         });
       });
@@ -2663,6 +2670,12 @@ DreamPilot.Parser = (function() {
       },
       '!=': function(a, b) {
         return a != b;
+      },
+      'in': function(a, b) {
+        return indexOf.call(b, a) >= 0;
+      },
+      'not in': function(a, b) {
+        return indexOf.call(b, a) < 0;
       }
     },
     unary: {
@@ -2876,6 +2889,12 @@ DreamPilot.Parser = (function() {
           return null;
         }
         break;
+      case 'ArrayExpression':
+        return node.elements.map((function(_this) {
+          return function(el) {
+            return self.evalNode(el, Scope, element, promiseCallback);
+          };
+        })(this));
       case 'ThisExpression':
         return element;
       default:

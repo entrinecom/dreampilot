@@ -58,6 +58,13 @@
 			<input type="radio" name="drive" value="4" id="drive-4" dp-value-bind="user1.drive">
 			<label for="drive-4">4WD</label>
 		</li>
+        <li dp-class="{rear: user1.drive == 'r', four: user1.drive == '4'}">Drive is <span dp-value-read-from="user1.drive"></span></li>
+		<li dp-show="user1.drive in ['r','4']">
+			this is shown only for Rear and 4WD
+		</li>
+        <li dp-show="user1.drive not in ['r','4']">
+            this is shown only not for Rear and 4WD
+        </li>
 		<li>
 			<div>Count in cart:</div>
 			<input type="number" name="count" dp-value-bind="cart['of_user1'].count">
@@ -118,7 +125,7 @@
 		</li>
 		<li>
 			<div>Position:</div>
-			<input type="text" name="position" dp-value-bind="user3.position">
+			<textarea name="position" dp-value-bind="user3.position"></textarea>
 		</li>
 		<li>
 			<div>Phone:</div>
@@ -129,6 +136,7 @@
 			<input type="number" name="count" dp-value-bind="cart[3].count">
 		</li>
 	</ul>
+	<button type="button" dp-click="reset3()">Reset form</button>
 </form>
 
 <form dp-submit="formSubmit($event)">

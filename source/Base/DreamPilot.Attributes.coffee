@@ -116,7 +116,7 @@ class DreamPilot.Attributes
             # setting up watchers
             $dp.Parser.eachLastUsedVariables (field) ->
                 that.getScope().onChange field, (field, value) ->
-                    # console.log 'changed SHOW: ', field, '=', value
+                    console.log 'changed SHOW: ', field, '=', value
                     $el.toggle $dp.Parser.isExpressionTrue expression, that.getApp(), el
 
             $dp.Parser.eachLastUsedObjects (object, field) ->

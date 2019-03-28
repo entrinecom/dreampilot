@@ -19,6 +19,8 @@ class DreamPilot.Parser
             '===': (a, b) -> a is b
             '!==': (a, b) -> a isnt b
             '!=': (a, b) -> `a != b`
+            'in': (a, b) -> a in b
+            'not in': (a, b) -> a not in b
         unary:
             '-': (a) -> -a
             '+': (a) -> -a
@@ -167,6 +169,8 @@ class DreamPilot.Parser
             when 'Literal'
                 #if Scope then Scope.get(node.value) or node.value else null
                 if Scope then node.value else null
+            when 'ArrayExpression'
+                node.elements.map (el) => self.evalNode el, Scope, element, promiseCallback
             when 'ThisExpression' then element
             else throw 'Unknown node type ' + node.type
 

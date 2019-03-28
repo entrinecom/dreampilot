@@ -18,12 +18,16 @@ class ModelApp extends DreamPilot.Application
         @user3 = new UserModel @user2
         @user3.set name: 'Lars Ulrich'
 
-        @linkToScope 'user1', 'user2', 'user3', 'cart', 'formSubmit', 'ff', 'onFocus', 'onBlur'
+        @linkToScope 'user1', 'user2', 'user3', 'cart', 'formSubmit', 'ff', 'onFocus', 'onBlur', 'reset3'
 
         console.log '(init) user1.name = ', @getScope().get 'user1.name'
 
         @user1.onChange '*', (field, value) ->
             console.log 'user1.' + field, '=', value
+        @
+
+    reset3: ->
+        @user3.kill()
         @
 
     formSubmit: (event) ->

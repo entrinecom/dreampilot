@@ -21,6 +21,6 @@
   ],
   "dependencies": {
     "jquery": "^3.2.1",
-    "jsep": "^0.3.2"
+    "jsep": "^0.3.4"
   }
 }

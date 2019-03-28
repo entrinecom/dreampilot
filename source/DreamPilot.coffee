@@ -5,6 +5,7 @@ class DreamPilot
     constructor: ->
         jQuery =>
             @checkDependencies()
+            .setupJsep()
             .setupApps()
 
     @prefix: 'dp-'
@@ -21,6 +22,11 @@ class DreamPilot
     checkDependencies: ->
         throw 'jQuery needed' if typeof jQuery is 'undefined'
         throw 'jsep needed' if typeof jsep is 'undefined'
+        @
+
+    setupJsep: ->
+        jsep.addBinaryOp 'in', 11
+        jsep.addBinaryOp 'not in', 11
         @
 
     setupApps: ->

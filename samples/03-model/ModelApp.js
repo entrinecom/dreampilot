@@ -38,11 +38,16 @@ ModelApp = (function(superClass) {
     this.user3.set({
       name: 'Lars Ulrich'
     });
-    this.linkToScope('user1', 'user2', 'user3', 'cart', 'formSubmit', 'ff', 'onFocus', 'onBlur');
+    this.linkToScope('user1', 'user2', 'user3', 'cart', 'formSubmit', 'ff', 'onFocus', 'onBlur', 'reset3');
     console.log('(init) user1.name = ', this.getScope().get('user1.name'));
     this.user1.onChange('*', function(field, value) {
       return console.log('user1.' + field, '=', value);
     });
+    return this;
+  };
+
+  ModelApp.prototype.reset3 = function() {
+    this.user3.kill();
     return this;
   };
 
