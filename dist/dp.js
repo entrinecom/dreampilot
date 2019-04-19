@@ -412,7 +412,6 @@ DreamPilot.Attributes = (function() {
       })(this)));
       $dp.Parser.eachLastUsedVariables(function(field) {
         return that.getScope().onChange(field, function(field, value) {
-          console.log('changed SHOW: ', field, '=', value);
           return $el.toggle($dp.Parser.isExpressionTrue(expression, that.getApp(), el));
         });
       });
