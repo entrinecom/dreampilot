@@ -276,7 +276,7 @@ DreamPilot.Attributes = (function() {
 
   Attributes.simpleAttributes = [self.hrefAttr, self.srcAttr, self.altAttr, self.titleAttr];
 
-  Attributes.disappearingAttributes = [self.disabledAttr, self.readOnlyAttr];
+  Attributes.stateAttributes = [self.disabledAttr, self.readOnlyAttr];
 
   Attributes.prototype.ScopePromises = null;
 
@@ -294,7 +294,7 @@ DreamPilot.Attributes = (function() {
     if ($element == null) {
       $element = null;
     }
-    return this.setupInitAttribute($element).setupClassAttribute($element).setupShowAttribute($element).setupIfAttribute($element).setupValueBindAttribute($element).setupValueWriteToAttribute($element).setupValueReadFromAttribute($element).setupSimpleAttributes($element).setupDisappearingAttributes($element);
+    return this.setupInitAttribute($element).setupClassAttribute($element).setupShowAttribute($element).setupIfAttribute($element).setupValueBindAttribute($element).setupValueWriteToAttribute($element).setupValueReadFromAttribute($element).setupSimpleAttributes($element).setupStateAttributes($element);
   };
 
   Attributes.prototype.getApp = function() {
@@ -485,6 +485,17 @@ DreamPilot.Attributes = (function() {
       }
     } else {
       $element.after(this.getReplacerFor($element, expression)).detach();
+    }
+    return this;
+  };
+
+  Attributes.prototype.toggleAttribute = function($element, attribute, state, expression) {
+    if (state) {
+      if ($element.attr(attribute) !== state) {
+        $element.attr(attribute, state);
+      }
+    } else {
+      $element.removeAttr(attribute);
     }
     return this;
   };
@@ -717,13 +728,37 @@ DreamPilot.Attributes = (function() {
     return this;
   };
 
-  Attributes.prototype.setupDisappearingAttributes = function($element) {
+  Attributes.prototype.setupStateAttributes = function($element) {
     var that;
     if ($element == null) {
       $element = null;
     }
     that = this;
-    jQuery.each(self.disappearingAttributes, (function(_this) {
+    jQuery.each(self.stateAttributes, (function(_this) {
+      return function(idx, attrName) {
+        return _this.eachByAttr(attrName, $element, function() {
+          var $el, el, expression, field, k, len, ref, state;
+          el = this;
+          $el = $dp.e(el);
+          expression = $el.attr($dp.attribute(attrName));
+          state = $dp.Parser.isExpressionTrue(expression, that.getApp(), el);
+          ref = $dp.Parser.getLastUsedVariables();
+          for (k = 0, len = ref.length; k < len; k++) {
+            field = ref[k];
+            that.getScope().onChange(field, function(field, value) {
+              return that.toggleAttribute($el, attrName, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression);
+            });
+          }
+          $dp.Parser.eachLastUsedObjects(function(object, field) {
+            return object.onChange(field, function(field, value) {
+              return that.toggleAttribute($el, attrName, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression);
+            });
+          });
+          return true;
+        });
+      };
+    })(this));
+    jQuery.each(self.stateAttributes, (function(_this) {
       return function(idx, attrName) {
         return _this.eachByAttr(attrName, $element, function() {
           var $el, Scope, expr, field;
@@ -756,12 +791,12 @@ DreamPilot.Attributes = (function() {
     return false;
   };
 
-  Attributes.bindAttribute = function(attribute, field, $el, Scope, disappearing) {
-    if (disappearing == null) {
-      disappearing = false;
+  Attributes.bindAttribute = function(attribute, field, $el, Scope, isStateAttribute) {
+    if (isStateAttribute == null) {
+      isStateAttribute = false;
     }
     Scope.onChange(field, function(field, value) {
-      if (disappearing && !value) {
+      if (isStateAttribute && !value) {
         return $el.removeAttr(attribute);
       } else {
         if ($el.attr(attribute) !== value) {
@@ -769,7 +804,7 @@ DreamPilot.Attributes = (function() {
         }
       }
     });
-    if (disappearing || Scope.get(field)) {
+    if (isStateAttribute || Scope.get(field)) {
       Scope.trigger('change', field);
     }
     return true;

@@ -21,7 +21,7 @@ class DreamPilot.Attributes
         self.altAttr
         self.titleAttr
     ]
-    @disappearingAttributes = [
+    @stateAttributes = [
         self.disabledAttr
         self.readOnlyAttr
     ]
@@ -45,7 +45,7 @@ class DreamPilot.Attributes
         .setupValueWriteToAttribute $element
         .setupValueReadFromAttribute $element
         .setupSimpleAttributes $element
-        .setupDisappearingAttributes $element
+        .setupStateAttributes $element
 
     getApp: -> @App
     getScope: -> @getApp().getScope()
@@ -168,6 +168,13 @@ class DreamPilot.Attributes
             $element
             .after @getReplacerFor $element, expression
             .detach()
+        @
+
+    toggleAttribute: ($element, attribute, state, expression) ->
+        if state
+            $element.attr attribute, state if $element.attr(attribute) isnt state
+        else
+            $element.removeAttr attribute
         @
 
     setupIfAttribute: ($element = null) ->
@@ -299,9 +306,28 @@ class DreamPilot.Attributes
                 self.bindAttribute attrName, field, $el, Scope
         @
 
-    setupDisappearingAttributes: ($element = null) ->
+    setupStateAttributes: ($element = null) ->
         that = @
-        jQuery.each self.disappearingAttributes, (idx, attrName) =>
+
+        jQuery.each self.stateAttributes, (idx, attrName) =>
+            @eachByAttr attrName, $element, ->
+                el = @
+                $el = $dp.e el
+                expression = $el.attr $dp.attribute attrName
+                state = $dp.Parser.isExpressionTrue(expression, that.getApp(), el)
+
+                # setting up watchers
+                for field in $dp.Parser.getLastUsedVariables()
+                    that.getScope().onChange field, (field, value) ->
+                        that.toggleAttribute $el, attrName, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression
+
+                $dp.Parser.eachLastUsedObjects (object, field) ->
+                    object.onChange field, (field, value) ->
+                        that.toggleAttribute $el, attrName, $dp.Parser.isExpressionTrue(expression, that.getApp(), el), expression
+
+                true
+
+        jQuery.each self.stateAttributes, (idx, attrName) =>
             @eachByAttr attrName, $element, ->
                 $el = $dp.e @
                 expr = $el.attr $dp.attribute attrName
@@ -322,11 +348,11 @@ class DreamPilot.Attributes
             return true
         false
 
-    @bindAttribute: (attribute, field, $el, Scope, disappearing = false) ->
+    @bindAttribute: (attribute, field, $el, Scope, isStateAttribute = false) ->
         Scope.onChange field, (field, value) ->
-            if disappearing and not value
+            if isStateAttribute and not value
                 $el.removeAttr attribute
             else
                 $el.attr attribute, value if $el.attr(attribute) isnt value
-        Scope.trigger 'change', field if disappearing or Scope.get field
+        Scope.trigger 'change', field if isStateAttribute or Scope.get field
         true

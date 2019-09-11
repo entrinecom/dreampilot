@@ -105,11 +105,11 @@
 </div>
 -->
 
-<div dp-init="btnDisabled = false">
-	<button dp-click="btnDisabled = false">Enable it</button>
-	<button dp-click="btnDisabled = true">Disable it</button>
-	<button dp-disabled="btnDisabled">Hey, am I enabled?</button>
-	<span dp-value-read-from="btnDisabled"></span>
+<div>
+	<button dp-click="nn.btnEnabled = true">Enable it</button>
+	<button dp-click="nn.btnEnabled = false">Disable it</button>
+	<button dp-disabled="!nn.btnEnabled">Hey, am I enabled?</button>
+	<span dp-value-read-from="nn.btnEnabled"></span>
 </div>
 
 <div style="margin-top: 20px;">
