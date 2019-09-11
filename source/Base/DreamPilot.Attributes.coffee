@@ -9,6 +9,8 @@ class DreamPilot.Attributes
     @srcAttr = 'src'
     @altAttr = 'alt'
     @titleAttr = 'title'
+    @disabledAttr = 'disabled'
+    @readOnlyAttr = 'readonly'
     @valueWriteToAttr = 'value-write-to'
     @valueReadFromAttr = 'value-read-from'
     @valueBindAttr = 'value-bind'
@@ -18,6 +20,10 @@ class DreamPilot.Attributes
         self.srcAttr
         self.altAttr
         self.titleAttr
+    ]
+    @disappearingAttributes = [
+        self.disabledAttr
+        self.readOnlyAttr
     ]
 
     ScopePromises: null
@@ -39,6 +45,7 @@ class DreamPilot.Attributes
         .setupValueWriteToAttribute $element
         .setupValueReadFromAttribute $element
         .setupSimpleAttributes $element
+        .setupDisappearingAttributes $element
 
     getApp: -> @App
     getScope: -> @getApp().getScope()
@@ -292,6 +299,18 @@ class DreamPilot.Attributes
                 self.bindAttribute attrName, field, $el, Scope
         @
 
+    setupDisappearingAttributes: ($element = null) ->
+        that = @
+        jQuery.each self.disappearingAttributes, (idx, attrName) =>
+            @eachByAttr attrName, $element, ->
+                $el = $dp.e @
+                expr = $el.attr $dp.attribute attrName
+                Scope = $dp.Parser.getScopeOf expr, that.getScope()
+                field = $dp.Parser.getPropertyOfExpression expr
+                return true if self.bindAttributeCheckScope attrName, expr, $el, Scope, that
+                self.bindAttribute attrName, field, $el, Scope, true
+        @
+
     @bindAttributeCheckScope: (attrName, field, $el, Scope, that) ->
         if Scope is null
             that.ScopePromises.add
@@ -300,12 +319,14 @@ class DreamPilot.Attributes
                 cb: (_scope) ->
                     field = $dp.Parser.getPropertyOfExpression field
                     self.bindAttribute attrName, field, $el, _scope
-
             return true
         false
 
-    @bindAttribute: (attribute, field, $el, Scope) ->
+    @bindAttribute: (attribute, field, $el, Scope, disappearing = false) ->
         Scope.onChange field, (field, value) ->
-            $el.attr attribute, value if $el.attr(attribute) isnt value
-        Scope.trigger 'change', field if Scope.get field
+            if disappearing and not value
+                $el.removeAttr attribute
+            else
+                $el.attr attribute, value if $el.attr(attribute) isnt value
+        Scope.trigger 'change', field if disappearing or Scope.get field
         true

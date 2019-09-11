@@ -105,6 +105,13 @@
 </div>
 -->
 
+<div dp-init="btnDisabled = false">
+	<button dp-click="btnDisabled = false">Enable it</button>
+	<button dp-click="btnDisabled = true">Disable it</button>
+	<button dp-disabled="btnDisabled">Hey, am I enabled?</button>
+	<span dp-value-read-from="btnDisabled"></span>
+</div>
+
 <div style="margin-top: 20px;">
 	<span dp-show="nn.f1.id" dp-value-read-from="nn.f1.id"></span>
 	<span dp-show="nn.f1.id" dp-value-read-from="nn.f2.id"></span>
@@ -129,7 +136,7 @@
 </div>
 
 <script type="text/javascript" src="../../bower_components/jquery/dist/jquery.min.js"></script>
-<script type="text/javascript" src="../../bower_components/jsep/build/jsep.min.js"></script>
+<script type="text/javascript" src="../../bower_components/jsep/src/jsep.js"></script>
 <script type="text/javascript" src="../../dist/dp.js"></script>
 <script type="text/javascript" src="myModel.js"></script>
 <script type="text/javascript" src="app.js"></script>

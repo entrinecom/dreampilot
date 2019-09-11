@@ -264,6 +264,10 @@ DreamPilot.Attributes = (function() {
 
   Attributes.titleAttr = 'title';
 
+  Attributes.disabledAttr = 'disabled';
+
+  Attributes.readOnlyAttr = 'readonly';
+
   Attributes.valueWriteToAttr = 'value-write-to';
 
   Attributes.valueReadFromAttr = 'value-read-from';
@@ -271,6 +275,8 @@ DreamPilot.Attributes = (function() {
   Attributes.valueBindAttr = 'value-bind';
 
   Attributes.simpleAttributes = [self.hrefAttr, self.srcAttr, self.altAttr, self.titleAttr];
+
+  Attributes.disappearingAttributes = [self.disabledAttr, self.readOnlyAttr];
 
   Attributes.prototype.ScopePromises = null;
 
@@ -288,7 +294,7 @@ DreamPilot.Attributes = (function() {
     if ($element == null) {
       $element = null;
     }
-    return this.setupInitAttribute($element).setupClassAttribute($element).setupShowAttribute($element).setupIfAttribute($element).setupValueBindAttribute($element).setupValueWriteToAttribute($element).setupValueReadFromAttribute($element).setupSimpleAttributes($element);
+    return this.setupInitAttribute($element).setupClassAttribute($element).setupShowAttribute($element).setupIfAttribute($element).setupValueBindAttribute($element).setupValueWriteToAttribute($element).setupValueReadFromAttribute($element).setupSimpleAttributes($element).setupDisappearingAttributes($element);
   };
 
   Attributes.prototype.getApp = function() {
@@ -711,6 +717,30 @@ DreamPilot.Attributes = (function() {
     return this;
   };
 
+  Attributes.prototype.setupDisappearingAttributes = function($element) {
+    var that;
+    if ($element == null) {
+      $element = null;
+    }
+    that = this;
+    jQuery.each(self.disappearingAttributes, (function(_this) {
+      return function(idx, attrName) {
+        return _this.eachByAttr(attrName, $element, function() {
+          var $el, Scope, expr, field;
+          $el = $dp.e(this);
+          expr = $el.attr($dp.attribute(attrName));
+          Scope = $dp.Parser.getScopeOf(expr, that.getScope());
+          field = $dp.Parser.getPropertyOfExpression(expr);
+          if (self.bindAttributeCheckScope(attrName, expr, $el, Scope, that)) {
+            return true;
+          }
+          return self.bindAttribute(attrName, field, $el, Scope, true);
+        });
+      };
+    })(this));
+    return this;
+  };
+
   Attributes.bindAttributeCheckScope = function(attrName, field, $el, Scope, that) {
     if (Scope === null) {
       that.ScopePromises.add({
@@ -726,13 +756,20 @@ DreamPilot.Attributes = (function() {
     return false;
   };
 
-  Attributes.bindAttribute = function(attribute, field, $el, Scope) {
+  Attributes.bindAttribute = function(attribute, field, $el, Scope, disappearing) {
+    if (disappearing == null) {
+      disappearing = false;
+    }
     Scope.onChange(field, function(field, value) {
-      if ($el.attr(attribute) !== value) {
-        return $el.attr(attribute, value);
+      if (disappearing && !value) {
+        return $el.removeAttr(attribute);
+      } else {
+        if ($el.attr(attribute) !== value) {
+          return $el.attr(attribute, value);
+        }
       }
     });
-    if (Scope.get(field)) {
+    if (disappearing || Scope.get(field)) {
       Scope.trigger('change', field);
     }
     return true;
