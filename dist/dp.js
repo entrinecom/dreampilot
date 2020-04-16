@@ -2093,48 +2093,6 @@ DreamPilot.Scope = (function(superClass) {
 
 })(DreamPilot.Model);
 
-DreamPilot.Router = (function() {
-  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
-
-  WORK_MODE_HASH = 1;
-
-  WORK_MODE_URL = 2;
-
-  ELSE_PATH = null;
-
-  Router.prototype.steps = {};
-
-  function Router(App, options) {
-    this.App = App;
-    if (options == null) {
-      options = {};
-    }
-    this.options = $.extend({
-      workMode: WORK_MODE_HASH,
-      attrName: 'data-step'
-    }, options);
-  }
-
-  Router.prototype.when = function(path, opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[path] = opts;
-    return this;
-  };
-
-  Router.prototype["else"] = function(opts) {
-    if (opts == null) {
-      opts = {};
-    }
-    this.steps[ELSE_PATH] = opts;
-    return this;
-  };
-
-  return Router;
-
-})();
-
 var slice = [].slice,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
@@ -2265,10 +2223,13 @@ DreamPilot.Functions = (function() {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
-  Functions.formatFloat = function(num, afterDot) {
+  Functions.formatFloat = function(num, afterDot, method) {
     var a, d;
+    if (method == null) {
+      method = 'round';
+    }
     d = Math.pow(10, afterDot);
-    num = Math.round(num * d) / d;
+    num = Math[method](num * d) / d;
     a = num.toString().split('.');
     a[1] = a[1] || '';
     while (a[1].length < afterDot) {
@@ -2308,17 +2269,20 @@ DreamPilot.Functions = (function() {
     });
   };
 
-  Functions.round = function(number, precision) {
+  Functions.round = function(number, precision, method) {
     var factor, roundedTempNumber, tempNumber;
     if (precision == null) {
       precision = 0;
     }
+    if (method == null) {
+      method = 'round';
+    }
     if (!precision) {
-      return Math.round(number);
+      return Math[method](number);
     }
     factor = Math.pow(10, precision);
     tempNumber = number * factor;
-    roundedTempNumber = Math.round(tempNumber);
+    roundedTempNumber = Math[method](tempNumber);
     return roundedTempNumber / factor;
   };
 
@@ -3398,3 +3362,45 @@ DreamPilot.Transport = (function() {
 if ($dp) {
   $dp.transport = DreamPilot.Transport;
 }
+
+DreamPilot.Router = (function() {
+  var ELSE_PATH, WORK_MODE_HASH, WORK_MODE_URL;
+
+  WORK_MODE_HASH = 1;
+
+  WORK_MODE_URL = 2;
+
+  ELSE_PATH = null;
+
+  Router.prototype.steps = {};
+
+  function Router(App, options) {
+    this.App = App;
+    if (options == null) {
+      options = {};
+    }
+    this.options = $.extend({
+      workMode: WORK_MODE_HASH,
+      attrName: 'data-step'
+    }, options);
+  }
+
+  Router.prototype.when = function(path, opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[path] = opts;
+    return this;
+  };
+
+  Router.prototype["else"] = function(opts) {
+    if (opts == null) {
+      opts = {};
+    }
+    this.steps[ELSE_PATH] = opts;
+    return this;
+  };
+
+  return Router;
+
+})();

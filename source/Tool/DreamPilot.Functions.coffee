@@ -44,9 +44,10 @@ class DreamPilot.Functions
 
     @randomInt: (min, max) -> Math.floor(Math.random() * (max - min + 1)) + min
 
-    @formatFloat: (num, afterDot) ->
+    # method can be: round/ceil/floor
+    @formatFloat: (num, afterDot, method = 'round') ->
         d = Math.pow 10, afterDot
-        num = Math.round(num * d) / d;
+        num = Math[method](num * d) / d;
         a = num.toString().split '.'
         a[1] = a[1] or ''
         a[1] += '0' while a[1].length < afterDot
@@ -68,11 +69,12 @@ class DreamPilot.Functions
         input.replace(commentsAndPhpTags, '').replace tags, ($0, $1) ->
             if allowed.indexOf('<' + $1.toLowerCase() + '>') > -1 then $0 else ''
 
-    @round: (number, precision = 0) ->
-        return Math.round number unless precision
+    # method can be: round/ceil/floor
+    @round: (number, precision = 0, method = 'round') ->
+        return Math[method] number unless precision
         factor = Math.pow 10, precision
         tempNumber = number * factor
-        roundedTempNumber = Math.round tempNumber
+        roundedTempNumber = Math[method] tempNumber
         roundedTempNumber / factor
 
     # Array functions
