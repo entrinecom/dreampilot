@@ -11,6 +11,7 @@ class DreamPilot.Attributes
     @titleAttr = 'title'
     @disabledAttr = 'disabled'
     @readOnlyAttr = 'readonly'
+    @requiredAttr = 'required'
     @valueWriteToAttr = 'value-write-to'
     @valueReadFromAttr = 'value-read-from'
     @valueBindAttr = 'value-bind'
@@ -24,6 +25,7 @@ class DreamPilot.Attributes
     @stateAttributes = [
         self.disabledAttr
         self.readOnlyAttr
+        self.requiredAttr
     ]
 
     ScopePromises: null
