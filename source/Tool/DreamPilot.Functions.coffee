@@ -191,7 +191,7 @@ class DreamPilot.Functions
     @fileExt: (fn) -> fn.split('.').pop()
 
     @getValueOfElement: ($element) ->
-        if $element.is 'input'
+        if $element.is 'input,select,button'
             switch $element.attr 'type'
                 when 'checkbox'
                     val = $element.val()

@@ -2562,7 +2562,7 @@ DreamPilot.Functions = (function() {
 
   Functions.getValueOfElement = function($element) {
     var val;
-    if ($element.is('input')) {
+    if ($element.is('input,select,button')) {
       switch ($element.attr('type')) {
         case 'checkbox':
           val = $element.val();
