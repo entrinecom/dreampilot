@@ -17,6 +17,7 @@ BasicApp = (function(superClass) {
   };
 
   BasicApp.prototype.initVariables = function() {
+    var cb, toggleBBB;
     this.someModel = new myModel();
     this.someModel.set('message', 'Hello I am a model');
     this.textModel = new myModel();
@@ -58,6 +59,20 @@ BasicApp = (function(superClass) {
       }
     });
     this.linkToScope('someMethod', 'mm', 'nn', ['getRequest', 'postRequest', 'putRequest', 'deleteRequest', 'postPayloadRequest', 'putPayloadRequest', 'deletePayloadRequest', 'showVal1', 'showVal2', 'someModel', 'textModel', 'textFill', 'textErase']);
+    cb = (function(_this) {
+      return function(event, element) {
+        console.log('event', event);
+        console.log('el', element);
+        return _this.getScope().set({
+          bbb: !_this.getScope().get('bbb')
+        });
+      };
+    })(this);
+    toggleBBB = $dp.fn.debounce(cb, 1000);
+    this.getScope().set({
+      bbb: true,
+      toggleBBB: toggleBBB
+    });
     setTimeout((function(_this) {
       return function() {
         return _this.getScope().set({

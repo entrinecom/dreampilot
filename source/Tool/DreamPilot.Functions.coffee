@@ -14,6 +14,14 @@ class DreamPilot.Functions
     @urlencode: (s) -> encodeURIComponent s
     @urldecode: (s) -> decodeURIComponent self.str(s).replace /\+/g, '%20'
 
+    @debounce: (func, ms) ->
+        skip = false
+        (args...) ->
+            unless skip
+                func.apply @, args
+                skip = true
+                setTimeout (-> skip = false), ms
+
     @parseQueryString: (url = window.location.href, start = '?', delimiter = '&', equal = '=') ->
         ar = {}
         if url.indexOf(start) > -1

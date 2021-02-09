@@ -55,6 +55,16 @@ class BasicApp extends DreamPilot.Application
             'textErase'
         ]
 
+        cb = (event, element) =>
+            console.log 'event', event
+            console.log 'el', element
+            @getScope().set bbb: not @getScope().get 'bbb'
+        toggleBBB = $dp.fn.debounce(cb, 1000)
+        @getScope().set {
+            bbb: true
+            toggleBBB
+        }
+
         setTimeout =>
             @getScope().set
                 lolo: 11

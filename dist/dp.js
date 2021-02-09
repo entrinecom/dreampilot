@@ -2205,6 +2205,22 @@ DreamPilot.Functions = (function() {
     return decodeURIComponent(self.str(s).replace(/\+/g, '%20'));
   };
 
+  Functions.debounce = function(func, ms) {
+    var skip;
+    skip = false;
+    return function() {
+      var args;
+      args = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+      if (!skip) {
+        func.apply(this, args);
+        skip = true;
+        return setTimeout((function() {
+          return skip = false;
+        }), ms);
+      }
+    };
+  };
+
   Functions.parseQueryString = function(url, start, delimiter, equal) {
     var ar, ar2, ar3, i;
     if (url == null) {

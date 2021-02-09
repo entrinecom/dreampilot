@@ -33,6 +33,11 @@
 		.shadow {
 			box-shadow: 0 0 5px rgba(0,0,0,.75);
 		}
+
+		.bbb {
+			margin: 30px 0;
+			cursor: pointer;
+		}
 	</style>
 </head>
 <body dp-app="BasicApp">
@@ -55,6 +60,11 @@
 	<button type="button" dp-click="requiredInput = !requiredInput">toggle required</button>
 </div>
 </form>
+
+<div dp-class="{bbb: true, blue: bbb, green: !bbb}">
+	<button type="button" dp-click="toggleBBB($event, this)">CLICK</button>
+	as fast as you can (debounce test, 1s min delay between clicks)
+</div>
 
 <div dp-class="{blue: x > 0, green: x <= 0}" dp-init="x = 10" dp-click="x = x - 10"
      dp-mouseover="show_bottom = true" dp-mouseout="show_bottom = false">click on me (or hover)</div>
