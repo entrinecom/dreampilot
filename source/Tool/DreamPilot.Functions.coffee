@@ -54,6 +54,7 @@ class DreamPilot.Functions
 
     # method can be: round/ceil/floor
     @formatFloat: (num, afterDot, method = 'round') ->
+        num = self.float num
         d = Math.pow 10, afterDot
         num = Math[method](num * d) / d;
         a = num.toString().split '.'
@@ -79,6 +80,7 @@ class DreamPilot.Functions
 
     # method can be: round/ceil/floor
     @round: (number, precision = 0, method = 'round') ->
+        number = self.float number
         return Math[method] number unless precision
         factor = Math.pow 10, precision
         tempNumber = number * factor
@@ -256,8 +258,8 @@ class DreamPilot.Functions
 
 unless String.prototype.format
     # Usage: 'Hello, {0}! {1} to see you'.format('James', 'Nice');
-	String::format = ->
-		args = arguments
-		@replace /{(\d+)}/g, (match, number) -> if typeof args[number] isnt 'undefined' then args[number] else match
+    String::format = ->
+        args = arguments
+        @replace /{(\d+)}/g, (match, number) -> if typeof args[number] isnt 'undefined' then args[number] else match
 
 $dp.fn = DreamPilot.Functions if $dp

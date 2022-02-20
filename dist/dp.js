@@ -2288,6 +2288,7 @@ DreamPilot.Functions = (function() {
     if (method == null) {
       method = 'round';
     }
+    num = self.float(num);
     d = Math.pow(10, afterDot);
     num = Math[method](num * d) / d;
     a = num.toString().split('.');
@@ -2337,6 +2338,7 @@ DreamPilot.Functions = (function() {
     if (method == null) {
       method = 'round';
     }
+    number = self.float(number);
     if (!precision) {
       return Math[method](number);
     }
